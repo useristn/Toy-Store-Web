@@ -1,4 +1,4 @@
-package t4m.toy_store.auth.controller;
+package t4m.toy_store.controller;
 
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import t4m.toy_store.auth.dto.AuthResponse;
 import t4m.toy_store.auth.dto.LoginRequest;
 import t4m.toy_store.auth.dto.RegisterRequest;
-import t4m.toy_store.auth.entity.Role;
-import t4m.toy_store.auth.entity.User;
 import t4m.toy_store.auth.service.UserService;
 import t4m.toy_store.auth.dto.ErrorResponse;
 import t4m.toy_store.auth.exception.*;
@@ -36,21 +34,21 @@ public class AuthController {
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest dto) {
         try {
             userService.register(dto);
-            return ResponseEntity.ok(new AuthResponse(dto.getEmail(), Set.of(dto.getRole()), "Registration successful"));
+            return ResponseEntity.ok(new AuthResponse(null, dto.getEmail(), Set.of(dto.getRole()), "Registration successful"));
         } catch (EmailAlreadyExistsException | InvalidRoleException e) {
             logger.warn("Registration error: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new AuthResponse(dto.getEmail(), null, e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new AuthResponse(null, dto.getEmail(), null, e.getMessage()));
         }
     }
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest dto) {
         try {
-            User user = userService.login(dto.getEmail(), dto.getPassword());
-            return ResponseEntity.ok(new AuthResponse(user.getEmail(), user.getRoles().stream().map(Role::getRname).collect(Collectors.toSet()), "Login successful"));
+            String token = userService.login(dto.getEmail(), dto.getPassword());
+            return ResponseEntity.ok(new AuthResponse(null, dto.getEmail(), null, "Login successful", token));
         } catch (UserNotFoundException | InvalidCredentialsException | AccountNotActivatedException e) {
             logger.warn("Login error: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse(dto.getEmail(), null, e.getMessage()));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse(null, dto.getEmail(), null, e.getMessage()));
         }
     }
 

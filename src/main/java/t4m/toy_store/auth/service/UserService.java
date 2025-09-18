@@ -7,12 +7,14 @@ import t4m.toy_store.auth.entity.Role;
 import t4m.toy_store.auth.entity.User;
 import t4m.toy_store.auth.repository.RoleRepository;
 import t4m.toy_store.auth.repository.UserRepository;
+import t4m.toy_store.auth.util.JwtUtil;
 import t4m.toy_store.auth.exception.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -20,12 +22,14 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
     private static final Set<String> ALLOWED_ROLES = new HashSet<>(Set.of("ROLE_USER", "ROLE_VENDOR", "ROLE_SHIPPER"));
 
-    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
     }
 
     public void register(RegisterRequest dto) {
@@ -59,7 +63,7 @@ public class UserService {
         logger.info("User registered successfully: {}", sanitizedEmail);
     }
 
-    public User login(String email, String password) {
+    public String login(String email, String password) {
         String sanitizedEmail = email.trim().toLowerCase();
         logger.info("Attempting login for user: {}", sanitizedEmail);
 
@@ -78,7 +82,9 @@ public class UserService {
             throw new AccountNotActivatedException("Account not activated");
         }
 
+        Set<String> roles = user.getRoles().stream().map(Role::getRname).collect(Collectors.toSet());
+        String token = jwtUtil.generateToken(sanitizedEmail, roles);
         logger.info("Login successful for user: {}", sanitizedEmail);
-        return user;
+        return token;
     }
 }
