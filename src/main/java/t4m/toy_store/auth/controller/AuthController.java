@@ -17,8 +17,6 @@ import t4m.toy_store.auth.exception.*;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -34,10 +32,10 @@ public class AuthController {
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest dto) {
         try {
             userService.register(dto);
-            return ResponseEntity.ok(new AuthResponse(null, dto.getEmail(), Set.of(dto.getRole()), "Registration successful"));
+            return ResponseEntity.ok(new AuthResponse(dto.getEmail(), dto.getRole(), "Registration successful"));
         } catch (EmailAlreadyExistsException | InvalidRoleException e) {
             logger.warn("Registration error: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new AuthResponse(null, dto.getEmail(), null, e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new AuthResponse(dto.getEmail(), null, e.getMessage()));
         }
     }
 
@@ -45,10 +43,11 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest dto) {
         try {
             String token = userService.login(dto.getEmail(), dto.getPassword());
-            return ResponseEntity.ok(new AuthResponse(null, dto.getEmail(), null, "Login successful", token));
+            String role = userService.getUserRole(dto.getEmail());
+            return ResponseEntity.ok(new AuthResponse(dto.getEmail(), role, "Login successful", token));
         } catch (UserNotFoundException | InvalidCredentialsException | AccountNotActivatedException e) {
             logger.warn("Login error: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse(null, dto.getEmail(), null, e.getMessage()));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse(dto.getEmail(), null, e.getMessage()));
         }
     }
 

@@ -2,6 +2,8 @@ package t4m.toy_store.auth.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 import t4m.toy_store.auth.dto.RegisterRequest;
 import t4m.toy_store.auth.entity.Role;
 import t4m.toy_store.auth.entity.User;
@@ -9,12 +11,10 @@ import t4m.toy_store.auth.repository.RoleRepository;
 import t4m.toy_store.auth.repository.UserRepository;
 import t4m.toy_store.auth.util.JwtUtil;
 import t4m.toy_store.auth.exception.*;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -53,10 +53,11 @@ public class UserService {
         user.setPasswd(passwordEncoder.encode(dto.getPassword()));
         user.setActivated(true);
 
-        Role userRole = roleRepository.findByRname(sanitizedRole).orElseThrow(() -> {
-            logger.error("Registration failed: Role not found - {}", sanitizedRole);
-            return new InvalidRoleException("Role not found: " + sanitizedRole);
-        });
+        Role userRole = roleRepository.findByRname(sanitizedRole)
+                .orElseThrow(() -> {
+                    logger.error("Registration failed: Role not found - {}", sanitizedRole);
+                    return new InvalidRoleException("Role not found: " + sanitizedRole);
+                });
         user.getRoles().add(userRole);
 
         userRepository.save(user);
@@ -67,10 +68,11 @@ public class UserService {
         String sanitizedEmail = email.trim().toLowerCase();
         logger.info("Attempting login for user: {}", sanitizedEmail);
 
-        User user = userRepository.findByEmail(sanitizedEmail).orElseThrow(() -> {
-            logger.warn("Login failed: User not found - {}", sanitizedEmail);
-            return new UserNotFoundException("User not found");
-        });
+        User user = userRepository.findByEmail(sanitizedEmail)
+                .orElseThrow(() -> {
+                    logger.warn("Login failed: User not found - {}", sanitizedEmail);
+                    return new UserNotFoundException("User not found");
+                });
 
         if (!passwordEncoder.matches(password, user.getPasswd())) {
             logger.warn("Login failed: Invalid password for user - {}", sanitizedEmail);
@@ -82,9 +84,30 @@ public class UserService {
             throw new AccountNotActivatedException("Account not activated");
         }
 
-        Set<String> roles = user.getRoles().stream().map(Role::getRname).collect(Collectors.toSet());
-        String token = jwtUtil.generateToken(sanitizedEmail, roles);
-        logger.info("Login successful for user: {}", sanitizedEmail);
-        return token;
+        try {
+            String role = user.getRoles().stream()
+                    .map(Role::getRname)
+                    .findFirst()
+                    .orElseThrow(() -> new InvalidRoleException("No role assigned to user"));
+            String token = jwtUtil.generateToken(sanitizedEmail, Collections.singleton(role));
+            logger.info("Login successful for user: {}", sanitizedEmail);
+            return token;
+        } catch (Exception e) {
+            logger.error("Error generating token for user {}: {}", sanitizedEmail, e.getMessage());
+            throw new RuntimeException("Login failed due to token generation error", e);
+        }
+    }
+
+    public String getUserRole(String email) {
+        String sanitizedEmail = email.trim().toLowerCase();
+        User user = userRepository.findByEmail(sanitizedEmail)
+                .orElseThrow(() -> {
+                    logger.warn("User not found for role retrieval: {}", sanitizedEmail);
+                    return new UserNotFoundException("User not found");
+                });
+        return user.getRoles().stream()
+                .map(Role::getRname)
+                .findFirst()
+                .orElseThrow(() -> new InvalidRoleException("No role assigned to user"));
     }
 }
