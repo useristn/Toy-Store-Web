@@ -37,13 +37,7 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-
-//    @Bean
-//    public UserDetailsService userDetailsService() {
-//        UserDetails user = User.withUsername("admin").password(passwordEncoder().encode("admin")).roles("ADMIN").build();
-//        return new InMemoryUserDetailsManager(user);
-//    }
-//
+    
 //    @Bean
 //    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 //        http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll()).csrf(AbstractHttpConfigurer::disable).formLogin(AbstractHttpConfigurer::disable).httpBasic(AbstractHttpConfigurer::disable);
@@ -57,6 +51,7 @@ public class SecurityConfig {
                 sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).
                 authorizeHttpRequests(auth -> auth.
                         requestMatchers("/api/auth/**").permitAll().
+                        requestMatchers("/api/user/**").hasRole("USER").
                         requestMatchers("/api/vendor/**").hasRole("VENDOR").
                         requestMatchers("/api/shipper/**").hasRole("SHIPPER").
                         requestMatchers("/api/admin/**").hasRole("ADMIN").
