@@ -2,44 +2,78 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WebSocket Chat Test</title>
+    <title>WebSocket Chat + Notification</title>
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 </head>
 <body>
-<h2>Chat Test</h2>
-<input type="text" id="message" placeholder="Type message..." />
-<button onclick="sendMessage()">Send</button>
-<ul id="chat"></ul>
+<h2>Test WebSocket Chat</h2>
+<div>
+    <label>Room ID:</label>
+    <input type="text" id="roomId" value="123">
+    <button onclick="connect()">Connect</button>
+</div>
+<div>
+    <label>Message:</label>
+    <input type="text" id="message">
+    <button onclick="sendMessage()">Send</button>
+</div>
+<div>
+    <h3>Messages</h3>
+    <ul id="messages"></ul>
+</div>
+<div>
+    <h3>Notifications</h3>
+    <ul id="notifications"></ul>
+</div>
 
 <script>
     let stompClient = null;
+    let currentRoom = null;
 
     function connect() {
         const socket = new SockJS('/ws');
         stompClient = Stomp.over(socket);
+        currentRoom = document.getElementById('roomId').value;
+
         stompClient.connect({}, function () {
-            console.log('Connected to WebSocket');
-            stompClient.subscribe('/topic/public', function (msg) {
-                const chat = document.getElementById("chat");
-                const li = document.createElement("li");
-                li.textContent = JSON.parse(msg.body).content;
-                chat.appendChild(li);
+            console.log("Connected to room: " + currentRoom);
+
+            // Sub chat room
+            stompClient.subscribe('/topic/chat.' + currentRoom, function (msg) {
+                const message = JSON.parse(msg.body);
+                showMessage(message.sender + ": " + message.content);
+            });
+
+            // Sub notifications (global)
+            stompClient.subscribe('/topic/notifications', function (payload) {
+                const notif = JSON.parse(payload.body);
+                showNotification(notif.type + ": " + notif.message);
             });
         });
     }
 
     function sendMessage() {
-        const messageContent = document.getElementById("message").value;
-        stompClient.send("/chat/chat.send", {}, JSON.stringify({
-            sender: "TestUser",
-            content: messageContent,
-            type: "CHAT"
-        }));
-        document.getElementById("message").value = "";
+        const content = document.getElementById('message').value;
+        stompClient.send(
+            "/chat/send." + currentRoom,
+            {},
+            JSON.stringify({ sender: "User1", content: content, type: "CHAT" })
+        );
+        document.getElementById('message').value = "";
     }
 
-    connect();
+    function showMessage(text) {
+        const li = document.createElement("li");
+        li.innerText = text;
+        document.getElementById("messages").appendChild(li);
+    }
+
+    function showNotification(text) {
+        const li = document.createElement("li");
+        li.innerText = "🔔 " + text;
+        document.getElementById("notifications").appendChild(li);
+    }
 </script>
 </body>
 </html>

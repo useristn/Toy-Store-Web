@@ -16,4 +16,10 @@ public class ChatRestController {
         chatService.sendMessage(message);
         return ResponseEntity.ok("Message sent to WebSocket subscribers");
     }
+
+    @PostMapping("/notify")
+    public ResponseEntity<String> sendNotification(@RequestBody NotificationMessage notification) {
+        chatService.sendNotification(notification);
+        return ResponseEntity.ok("Notification sent");
+    }
 }

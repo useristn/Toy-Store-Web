@@ -11,13 +11,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChatMessage {
-    private String sender;
+    private String senderId;   // id người gửi
+    private String receiverId; // id người nhận (cho private chat)
+    private String roomId;     // room (chat 1-1)
     private String content;
     private MessageType type;
 
     public enum MessageType {
         CHAT,
         JOIN,
-        LEAVE
+        LEAVE,
+        NOTIFICATION
     }
 }
