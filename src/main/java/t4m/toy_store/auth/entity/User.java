@@ -12,9 +12,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Data
 @Entity
 @Table(name = "user")
-@Data
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,28 +54,13 @@ public class User implements UserDetails {
     }
 
     @Override
-    public String getPassword() {
-        return passwd;
-    }
-
-    @Override
     public String getUsername() {
         return email;
     }
 
     @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
+    public String getPassword() {
+        return passwd;
     }
 
     @Override

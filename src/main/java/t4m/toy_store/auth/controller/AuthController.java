@@ -1,16 +1,31 @@
-package t4m.toy_store.controller;
+package t4m.toy_store.auth.controller;
 
-import t4m.toy_store.auth.dto.LoginRequest;
-import t4m.toy_store.auth.dto.RegisterRequest;
-import t4m.toy_store.auth.entity.User;
-import t4m.toy_store.auth.service.UserService;
+import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import t4m.toy_store.auth.dto.AuthResponse;
+import t4m.toy_store.auth.dto.LoginRequest;
+import t4m.toy_store.auth.dto.RegisterRequest;
+import t4m.toy_store.auth.entity.Role;
+import t4m.toy_store.auth.entity.User;
+import t4m.toy_store.auth.service.UserService;
+import t4m.toy_store.auth.dto.ErrorResponse;
+import t4m.toy_store.auth.exception.*;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
     private final UserService userService;
 
     public AuthController(UserService userService) {
@@ -18,22 +33,34 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest dto) {
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest dto) {
         try {
             userService.register(dto);
-            return ResponseEntity.ok("Registration successful");
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.ok(new AuthResponse(dto.getEmail(), Set.of(dto.getRole()), "Registration successful"));
+        } catch (EmailAlreadyExistsException | InvalidRoleException e) {
+            logger.warn("Registration error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new AuthResponse(dto.getEmail(), null, e.getMessage()));
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest dto) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest dto) {
         try {
             User user = userService.login(dto.getEmail(), dto.getPassword());
-            return ResponseEntity.ok("Login successful for " + user.getEmail() + "Role: " + user.getRoles());
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            return ResponseEntity.ok(new AuthResponse(user.getEmail(), user.getRoles().stream().map(Role::getRname).collect(Collectors.toSet()), "Login successful"));
+        } catch (UserNotFoundException | InvalidCredentialsException | AccountNotActivatedException e) {
+            logger.warn("Login error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse(dto.getEmail(), null, e.getMessage()));
         }
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+            errors.put(error.getField(), error.getDefaultMessage());
+        }
+        logger.warn("Validation error: {}", errors);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), errors.toString()));
     }
 }

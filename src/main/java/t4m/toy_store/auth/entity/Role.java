@@ -3,9 +3,9 @@ package t4m.toy_store.auth.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "role")
-@Data
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
