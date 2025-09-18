@@ -13,13 +13,13 @@ import java.util.function.Function;
 
 @Component
 public class JwtUtil {
-    private final String SECRET_KEY = "your-secret-key-1234567890"; // Thay bằng key mạnh, lưu ở application.properties
+
+    private final String SECRET_KEY = "somerandomsecretsomerandomsecretsomerandomsecretsomerandomsecret";
 
     public String generateToken(String username, Set<String> roles) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("roles", roles);
-        // 10 giờ
-        long JWT_EXPIRATION = 1000 * 60 * 60 * 10;
+        long JWT_EXPIRATION = 1000 * 60 * 60 * 6;
         return Jwts.builder().setClaims(claims).setSubject(username).setIssuedAt(new Date(System.currentTimeMillis())).setExpiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION)).signWith(SignatureAlgorithm.HS256, SECRET_KEY).compact();
     }
 

@@ -1,4 +1,4 @@
-package t4m.toy_store.controller;
+package t4m.toy_store.auth.controller;
 
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
