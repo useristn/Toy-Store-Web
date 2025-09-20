@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import t4m.toy_store.auth.dto.AuthResponse;
 import t4m.toy_store.auth.dto.LoginRequest;
 import t4m.toy_store.auth.dto.RegisterRequest;
+import t4m.toy_store.auth.dto.OtpRequest;
+import t4m.toy_store.auth.dto.ResetPasswordRequest;
 import t4m.toy_store.auth.service.UserService;
 import t4m.toy_store.auth.dto.ErrorResponse;
 import t4m.toy_store.auth.exception.*;
@@ -32,9 +34,35 @@ public class AuthController {
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest dto) {
         try {
             userService.register(dto);
-            return ResponseEntity.ok(new AuthResponse(dto.getEmail(), dto.getRole(), "Registration successful"));
+            return ResponseEntity.ok(new AuthResponse(dto.getEmail(), dto.getRole(), "Registration successful, please check your email for OTP"));
         } catch (EmailAlreadyExistsException | InvalidRoleException e) {
             logger.warn("Registration error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new AuthResponse(dto.getEmail(), null, e.getMessage()));
+        }
+    }
+
+    @PostMapping("/active-account")
+    public ResponseEntity<AuthResponse> activeAccount(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            if (email == null || email.trim().isEmpty()) {
+                throw new IllegalArgumentException("Email is required");
+            }
+            userService.sendActivationOtp(email);
+            return ResponseEntity.ok(new AuthResponse(email, null, "OTP sent to your email for activation"));
+        } catch (UserNotFoundException | AccountNotActivatedException | IllegalArgumentException e) {
+            logger.warn("Activation OTP error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new AuthResponse(null, null, null, e.getMessage()));
+        }
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<AuthResponse> verifyOtp(@Valid @RequestBody OtpRequest dto) {
+        try {
+            userService.verifyOtpAndActivate(dto.getEmail(), dto.getOtp());
+            return ResponseEntity.ok(new AuthResponse(dto.getEmail(), null, "Account activated successfully"));
+        } catch (UserNotFoundException | OtpInvalidException | OtpExpiredException | AccountNotActivatedException e) {
+            logger.warn("OTP verification error: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new AuthResponse(dto.getEmail(), null, e.getMessage()));
         }
     }
@@ -48,6 +76,32 @@ public class AuthController {
         } catch (UserNotFoundException | InvalidCredentialsException | AccountNotActivatedException e) {
             logger.warn("Login error: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse(dto.getEmail(), null, e.getMessage()));
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<AuthResponse> forgotPassword(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            if (email == null || email.trim().isEmpty()) {
+                throw new IllegalArgumentException("Email is required");
+            }
+            userService.sendForgotPasswordOtp(email);
+            return ResponseEntity.ok(new AuthResponse(email, null, "OTP sent to your email"));
+        } catch (UserNotFoundException | IllegalArgumentException e) {
+            logger.warn("Forgot password error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new AuthResponse(null, null, null, e.getMessage()));
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<AuthResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest dto) {
+        try {
+            userService.resetPassword(dto.getEmail(), dto.getOtp(), dto.getNewPassword());
+            return ResponseEntity.ok(new AuthResponse(dto.getEmail(), null, "Password reset successfully"));
+        } catch (UserNotFoundException | OtpInvalidException | OtpExpiredException e) {
+            logger.warn("Reset password error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new AuthResponse(dto.getEmail(), null, e.getMessage()));
         }
     }
 
