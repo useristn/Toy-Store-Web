@@ -1,5 +1,6 @@
 package t4m.toy_store.product.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -36,5 +37,6 @@ public class Category {
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<Product> products;
 }
