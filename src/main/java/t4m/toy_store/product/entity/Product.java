@@ -61,5 +61,6 @@ public class Product {
     private List<ProductVariant> variants;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
     private List<ProductImage> images;
 }

@@ -1,5 +1,6 @@
 package t4m.toy_store.product.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,6 +16,7 @@ public class ProductImage {
     // optional: product_id
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
+    @JsonBackReference
     private Product product;
 
     // optional variant link
