@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import t4m.toy_store.auth.dto.RegisterRequest;
+import t4m.toy_store.auth.dto.UpdateProfileRequest;
+import t4m.toy_store.auth.dto.UserProfileResponse;
 import t4m.toy_store.auth.entity.Role;
 import t4m.toy_store.auth.entity.User;
 import t4m.toy_store.auth.repository.RoleRepository;
@@ -16,10 +18,11 @@ import t4m.toy_store.auth.exception.*;
 
 import lombok.RequiredArgsConstructor;
 
-import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,8 +34,15 @@ public class UserService {
     private final JwtUtil jwtUtil;
     private final OtpService otpService;
     private static final Set<String> ALLOWED_ROLES = new HashSet<>(Set.of("ROLE_USER", "ROLE_VENDOR", "ROLE_SHIPPER"));
-    private final Cache<String, Role> roleCache = Caffeine.newBuilder().expireAfterWrite(1, TimeUnit.HOURS).maximumSize(100).build();
+    private final Cache<String, Role> roleCache = Caffeine.newBuilder()
+            .expireAfterWrite(1, TimeUnit.HOURS)
+            .maximumSize(100)
+            .build();
 
+    /**
+     * Register a new user with email, password, and role.
+     * Sends OTP for account activation.
+     */
     public void register(RegisterRequest dto) {
         String sanitizedEmail = dto.getEmail().trim().toLowerCase();
         String sanitizedRole = dto.getRole().trim();
@@ -54,10 +64,11 @@ public class UserService {
         user.setPasswd(passwordEncoder.encode(dto.getPassword()));
         user.setActivated(false);
 
-        Role userRole = roleCache.get(sanitizedRole, key -> roleRepository.findByRname(key).orElseThrow(() -> {
-            logger.error("Registration failed: Role not found - {}", sanitizedRole);
-            return new InvalidRoleException("Role not found: " + sanitizedRole);
-        }));
+        Role userRole = roleCache.get(sanitizedRole, key -> roleRepository.findByRname(key)
+                .orElseThrow(() -> {
+                    logger.error("Registration failed: Role not found - {}", sanitizedRole);
+                    return new InvalidRoleException("Role not found: " + sanitizedRole);
+                }));
         user.getRoles().add(userRole);
 
         userRepository.save(user);
@@ -68,14 +79,18 @@ public class UserService {
         otpService.sendOtpEmail(sanitizedEmail, otp, "Account Activation");
     }
 
+    /**
+     * Send OTP for account activation.
+     */
     public void sendActivationOtp(String email) {
         String sanitizedEmail = email.trim().toLowerCase();
         logger.info("Sending activation OTP for email: {}", sanitizedEmail);
 
-        User user = userRepository.findByEmail(sanitizedEmail).orElseThrow(() -> {
-            logger.warn("Activation OTP failed: User not found - {}", sanitizedEmail);
-            return new UserNotFoundException("User not found");
-        });
+        User user = userRepository.findByEmail(sanitizedEmail)
+                .orElseThrow(() -> {
+                    logger.warn("Activation OTP failed: User not found - {}", sanitizedEmail);
+                    return new UserNotFoundException("User not found");
+                });
 
         if (user.isActivated()) {
             logger.warn("Account already activated: {}", sanitizedEmail);
@@ -87,14 +102,18 @@ public class UserService {
         otpService.sendOtpEmail(sanitizedEmail, otp, "Account Activation");
     }
 
+    /**
+     * Verify OTP and activate account.
+     */
     public void verifyOtpAndActivate(String email, String otp) {
         String sanitizedEmail = email.trim().toLowerCase();
         logger.info("Attempting to verify OTP and activate account for email: {}", sanitizedEmail);
 
-        User user = userRepository.findByEmail(sanitizedEmail).orElseThrow(() -> {
-            logger.warn("Activation failed: User not found - {}", sanitizedEmail);
-            return new UserNotFoundException("User not found");
-        });
+        User user = userRepository.findByEmail(sanitizedEmail)
+                .orElseThrow(() -> {
+                    logger.warn("Activation failed: User not found - {}", sanitizedEmail);
+                    return new UserNotFoundException("User not found");
+                });
 
         if (user.isActivated()) {
             logger.warn("Account already activated: {}", sanitizedEmail);
@@ -107,14 +126,18 @@ public class UserService {
         logger.info("Account activated successfully: {}", sanitizedEmail);
     }
 
+    /**
+     * Login user and generate JWT.
+     */
     public String login(String email, String password) {
         String sanitizedEmail = email.trim().toLowerCase();
         logger.info("Attempting login for user: {}", sanitizedEmail);
 
-        User user = userRepository.findByEmail(sanitizedEmail).orElseThrow(() -> {
-            logger.warn("Login failed: User not found - {}", sanitizedEmail);
-            return new UserNotFoundException("User not found");
-        });
+        User user = userRepository.findByEmail(sanitizedEmail)
+                .orElseThrow(() -> {
+                    logger.warn("Login failed: User not found - {}", sanitizedEmail);
+                    return new UserNotFoundException("User not found");
+                });
 
         if (!passwordEncoder.matches(password, user.getPasswd())) {
             logger.warn("Login failed: Invalid password for user - {}", sanitizedEmail);
@@ -127,8 +150,11 @@ public class UserService {
         }
 
         try {
-            String role = user.getRoles().stream().map(Role::getRname).findFirst().orElseThrow(() -> new InvalidRoleException("No role assigned to user"));
-            String token = jwtUtil.generateToken(sanitizedEmail, Collections.singleton(role));
+            String role = user.getRoles().stream()
+                    .map(Role::getRname)
+                    .findFirst()
+                    .orElseThrow(() -> new InvalidRoleException("No role assigned to user"));
+            String token = jwtUtil.generateToken(sanitizedEmail, Set.of(role));
             logger.info("Login successful for user: {}", sanitizedEmail);
             return token;
         } catch (Exception e) {
@@ -137,41 +163,96 @@ public class UserService {
         }
     }
 
+    /**
+     * Get user role.
+     */
     public String getUserRole(String email) {
         String sanitizedEmail = email.trim().toLowerCase();
-        User user = userRepository.findByEmail(sanitizedEmail).orElseThrow(() -> {
-            logger.warn("User not found for role retrieval: {}", sanitizedEmail);
-            return new UserNotFoundException("User not found");
-        });
-        return user.getRoles().stream().map(Role::getRname).findFirst().orElseThrow(() -> new InvalidRoleException("No role assigned to user"));
+        User user = userRepository.findByEmail(sanitizedEmail)
+                .orElseThrow(() -> {
+                    logger.warn("User not found for role retrieval: {}", sanitizedEmail);
+                    return new UserNotFoundException("User not found");
+                });
+        return user.getRoles().stream()
+                .map(Role::getRname)
+                .findFirst()
+                .orElseThrow(() -> new InvalidRoleException("No role assigned to user"));
     }
 
+    /**
+     * Send OTP for password reset.
+     */
     public void sendForgotPasswordOtp(String email) {
         String sanitizedEmail = email.trim().toLowerCase();
         logger.info("Sending forgot password OTP for email: {}", sanitizedEmail);
 
-        User user = userRepository.findByEmail(sanitizedEmail).orElseThrow(() -> {
-            logger.warn("Forgot password failed: User not found - {}", sanitizedEmail);
-            return new UserNotFoundException("User not found");
-        });
+        User user = userRepository.findByEmail(sanitizedEmail)
+                .orElseThrow(() -> {
+                    logger.warn("Forgot password failed: User not found - {}", sanitizedEmail);
+                    return new UserNotFoundException("User not found");
+                });
 
         String otp = otpService.generateOtp();
         otpService.storeOtp(sanitizedEmail, otp, "forgot-password");
         otpService.sendOtpEmail(sanitizedEmail, otp, "Password Reset");
     }
 
+    /**
+     * Reset password with OTP.
+     */
     public void resetPassword(String email, String otp, String newPassword) {
         String sanitizedEmail = email.trim().toLowerCase();
         logger.info("Attempting to reset password for email: {}", sanitizedEmail);
 
-        User user = userRepository.findByEmail(sanitizedEmail).orElseThrow(() -> {
-            logger.warn("Reset password failed: User not found - {}", sanitizedEmail);
-            return new UserNotFoundException("User not found");
-        });
+        User user = userRepository.findByEmail(sanitizedEmail)
+                .orElseThrow(() -> {
+                    logger.warn("Reset password failed: User not found - {}", sanitizedEmail);
+                    return new UserNotFoundException("User not found");
+                });
 
         otpService.validateOtp(sanitizedEmail, otp, "forgot-password");
         user.setPasswd(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         logger.info("Password reset successfully for email: {}", sanitizedEmail);
+    }
+
+    /**
+     * Get user profile information.
+     */
+    public UserProfileResponse getUserProfile(String email) {
+        String sanitizedEmail = email.trim().toLowerCase();
+        logger.info("Fetching profile for user: {}", sanitizedEmail);
+
+        User user = userRepository.findByEmail(sanitizedEmail)
+                .orElseThrow(() -> {
+                    logger.warn("Profile fetch failed: User not found - {}", sanitizedEmail);
+                    return new UserNotFoundException("User not found");
+                });
+
+        List<String> roles = user.getRoles().stream()
+                .map(Role::getRname)
+                .collect(Collectors.toList());
+
+        return new UserProfileResponse(user.getEmail(), user.getName(), user.getPhone(), user.getAddress(), roles);
+    }
+
+    /**
+     * Update user profile information.
+     */
+    public void updateUserProfile(String email, UpdateProfileRequest dto) {
+        String sanitizedEmail = email.trim().toLowerCase();
+        logger.info("Attempting to update profile for user: {}", sanitizedEmail);
+
+        User user = userRepository.findByEmail(sanitizedEmail)
+                .orElseThrow(() -> {
+                    logger.warn("Profile update failed: User not found - {}", sanitizedEmail);
+                    return new UserNotFoundException("User not found");
+                });
+
+        user.setName(dto.getName());
+        user.setPhone(dto.getPhone());
+        user.setAddress(dto.getAddress());
+        userRepository.save(user);
+        logger.info("Profile updated successfully for user: {}", sanitizedEmail);
     }
 }
