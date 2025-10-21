@@ -72,8 +72,6 @@
 //    }
 //}
 
-
-
 package t4m.toy_store.config;
 
 import org.springframework.context.annotation.Bean;

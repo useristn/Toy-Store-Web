@@ -19,293 +19,357 @@ const apiBase = `${base}/api/auth`;
 
 // Utility: display a message inside a container element
 function displayMessage(containerId, message, isError = false) {
-  const container = document.getElementById(containerId);
-  if (container) {
-    container.textContent = message;
-    container.style.color = isError ? 'red' : 'green';
-  }
+    const container = document.getElementById(containerId);
+    if (container) {
+        container.textContent = message;
+        container.style.color = isError ? 'red' : 'green';
+    }
 }
 
 // Registration handler
 function handleRegister(event) {
-  event.preventDefault();
-  const email = document.getElementById('registerEmail').value.trim();
-  const password = document.getElementById('registerPassword').value;
-  const confirmPassword = document.getElementById('registerConfirmPassword').value;
-  const role = document.getElementById('registerRole').value.trim();
+    event.preventDefault();
+    const email = document.getElementById('registerEmail').value.trim();
+    const password = document.getElementById('registerPassword').value;
+    const confirmPassword = document.getElementById('registerConfirmPassword').value;
+    const role = document.getElementById('registerRole').value.trim();
 
-  if (password !== confirmPassword) {
-    displayMessage('registerMessage', 'Passwords do not match', true);
-    return;
-  }
-
-  fetch(`${apiBase}/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password, role })
-  }).then(async (response) => {
-    const data = await response.json().catch(() => ({}));
-    if (response.ok) {
-      displayMessage('registerMessage', data.message || 'Registration successful');
-      // After registration, redirect to verification page so user can enter OTP
-      setTimeout(() => { window.location.href = '/verify-otp'; }, 1500);
-    } else {
-      displayMessage('registerMessage', data.message || 'Registration failed', true);
+    if (password !== confirmPassword) {
+        displayMessage('registerMessage', 'Passwords do not match', true);
+        return;
     }
-  }).catch((error) => {
-    displayMessage('registerMessage', 'Error: ' + error.message, true);
-  });
+
+    fetch(`${apiBase}/register`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({email, password, role})
+    }).then(async (response) => {
+        const data = await response.json().catch(() => ({}));
+        if (response.ok) {
+            displayMessage('registerMessage', data.message || 'Registration successful');
+            // Lưu email vào session để trang xác thực có thể lấy
+            sessionStorage.setItem('verifyEmail', email);
+            // After registration, redirect to verification page so user can enter OTP
+            setTimeout(() => {
+                window.location.href = '/verify-otp';
+            }, 1500);
+        } else {
+            displayMessage('registerMessage', data.message || 'Registration failed', true);
+        }
+    }).catch((error) => {
+        displayMessage('registerMessage', 'Error: ' + error.message, true);
+    });
 }
 
 // Send activation OTP handler (resend)
 function handleSendActivationOtp(event) {
-  event.preventDefault();
-  const email = document.getElementById('verifyEmail').value.trim();
-  if (!email) {
-    displayMessage('verifyMessage', 'Please enter your email', true);
-    return;
-  }
-  fetch(`${apiBase}/active-account`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email })
-  }).then(async (response) => {
-    const data = await response.json().catch(() => ({}));
-    if (response.ok) {
-      displayMessage('verifyMessage', data.message || 'OTP has been sent');
-    } else {
-      displayMessage('verifyMessage', data.message || 'Failed to send OTP', true);
+    event.preventDefault();
+    const email = document.getElementById('verifyEmail').value.trim();
+    if (!email) {
+        displayMessage('verifyMessage', 'Please enter your email', true);
+        return;
     }
-  }).catch((error) => {
-    displayMessage('verifyMessage', 'Error: ' + error.message, true);
-  });
+    fetch(`${apiBase}/active-account`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({email})
+    }).then(async (response) => {
+        const data = await response.json().catch(() => ({}));
+        if (response.ok) {
+            displayMessage('verifyMessage', data.message || 'OTP has been sent');
+        } else {
+            displayMessage('verifyMessage', data.message || 'Failed to send OTP', true);
+        }
+    }).catch((error) => {
+        displayMessage('verifyMessage', 'Error: ' + error.message, true);
+    });
 }
 
 // Account verification handler
 function handleVerifyAccount(event) {
-  event.preventDefault();
-  const email = document.getElementById('verifyEmail').value.trim();
-  const otp = document.getElementById('verifyOtp').value.trim();
-  if (!email || !otp) {
-    displayMessage('verifyMessage', 'Email and OTP are required', true);
-    return;
-  }
-  fetch(`${apiBase}/verify-account`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, otp })
-  }).then(async (response) => {
-    const data = await response.json().catch(() => ({}));
-    if (response.ok) {
-      displayMessage('verifyMessage', data.message || 'Account verified');
-      setTimeout(() => { window.location.href = '/login'; }, 1500);
-    } else {
-      displayMessage('verifyMessage', data.message || 'Verification failed', true);
+    event.preventDefault();
+    const email = document.getElementById('verifyEmail').value.trim();
+    const otp = document.getElementById('verifyOtp').value.trim();
+    if (!email || !otp) {
+        displayMessage('verifyMessage', 'Email and OTP are required', true);
+        return;
     }
-  }).catch((error) => {
-    displayMessage('verifyMessage', 'Error: ' + error.message, true);
-  });
+    fetch(`${apiBase}/verify-account`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({email, otp})
+    }).then(async (response) => {
+        const data = await response.json().catch(() => ({}));
+        if (response.ok) {
+            displayMessage('verifyMessage', data.message || 'Account verified');
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 1500);
+        } else {
+            displayMessage('verifyMessage', data.message || 'Verification failed', true);
+        }
+    }).catch((error) => {
+        displayMessage('verifyMessage', 'Error: ' + error.message, true);
+    });
 }
 
 // Login handler
 function handleLogin(event) {
-  event.preventDefault();
-  const email = document.getElementById('loginEmail').value.trim();
-  const password = document.getElementById('loginPassword').value;
-  fetch(`${apiBase}/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-  }).then(async (response) => {
-    const data = await response.json().catch(() => ({}));
-    if (response.ok && data.token) {
-      // Persist token and email for subsequent authenticated requests
-      localStorage.setItem('authToken', data.token);
-      localStorage.setItem('authEmail', data.email || email);
-      displayMessage('loginMessage', data.message || 'Login successful');
-      setTimeout(() => { window.location.href = '/profile'; }, 1500);
-    } else {
-      displayMessage('loginMessage', data.message || 'Login failed', true);
-    }
-  }).catch((error) => {
-    displayMessage('loginMessage', 'Error: ' + error.message, true);
-  });
+    event.preventDefault();
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    fetch(`${apiBase}/login`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({email, password})
+    }).then(async (response) => {
+        const data = await response.json().catch(() => ({}));
+        if (response.ok && data.token) {
+            // Persist token and email for subsequent authenticated requests
+            localStorage.setItem('authToken', data.token);
+            localStorage.setItem('authEmail', data.email || email);
+            displayMessage('loginMessage', data.message || 'Login successful');
+            setTimeout(() => {
+                window.location.href = '/profile';
+            }, 1500);
+        } else {
+            displayMessage('loginMessage', data.message || 'Login failed', true);
+        }
+    }).catch((error) => {
+        displayMessage('loginMessage', 'Error: ' + error.message, true);
+    });
 }
 
 // Forgot password handler
 function handleForgotPassword(event) {
-  event.preventDefault();
-  const email = document.getElementById('forgotEmail').value.trim();
-  if (!email) {
-    displayMessage('forgotMessage', 'Please enter your email', true);
-    return;
-  }
-  fetch(`${apiBase}/forgot-password`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email })
-  }).then(async (response) => {
-    const data = await response.json().catch(() => ({}));
-    if (response.ok) {
-      displayMessage('forgotMessage', data.message || 'OTP sent to your email');
-      setTimeout(() => { window.location.href = '/reset-password'; }, 1500);
-    } else {
-      displayMessage('forgotMessage', data.message || 'Failed to send OTP', true);
+    event.preventDefault();
+    const email = document.getElementById('forgotEmail').value.trim();
+    if (!email) {
+        displayMessage('forgotMessage', 'Please enter your email', true);
+        return;
     }
-  }).catch((error) => {
-    displayMessage('forgotMessage', 'Error: ' + error.message, true);
-  });
+    fetch(`${apiBase}/forgot-password`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({email})
+    }).then(async (response) => {
+        const data = await response.json().catch(() => ({}));
+        if (response.ok) {
+            displayMessage('forgotMessage', data.message || 'OTP sent to your email');
+            // Lưu email vào session để trang reset có thể lấy
+            sessionStorage.setItem('resetEmail', email);
+            setTimeout(() => {
+                window.location.href = '/reset-password';
+            }, 1500);
+        } else {
+            displayMessage('forgotMessage', data.message || 'Failed to send OTP', true);
+        }
+    }).catch((error) => {
+        displayMessage('forgotMessage', 'Error: ' + error.message, true);
+    });
 }
 
 // Reset password handler
 function handleResetPassword(event) {
-  event.preventDefault();
-  const email = document.getElementById('resetEmail').value.trim();
-  const otp = document.getElementById('resetOtp').value.trim();
-  const newPassword = document.getElementById('resetPassword').value;
-  const confirmNewPassword = document.getElementById('resetConfirmPassword').value;
-  if (newPassword !== confirmNewPassword) {
-    displayMessage('resetMessage', 'Passwords do not match', true);
-    return;
-  }
-  fetch(`${apiBase}/reset-password`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, otp, newPassword })
-  }).then(async (response) => {
-    const data = await response.json().catch(() => ({}));
-    if (response.ok) {
-      displayMessage('resetMessage', data.message || 'Password reset successfully');
-      setTimeout(() => { window.location.href = '/login'; }, 1500);
-    } else {
-      displayMessage('resetMessage', data.message || 'Failed to reset password', true);
+    event.preventDefault();
+    const email = document.getElementById('resetEmail').value.trim();
+    const otp = document.getElementById('resetOtp').value.trim();
+    const newPassword = document.getElementById('resetPassword').value;
+    const confirmNewPassword = document.getElementById('resetConfirmPassword').value;
+    if (newPassword !== confirmNewPassword) {
+        displayMessage('resetMessage', 'Passwords do not match', true);
+        return;
     }
-  }).catch((error) => {
-    displayMessage('resetMessage', 'Error: ' + error.message, true);
-  });
+    fetch(`${apiBase}/reset-password`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({email, otp, newPassword})
+    }).then(async (response) => {
+        const data = await response.json().catch(() => ({}));
+        if (response.ok) {
+            displayMessage('resetMessage', data.message || 'Password reset successfully');
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 1500);
+        } else {
+            displayMessage('resetMessage', data.message || 'Failed to reset password', true);
+        }
+    }).catch((error) => {
+        displayMessage('resetMessage', 'Error: ' + error.message, true);
+    });
 }
 
 // Load user profile
 function loadProfile() {
-  const email = localStorage.getItem('authEmail');
-  const token = localStorage.getItem('authToken');
-  if (!email) {
-    // Not logged in
-    window.location.href = '/login';
-    return;
-  }
-  const headers = {};
-  if (token) {
-    headers['Authorization'] = 'Bearer ' + token;
-  }
-  fetch(`${apiBase}/user?email=${encodeURIComponent(email)}`, {
-    method: 'GET',
-    headers
-  }).then(async (response) => {
-    if (response.ok) {
-      const data = await response.json();
-      const infoDiv = document.getElementById('profileInfo');
-      if (infoDiv) {
-        infoDiv.innerHTML = '';
-        const list = document.createElement('ul');
-        const addItem = (label, value) => {
-          const li = document.createElement('li');
-          li.textContent = `${label}: ${value || ''}`;
-          list.appendChild(li);
-        };
-        addItem('Email', data.email);
-        addItem('Name', data.name);
-        addItem('Phone', data.phone);
-        addItem('Address', data.address);
-        if (data.roles) {
-          addItem('Roles', Array.isArray(data.roles) ? data.roles.join(', ') : data.roles);
-        }
-        infoDiv.appendChild(list);
-        // Pre-fill form fields
-        const nameField = document.getElementById('profileName');
-        const phoneField = document.getElementById('profilePhone');
-        const addressField = document.getElementById('profileAddress');
-        if (nameField) nameField.value = data.name || '';
-        if (phoneField) phoneField.value = data.phone || '';
-        if (addressField) addressField.value = data.address || '';
-      }
-    } else {
-      // If not found or unauthorized, redirect to login
-      window.location.href = '/login';
+    const email = localStorage.getItem('authEmail');
+    const token = localStorage.getItem('authToken');
+    if (!email) {
+        // Not logged in
+        window.location.href = '/login';
+        return;
     }
-  }).catch(() => {
-    window.location.href = '/login';
-  });
+    const headers = {};
+    if (token) {
+        headers['Authorization'] = 'Bearer ' + token;
+    }
+
+    // Tạo một đối tượng để map các role
+    const roleMap = {
+        'ROLE_USER': 'Khách hàng',
+        'ROLE_VENDOR': 'Người bán',
+        'ROLE_SHIPPER': 'Người giao hàng',
+        'ROLE_ADMIN': 'Quản trị viên',
+        'SOLE_ADMIN': 'Quản trị viên' // Thêm cả trường hợp SOLE_ADMIN bạn đã viết
+    };
+
+    // Hàm helper để dịch role
+    const getFriendlyRole = (role) => {
+        return roleMap[role] || role; // Trả về giá trị đã map, hoặc chính role đó nếu không tìm thấy
+    };
+
+    fetch(`${apiBase}/user?email=${encodeURIComponent(email)}`, {
+        method: 'GET',
+        headers
+    }).then(async (response) => {
+        if (response.ok) {
+            const data = await response.json();
+            const infoDiv = document.getElementById('profileInfo');
+            if (infoDiv) {
+                infoDiv.innerHTML = '';
+                const list = document.createElement('ul');
+                const addItem = (label, value) => {
+                    const li = document.createElement('li');
+                    li.textContent = `${label}: ${value || ''}`;
+                    list.appendChild(li);
+                };
+                addItem('Email', data.email);
+                addItem('Name', data.name);
+                addItem('Phone', data.phone);
+                addItem('Address', data.address);
+
+                // *** BẮT ĐẦU THAY ĐỔI ***
+                if (data.roles) {
+                    let friendlyRoles = '';
+                    if (Array.isArray(data.roles)) {
+                        // Nếu là mảng, map từng giá trị
+                        friendlyRoles = data.roles.map(getFriendlyRole).join(', ');
+                    } else {
+                        // Nếu là một chuỗi đơn
+                        friendlyRoles = getFriendlyRole(data.roles);
+                    }
+                    addItem('Roles', friendlyRoles);
+                }
+                // *** KẾT THÚC THAY ĐỔI ***
+
+                infoDiv.appendChild(list);
+                // Pre-fill form fields
+                const nameField = document.getElementById('profileName');
+                const phoneField = document.getElementById('profilePhone');
+                const addressField = document.getElementById('profileAddress');
+                if (nameField) nameField.value = data.name || '';
+                if (phoneField) phoneField.value = data.phone || '';
+                if (addressField) addressField.value = data.address || '';
+            }
+        } else {
+            // If not found or unauthorized, redirect to login
+            window.location.href = '/login';
+        }
+    }).catch(() => {
+        window.location.href = '/login';
+    });
 }
 
 // Update profile handler
 function handleUpdateProfile(event) {
-  event.preventDefault();
-  const email = localStorage.getItem('authEmail');
-  const token = localStorage.getItem('authToken');
-  const name = document.getElementById('profileName').value.trim();
-  const phone = document.getElementById('profilePhone').value.trim();
-  const address = document.getElementById('profileAddress').value.trim();
-  const headers = { 'Content-Type': 'application/json' };
-  if (token) {
-    headers['Authorization'] = 'Bearer ' + token;
-  }
-  fetch(`${apiBase}/update-profile?email=${encodeURIComponent(email)}`, {
-    method: 'PUT',
-    headers,
-    body: JSON.stringify({ name, phone, address })
-  }).then(async (response) => {
-    const data = await response.json().catch(() => ({}));
-    if (response.ok) {
-      displayMessage('profileMessage', data.message || 'Profile updated successfully');
-      // refresh the profile details after update
-      loadProfile();
-    } else {
-      displayMessage('profileMessage', data.message || 'Failed to update profile', true);
+    event.preventDefault();
+    const email = localStorage.getItem('authEmail');
+    const token = localStorage.getItem('authToken');
+    const name = document.getElementById('profileName').value.trim();
+    const phone = document.getElementById('profilePhone').value.trim();
+    const address = document.getElementById('profileAddress').value.trim();
+    const headers = {'Content-Type': 'application/json'};
+    if (token) {
+        headers['Authorization'] = 'Bearer ' + token;
     }
-  }).catch((error) => {
-    displayMessage('profileMessage', 'Error: ' + error.message, true);
-  });
+    fetch(`${apiBase}/update-profile?email=${encodeURIComponent(email)}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({name, phone, address})
+    }).then(async (response) => {
+        const data = await response.json().catch(() => ({}));
+        if (response.ok) {
+            displayMessage('profileMessage', data.message || 'Profile updated successfully');
+            // refresh the profile details after update
+            loadProfile();
+        } else {
+            displayMessage('profileMessage', data.message || 'Failed to update profile', true);
+        }
+    }).catch((error) => {
+        displayMessage('profileMessage', 'Error: ' + error.message, true);
+    });
 }
 
 // Logout handler
 function handleLogout() {
-  localStorage.removeItem('authToken');
-  localStorage.removeItem('authEmail');
-  window.location.href = '/login';
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('authEmail');
+    window.location.href = '/login';
 }
 
 // Attach event listeners once the DOM content is loaded on each page
 document.addEventListener('DOMContentLoaded', () => {
-  // Register page
-  const registerForm = document.getElementById('registerForm');
-  if (registerForm) registerForm.addEventListener('submit', handleRegister);
+    // Register page
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) registerForm.addEventListener('submit', handleRegister);
 
-  // Verify account page
-  const verifyForm = document.getElementById('verifyForm');
-  if (verifyForm) verifyForm.addEventListener('submit', handleVerifyAccount);
-  const resendOtpBtn = document.getElementById('resendOtpButton');
-  if (resendOtpBtn) resendOtpBtn.addEventListener('click', handleSendActivationOtp);
+    // Verify account page
+    const verifyForm = document.getElementById('verifyForm');
+    if (verifyForm) { // Chúng ta gộp logic cho trang verify vào đây
+        verifyForm.addEventListener('submit', handleVerifyAccount);
 
-  // Login page
-  const loginForm = document.getElementById('loginForm');
-  if (loginForm) loginForm.addEventListener('submit', handleLogin);
+        // Tự động điền email từ trang đăng ký
+        const emailField = document.getElementById('verifyEmail');
+        const emailFromRegister = sessionStorage.getItem('verifyEmail');
 
-  // Forgot password page
-  const forgotForm = document.getElementById('forgotForm');
-  if (forgotForm) forgotForm.addEventListener('submit', handleForgotPassword);
+        if (emailField && emailFromRegister) {
+            emailField.value = emailFromRegister;
+            // Xóa khỏi session để không dùng lại
+            sessionStorage.removeItem('verifyEmail');
+        }
+    }
 
-  // Reset password page
-  const resetForm = document.getElementById('resetForm');
-  if (resetForm) resetForm.addEventListener('submit', handleResetPassword);
+    const resendOtpBtn = document.getElementById('resendOtpButton');
+    if (resendOtpBtn) resendOtpBtn.addEventListener('click', handleSendActivationOtp);
 
-  // Profile page
-  const updateProfileForm = document.getElementById('updateProfileForm');
-  if (updateProfileForm) updateProfileForm.addEventListener('submit', handleUpdateProfile);
-  const logoutBtn = document.getElementById('logoutButton');
-  if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
-  // If on profile page, load profile data
-  if (document.getElementById('profileInfo')) {
-    loadProfile();
-  }
+    // Login page
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) loginForm.addEventListener('submit', handleLogin);
+
+    // Forgot password page
+    const forgotForm = document.getElementById('forgotForm');
+    if (forgotForm) forgotForm.addEventListener('submit', handleForgotPassword);
+
+    // Reset password page
+    const resetForm = document.getElementById('resetForm');
+    if (resetForm) resetForm.addEventListener('submit', handleResetPassword);
+
+    // Tự động điền email từ trang quên mật khẩu
+    const emailField = document.getElementById('resetEmail');
+    const emailFromForgot = sessionStorage.getItem('resetEmail');
+
+    if (emailField && emailFromForgot) {
+        emailField.value = emailFromForgot;
+        // Xóa khỏi session để không dùng lại
+        sessionStorage.removeItem('resetEmail');
+    }
+
+    // Profile page
+    const updateProfileForm = document.getElementById('updateProfileForm');
+    if (updateProfileForm) updateProfileForm.addEventListener('submit', handleUpdateProfile);
+    const logoutBtn = document.getElementById('logoutButton');
+    if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+    // If on profile page, load profile data
+    if (document.getElementById('profileInfo')) {
+        loadProfile();
+    }
 });

@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Register – Toy Store</title>
-  <link rel="stylesheet" th:href="@{/css/style.css}">
-  <script th:src="@{/js/auth.js}" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register – Toy Store</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script th:src="@{/js/auth.js}" defer></script>
 </head>
 <body>
-  <h1>Register</h1>
-  <form id="registerForm">
+<h1>Register</h1>
+<form id="registerForm">
     <label for="registerEmail">Email</label>
     <input type="email" id="registerEmail" name="email" required>
 
@@ -19,14 +19,17 @@
     <label for="registerConfirmPassword">Confirm Password</label>
     <input type="password" id="registerConfirmPassword" name="confirmPassword" required>
 
-    <label for="registerRole">Role</label>
-    <input type="text" id="registerRole" name="role" value="USER" required>
-
+    <label for="registerRole">Register as</label>
+    <select id="registerRole" name="role" required>
+        <option value="ROLE_USER" selected>User (Customer)</option>
+        <option value="ROLE_VENDOR">Vendor (Seller)</option>
+        <option value="ROLE_SHIPPER">Shipper (Delivery)</option>
+    </select>
     <button type="submit">Register</button>
-  </form>
-  <div id="registerMessage"></div>
-  <p><a href="index.html">Back to Home</a></p>
-  <a th:href="@{/home}">Back to Home</a>
-  <a th:href="@{/login}">Login</a>
+</form>
+<div id="registerMessage"></div>
+<p><a href="index.html">Back to Home</a></p>
+<a th:href="@{/home}">Back to Home</a>
+<a th:href="@{/login}">Login</a>
 </body>
 </html>

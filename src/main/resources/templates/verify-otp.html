@@ -1,25 +1,26 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verify Account – Toy Store</title>
-  <link rel="stylesheet" th:href="@{/css/style.css}">
-  <script th:src="@{/js/auth.js}" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Account – Toy Store</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script th:src="@{/js/auth.js}" defer></script>
 </head>
 <body>
-  <h1>Verify Account</h1>
-  <form id="verifyForm">
+<h1>Verify Account</h1>
+<form id="verifyForm">
     <label for="verifyEmail">Email</label>
-    <input type="email" id="verifyEmail" name="email" required>
+    <input type="email" id="verifyEmail" name="email" required readonly
+           style="background-color: #eee; cursor: not-allowed;">
 
     <label for="verifyOtp">OTP</label>
     <input type="text" id="verifyOtp" name="otp" required>
 
     <button type="submit">Verify</button>
     <button id="resendOtpButton" type="button" style="margin-left:0.5rem; background-color:#6c757d;">Resend OTP</button>
-  </form>
-  <div id="verifyMessage"></div>
-  <a th:href="@{/home}">Back to Home</a>
+</form>
+<div id="verifyMessage"></div>
+<a th:href="@{/home}">Back to Home</a>
 </body>
 </html>
