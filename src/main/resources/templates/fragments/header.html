@@ -86,44 +86,120 @@
     <!-- Category Navigation - Separate Section -->
     <nav class="category-nav space-bg py-2">
         <div class="container">
-            <ul class="navbar-nav d-flex flex-row justify-content-center">
+            <ul class="navbar-nav d-flex flex-row justify-content-center flex-wrap" id="categoryNavigation">
                 <li class="nav-item">
-                    <a class="nav-link text-white fw-semibold px-3" th:href="@{/}">
-                        <i class="fas fa-home me-1"></i>Trạm vũ trụ
+                    <a class="nav-link text-white fw-semibold px-2 px-lg-3" th:href="@{/}">
+                        <i class="fas fa-home me-1"></i>Trang chủ
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white fw-semibold px-3" href="#" data-category="dolls">
-                        <i class="fas fa-female me-1"></i>Công chúa
+                    <a class="nav-link text-white fw-semibold px-2 px-lg-3" th:href="@{/products}">
+                        <i class="fas fa-store me-1"></i>Tất cả
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white fw-semibold px-3" href="#" data-category="cars">
-                        <i class="fas fa-rocket me-1"></i>Phi thuyền
+                    <a class="nav-link text-white fw-semibold px-2 px-lg-3" href="/products?category=1" title="Búp bê xinh đẹp">
+                        👸 Búp bê
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white fw-semibold px-3" href="#" data-category="puzzles">
-                        <i class="fas fa-puzzle-piece me-1"></i>Ghép hình
+                    <a class="nav-link text-white fw-semibold px-2 px-lg-3" href="/products?category=2" title="Phương tiện vũ trụ">
+                        🚀 Xe
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white fw-semibold px-3" href="#" data-category="educational">
-                        <i class="fas fa-atom me-1"></i>Khoa học
+                    <a class="nav-link text-white fw-semibold px-2 px-lg-3" href="/products?category=3" title="Đồ chơi sáng tạo">
+                        🧩 Xếp hình
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white fw-semibold px-3" href="#" data-category="outdoor">
-                        <i class="fas fa-globe me-1"></i>Khám phá
+                    <a class="nav-link text-white fw-semibold px-2 px-lg-3" href="/products?category=4" title="Học tập vui vẻ">
+                        🔬 Khoa học
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white fw-semibold px-3" href="#" data-category="space">
-                        <i class="fas fa-satellite me-1"></i>Vũ trụ
+                    <a class="nav-link text-white fw-semibold px-2 px-lg-3" href="/products?category=5" title="Vận động ngoài trời">
+                        ⚽ Ngoài trời
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white fw-semibold px-2 px-lg-3" href="/products?category=6" title="Phát triển nghệ thuật">
+                        🎨 Nghệ thuật
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white fw-semibold px-2 px-lg-3" href="/products?category=7" title="Công nghệ hiện đại">
+                        🤖 Điện tử
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white fw-semibold px-2 px-lg-3" href="/products?category=8" title="Trò chơi trí tuệ">
+                        🎲 Board Game
                     </a>
                 </li>
             </ul>
         </div>
     </nav>
 </header>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Header Search functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchBtn = document.getElementById('searchBtn');
+        const searchInput = document.getElementById('searchInput');
+
+        if (searchBtn && searchInput) {
+            // Search button click
+            searchBtn.addEventListener('click', function() {
+                performSearch();
+            });
+
+            // Enter key press
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    performSearch();
+                }
+            });
+        }
+
+        function performSearch() {
+            const keyword = searchInput.value.trim();
+            if (keyword) {
+                window.location.href = `/products?search=${encodeURIComponent(keyword)}`;
+            }
+        }
+
+        // Check auth status
+        const token = localStorage.getItem('token');
+        const userEmail = localStorage.getItem('userEmail');
+
+        if (token && userEmail) {
+            const authButtons = document.getElementById('authButtons');
+            const userMenu = document.getElementById('userMenu');
+
+            if (authButtons) authButtons.classList.add('d-none');
+            if (userMenu) {
+                userMenu.classList.remove('d-none');
+                const userName = document.getElementById('userName');
+                if (userName) {
+                    userName.textContent = userEmail.split('@')[0];
+                }
+            }
+        }
+
+        // Logout handler
+        const logoutLink = document.getElementById('logoutLink');
+        if (logoutLink) {
+            logoutLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.removeItem('token');
+                localStorage.removeItem('userEmail');
+                window.location.href = '/';
+            });
+        }
+    });
+</script>
 </html>

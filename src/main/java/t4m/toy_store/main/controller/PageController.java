@@ -40,4 +40,14 @@ public class PageController {
     public String profile() {
         return "profile";
     }
+
+    @GetMapping("/products")
+    public String products() {
+        return "products";
+    }
+
+    @GetMapping("/product/{id}")
+    public String productDetail() {
+        return "product-detail";
+    }
 }
