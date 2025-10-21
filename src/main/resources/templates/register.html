@@ -1,35 +1,61 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register – Toy Store</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-    <script th:src="@{/js/auth.js}" defer></script>
+<head th:replace="~{fragments/header :: head}">
+    <title>🚀 Trở thành phi hành gia – T4M</title>
 </head>
 <body>
-<h1>Register</h1>
-<form id="registerForm">
-    <label for="registerEmail">Email</label>
-    <input type="email" id="registerEmail" name="email" required>
+    <div th:replace="~{fragments/header :: header}"></div>
 
-    <label for="registerPassword">Password</label>
-    <input type="password" id="registerPassword" name="password" required>
+    <div class="auth-container">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-5">
+                    <div class="auth-card">
+                        <div class="auth-header">
+                            <h2 class="mb-0"><i class="fas fa-user-astronaut me-2"></i>Gia nhập phi đội</h2>
+                            <p class="mb-0 mt-2 opacity-75">Trở thành phi hành gia nhí!</p>
+                        </div>
+                        <div class="auth-body">
+                            <form id="registerForm">
+                                <div class="mb-3">
+                                    <label for="registerEmail" class="form-label">Email phi hành gia</label>
+                                    <input type="email" class="form-control form-control-lg" id="registerEmail" name="email" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="registerPassword" class="form-label">Mật khẩu bí mật</label>
+                                    <input type="password" class="form-control form-control-lg" id="registerPassword" name="password" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="registerConfirmPassword" class="form-label">Xác nhận mật khẩu</label>
+                                    <input type="password" class="form-control form-control-lg" id="registerConfirmPassword" name="confirmPassword" required>
+                                </div>
+                                <div class="mb-4">
+                                    <label for="registerRole" class="form-label">Chọn vai trò vũ trụ</label>
+                                    <select class="form-select form-select-lg" id="registerRole" name="role" required>
+                                        <option value="ROLE_USER" selected>Phi hành gia khám phá</option>
+                                        <option value="ROLE_VENDOR">Thương gia vũ trụ</option>
+                                        <option value="ROLE_SHIPPER">Phi công giao hàng</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-danger btn-lg w-100 mb-3">
+                                    <i class="fas fa-rocket me-2"></i>Bắt đầu hành trình
+                                </button>
+                            </form>
+                            
+                            <div id="registerMessage" class="mt-3 d-none"></div>
+                            
+                            <div class="text-center">
+                                <span class="text-muted">Đã là phi hành gia? </span>
+                                <a th:href="@{/login}" class="text-decoration-none fw-semibold">Đăng nhập ngay</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <label for="registerConfirmPassword">Confirm Password</label>
-    <input type="password" id="registerConfirmPassword" name="confirmPassword" required>
-
-    <label for="registerRole">Register as</label>
-    <select id="registerRole" name="role" required>
-        <option value="ROLE_USER" selected>User (Customer)</option>
-        <option value="ROLE_VENDOR">Vendor (Seller)</option>
-        <option value="ROLE_SHIPPER">Shipper (Delivery)</option>
-    </select>
-    <button type="submit">Register</button>
-</form>
-<div id="registerMessage"></div>
-<p><a href="index.html">Back to Home</a></p>
-<a th:href="@{/home}">Back to Home</a>
-<a th:href="@{/login}">Login</a>
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script th:src="@{/js/auth.js}" defer></script>
 </body>
 </html>

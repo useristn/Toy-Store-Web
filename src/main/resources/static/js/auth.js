@@ -21,8 +21,9 @@ const apiBase = `${base}/api/auth`;
 function displayMessage(containerId, message, isError = false) {
     const container = document.getElementById(containerId);
     if (container) {
-        container.textContent = message;
-        container.style.color = isError ? 'red' : 'green';
+        container.className = `alert ${isError ? 'alert-danger' : 'alert-success'}`;
+        container.innerHTML = `${isError ? '😢' : '🎉'} ${message}`;
+        container.classList.remove('d-none');
     }
 }
 
@@ -35,7 +36,7 @@ function handleRegister(event) {
     const role = document.getElementById('registerRole').value.trim();
 
     if (password !== confirmPassword) {
-        displayMessage('registerMessage', 'Passwords do not match', true);
+        displayMessage('registerMessage', 'Mật khẩu không khớp! Hãy thử lại nhé! 🔒', true);
         return;
     }
 
@@ -46,7 +47,7 @@ function handleRegister(event) {
     }).then(async (response) => {
         const data = await response.json().catch(() => ({}));
         if (response.ok) {
-            displayMessage('registerMessage', data.message || 'Registration successful');
+            displayMessage('registerMessage', data.message || '🎉 Đăng ký thành công! Chào mừng phi hành gia mới! 🚀');
             // Lưu email vào session để trang xác thực có thể lấy
             sessionStorage.setItem('verifyEmail', email);
             // After registration, redirect to verification page so user can enter OTP
@@ -54,10 +55,10 @@ function handleRegister(event) {
                 window.location.href = '/verify-otp';
             }, 1500);
         } else {
-            displayMessage('registerMessage', data.message || 'Registration failed', true);
+            displayMessage('registerMessage', data.message || '😢 Đăng ký không thành công. Hãy thử lại nhé!', true);
         }
     }).catch((error) => {
-        displayMessage('registerMessage', 'Error: ' + error.message, true);
+        displayMessage('registerMessage', '🛸 Có lỗi kết nối: ' + error.message, true);
     });
 }
 
@@ -118,6 +119,7 @@ function handleLogin(event) {
     event.preventDefault();
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
+    
     fetch(`${apiBase}/login`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -128,15 +130,15 @@ function handleLogin(event) {
             // Persist token and email for subsequent authenticated requests
             localStorage.setItem('authToken', data.token);
             localStorage.setItem('authEmail', data.email || email);
-            displayMessage('loginMessage', data.message || 'Login successful');
+            displayMessage('loginMessage', data.message || '🚀 Đăng nhập thành công! Chào mừng trở lại phi hành gia! 🌟');
             setTimeout(() => {
                 window.location.href = '/profile';
             }, 1500);
         } else {
-            displayMessage('loginMessage', data.message || 'Login failed', true);
+            displayMessage('loginMessage', data.message || '😢 Đăng nhập không thành công. Kiểm tra email và mật khẩu nhé!', true);
         }
     }).catch((error) => {
-        displayMessage('loginMessage', 'Error: ' + error.message, true);
+        displayMessage('loginMessage', '🛸 Có lỗi kết nối: ' + error.message, true);
     });
 }
 
@@ -309,15 +311,108 @@ function handleUpdateProfile(event) {
     });
 }
 
-// Logout handler
+// Update auth UI based on login state
+function updateAuthUI() {
+    const token = localStorage.getItem('authToken');
+    const email = localStorage.getItem('authEmail');
+    const authButtons = document.getElementById('authButtons');
+    const userMenu = document.getElementById('userMenu');
+    const userName = document.getElementById('userName');
+
+    if (token && email) {
+        // User is logged in
+        if (authButtons) authButtons.classList.add('d-none');
+        if (userMenu) {
+            userMenu.classList.remove('d-none');
+            if (userName) {
+                userName.textContent = `${email.split('@')[0]} 🚀`; // Show username part of email with rocket
+            }
+        }
+    } else {
+        // User is not logged in
+        if (authButtons) authButtons.classList.remove('d-none');
+        if (userMenu) userMenu.classList.add('d-none');
+    }
+}
+
+// Newsletter subscription handler
+function handleNewsletter(event) {
+    event.preventDefault();
+    const email = document.getElementById('newsletterEmail').value.trim();
+    if (!email) {
+        // Just show inline message, no alert
+        return;
+    }
+    
+    // Clear the email field to show success
+    document.getElementById('newsletterEmail').value = '';
+    // Could add a small success indicator here if needed
+}
+
+// Search handler
+function handleSearch() {
+    const searchInput = document.getElementById('searchInput');
+    
+    if (searchInput && searchInput.value.trim()) {
+        const query = searchInput.value.trim();
+        
+        // Just perform search without alert - in real app, this would redirect to search results
+        console.log(`🔍 Tìm kiếm: "${query}"`);
+    }
+}
+
+// Enhanced logout handler
 function handleLogout() {
     localStorage.removeItem('authToken');
     localStorage.removeItem('authEmail');
-    window.location.href = '/login';
+    updateAuthUI();
+    window.location.href = '/';
 }
 
 // Attach event listeners once the DOM content is loaded on each page
 document.addEventListener('DOMContentLoaded', () => {
+    // Update auth UI on page load
+    updateAuthUI();
+    
+    // Newsletter form
+    const newsletterForm = document.getElementById('newsletterForm');
+    if (newsletterForm) {
+        newsletterForm.addEventListener('submit', handleNewsletter);
+    }
+    
+    // Search functionality
+    const searchBtn = document.getElementById('searchBtn');
+    const searchInput = document.getElementById('searchInput');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', handleSearch);
+    }
+    if (searchInput) {
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleSearch();
+            }
+        });
+    }
+    
+    // Logout link in user menu
+    const logoutLink = document.getElementById('logoutLink');
+    if (logoutLink) {
+        logoutLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleLogout();
+        });
+    }
+    
+    // Category navigation
+    document.querySelectorAll('[data-category]').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const category = e.target.closest('[data-category]').dataset.category;
+            // Just log or redirect, no alert
+            console.log(`🚀 Chuyển đến danh mục: ${category}! ✨`);
+        });
+    });
+
     // Register page
     const registerForm = document.getElementById('registerForm');
     if (registerForm) registerForm.addEventListener('submit', handleRegister);

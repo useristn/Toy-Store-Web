@@ -1,30 +1,116 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Profile – Toy Store</title>
-  <link rel="stylesheet" th:href="@{/css/style.css}">
-  <script th:src="@{/js/auth.js}" defer></script>
+<head th:replace="~{fragments/header :: head}">
+    <title>🚀 Hồ sơ phi hành gia – T4M</title>
 </head>
 <body>
-  <h1>Your Profile</h1>
-  <div id="profileInfo">Loading profile...</div>
-  <h2>Update Profile</h2>
-  <form id="updateProfileForm">
-    <label for="profileName">Name</label>
-    <input type="text" id="profileName" name="name">
+    <div th:replace="~{fragments/header :: header}"></div>
 
-    <label for="profilePhone">Phone</label>
-    <input type="tel" id="profilePhone" name="phone">
+    <!-- Profile Header -->
+    <section class="profile-header">
+        <div class="container text-center">
+            <h1 class="display-5 fw-bold"><i class="fas fa-user-circle me-3"></i>Hồ sơ cá nhân</h1>
+            <p class="lead">Quản lý thông tin tài khoản của bạn</p>
+        </div>
+    </section>
 
-    <label for="profileAddress">Address</label>
-    <input type="text" id="profileAddress" name="address">
+    <div class="container py-5">
+        <div class="row">
+            <!-- Profile Information -->
+            <div class="col-lg-6 mb-4">
+                <div class="card profile-card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Thông tin cá nhân</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="profileInfo">
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Đang tải...</span>
+                                </div>
+                                <p class="mt-2 text-muted">Đang tải thông tin hồ sơ...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    <button type="submit">Update Profile</button>
-  </form>
-  <div id="profileMessage"></div>
-  <button id="logoutButton" style="margin-top:1rem; background-color:#dc3545;">Logout</button>
-  <a th:href="@{/home}">Back to Home</a>
+            <!-- Update Profile Form -->
+            <div class="col-lg-6 mb-4">
+                <div class="card profile-card">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Cập nhật thông tin</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="updateProfileForm">
+                            <div class="mb-3">
+                                <label for="profileName" class="form-label">Họ và tên</label>
+                                <input type="text" class="form-control" id="profileName" name="name">
+                            </div>
+                            <div class="mb-3">
+                                <label for="profilePhone" class="form-label">Số điện thoại</label>
+                                <input type="tel" class="form-control" id="profilePhone" name="phone">
+                            </div>
+                            <div class="mb-4">
+                                <label for="profileAddress" class="form-label">Địa chỉ</label>
+                                <input type="text" class="form-control" id="profileAddress" name="address">
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-save me-2"></i>Cập nhật hồ sơ
+                            </button>
+                        </form>
+                        
+                        <div id="profileMessage" class="mt-3"></div>
+                        
+                        <hr class="my-4">
+                        
+                        <button id="logoutButton" class="btn btn-outline-danger w-100">
+                            <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-bolt me-2 text-warning"></i>Thao tác nhanh</h5>
+                        <div class="row">
+                            <div class="col-md-3 col-6 mb-3">
+                                <a href="#" class="btn btn-outline-primary w-100">
+                                    <i class="fas fa-shopping-bag d-block mb-2"></i>
+                                    Đơn hàng
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-6 mb-3">
+                                <a href="#" class="btn btn-outline-success w-100">
+                                    <i class="fas fa-heart d-block mb-2"></i>
+                                    Yêu thích
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-6 mb-3">
+                                <a href="#" class="btn btn-outline-info w-100">
+                                    <i class="fas fa-credit-card d-block mb-2"></i>
+                                    Thanh toán
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-6 mb-3">
+                                <a href="#" class="btn btn-outline-warning w-100">
+                                    <i class="fas fa-headset d-block mb-2"></i>
+                                    Hỗ trợ
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script th:src="@{/js/auth.js}" defer></script>
 </body>
 </html>
