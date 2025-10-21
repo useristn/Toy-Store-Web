@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Verify Account – Toy Store</title>
-  <link rel="stylesheet" href="css/style.css">
-  <script src="js/auth.js" defer></script>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <script th:src="@{/js/auth.js}" defer></script>
 </head>
 <body>
   <h1>Verify Account</h1>
@@ -20,6 +20,6 @@
     <button id="resendOtpButton" type="button" style="margin-left:0.5rem; background-color:#6c757d;">Resend OTP</button>
   </form>
   <div id="verifyMessage"></div>
-  <p><a href="index.html">Back to Home</a></p>
+  <a th:href="@{/home}">Back to Home</a>
 </body>
 </html>

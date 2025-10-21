@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>User Profile – Toy Store</title>
-  <link rel="stylesheet" href="css/style.css">
-  <script src="js/auth.js" defer></script>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <script th:src="@{/js/auth.js}" defer></script>
 </head>
 <body>
   <h1>Your Profile</h1>
@@ -25,6 +25,6 @@
   </form>
   <div id="profileMessage"></div>
   <button id="logoutButton" style="margin-top:1rem; background-color:#dc3545;">Logout</button>
-  <p><a href="index.html">Back to Home</a></p>
+  <a th:href="@{/home}">Back to Home</a>
 </body>
 </html>

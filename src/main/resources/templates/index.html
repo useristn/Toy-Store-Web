@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home – Toy Store</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script th:src="@{/js/auth.js}" defer></script>
+</head>
+<body>
+<h1>Welcome to the Toy Store!</h1>
+
+<p>Find the perfect toy for every age and occasion.</p>
+
+<section id="featured-products">
+    <h2>Featured Items</h2>
+    <p>Check out our latest and greatest toys!</p>
+</section>
+
+<a th:href="@{/login}">Go to Login Page</a>
+<a th:href="@{/forgot-password}">Need help? (Forgot Password Page)</a>
+<a th:href="@{/register}">Don't have an account? Register Now!</a>
+
+</body>
+</html>

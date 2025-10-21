@@ -13,7 +13,9 @@
  * message or redirect the user to the appropriate page.
  */
 
-const apiBase = '/api/auth';
+const ctx = document.querySelector('meta[name="ctx"]')?.content || '/';
+const base = ctx.endsWith('/') ? ctx.slice(0, -1) : ctx;
+const apiBase = `${base}/api/auth`;
 
 // Utility: display a message inside a container element
 function displayMessage(containerId, message, isError = false) {
@@ -46,7 +48,7 @@ function handleRegister(event) {
     if (response.ok) {
       displayMessage('registerMessage', data.message || 'Registration successful');
       // After registration, redirect to verification page so user can enter OTP
-      setTimeout(() => { window.location.href = 'verify-otp.html'; }, 1500);
+      setTimeout(() => { window.location.href = '/verify-otp'; }, 1500);
     } else {
       displayMessage('registerMessage', data.message || 'Registration failed', true);
     }
@@ -96,7 +98,7 @@ function handleVerifyAccount(event) {
     const data = await response.json().catch(() => ({}));
     if (response.ok) {
       displayMessage('verifyMessage', data.message || 'Account verified');
-      setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+      setTimeout(() => { window.location.href = '/login'; }, 1500);
     } else {
       displayMessage('verifyMessage', data.message || 'Verification failed', true);
     }
@@ -121,7 +123,7 @@ function handleLogin(event) {
       localStorage.setItem('authToken', data.token);
       localStorage.setItem('authEmail', data.email || email);
       displayMessage('loginMessage', data.message || 'Login successful');
-      setTimeout(() => { window.location.href = 'profile.html'; }, 1500);
+      setTimeout(() => { window.location.href = '/profile'; }, 1500);
     } else {
       displayMessage('loginMessage', data.message || 'Login failed', true);
     }
@@ -146,7 +148,7 @@ function handleForgotPassword(event) {
     const data = await response.json().catch(() => ({}));
     if (response.ok) {
       displayMessage('forgotMessage', data.message || 'OTP sent to your email');
-      setTimeout(() => { window.location.href = 'reset-password.html'; }, 1500);
+      setTimeout(() => { window.location.href = '/reset-password'; }, 1500);
     } else {
       displayMessage('forgotMessage', data.message || 'Failed to send OTP', true);
     }
@@ -174,7 +176,7 @@ function handleResetPassword(event) {
     const data = await response.json().catch(() => ({}));
     if (response.ok) {
       displayMessage('resetMessage', data.message || 'Password reset successfully');
-      setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+      setTimeout(() => { window.location.href = '/login'; }, 1500);
     } else {
       displayMessage('resetMessage', data.message || 'Failed to reset password', true);
     }
@@ -189,7 +191,7 @@ function loadProfile() {
   const token = localStorage.getItem('authToken');
   if (!email) {
     // Not logged in
-    window.location.href = 'login.html';
+    window.location.href = '/login';
     return;
   }
   const headers = {};
@@ -229,10 +231,10 @@ function loadProfile() {
       }
     } else {
       // If not found or unauthorized, redirect to login
-      window.location.href = 'login.html';
+      window.location.href = '/login';
     }
   }).catch(() => {
-    window.location.href = 'login.html';
+    window.location.href = '/login';
   });
 }
 
@@ -270,7 +272,7 @@ function handleUpdateProfile(event) {
 function handleLogout() {
   localStorage.removeItem('authToken');
   localStorage.removeItem('authEmail');
-  window.location.href = 'login.html';
+  window.location.href = '/login';
 }
 
 // Attach event listeners once the DOM content is loaded on each page

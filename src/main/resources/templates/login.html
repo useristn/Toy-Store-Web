@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login – Toy Store</title>
-  <link rel="stylesheet" href="css/style.css">
-  <script src="js/auth.js" defer></script>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <script th:src="@{/js/auth.js}" defer></script>
 </head>
 <body>
   <h1>Login</h1>
@@ -19,8 +19,8 @@
     <button type="submit">Login</button>
   </form>
   <div id="loginMessage"></div>
-  <p><a href="forgot-password.html">Forgot Password?</a></p>
-  <p><a href="register.html">Don't have an account? Register</a></p>
-  <p><a href="index.html">Back to Home</a></p>
+  <a th:href="@{/forgot-password}">Forgot Password</a>
+  <a th:href="@{/register}">Don't have an account? Register</a>
+  <a th:href="@{/home}">Home</a>
 </body>
 </html>
