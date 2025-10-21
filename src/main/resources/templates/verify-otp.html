@@ -4,52 +4,54 @@
     <title>🌟 Xác thực phi hành gia – T4M</title>
 </head>
 <body>
-    <div th:replace="~{fragments/header :: header}"></div>
+<div th:replace="~{fragments/header :: header}"></div>
 
-    <div class="auth-container">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-6 col-lg-5">
-                    <div class="auth-card">
-                        <div class="auth-header">
-                            <h2 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Xác thực phi hành gia</h2>
-                            <p class="mb-0 mt-2 opacity-75">Nhập mã bí mật từ vũ trụ!</p>
-                        </div>
-                        <div class="auth-body">
-                            <form id="verifyForm">
-                                <div class="mb-3">
-                                    <label for="verifyEmail" class="form-label">Email phi hành gia</label>
-                                    <input type="email" class="form-control form-control-lg" id="verifyEmail" name="email" required readonly
-                                           style="background-color: #eee; cursor: not-allowed;">
-                                </div>
-                                <div class="mb-4">
-                                    <label for="verifyOtp" class="form-label">Mã OTP từ vũ trụ</label>
-                                    <input type="text" class="form-control form-control-lg text-center" id="verifyOtp" name="otp" required
-                                           placeholder="Nhập 6 chữ số" maxlength="6">
-                                </div>
-                                <button type="submit" class="btn btn-success btn-lg w-100 mb-3">
-                                    <i class="fas fa-rocket me-2"></i>Kích hoạt phi hành gia
-                                </button>
-                                <button id="resendOtpButton" type="button" class="btn btn-outline-secondary w-100">
-                                    <i class="fas fa-satellite me-2"></i>Gửi lại tín hiệu
-                                </button>
-                            </form>
-                            
-                            <div id="verifyMessage" class="mt-3 d-none"></div>
-                            
-                            <div class="text-center mt-4">
-                                <a th:href="@{/}" class="text-decoration-none">
-                                    <i class="fas fa-home me-1"></i>Về trạm vũ trụ
-                                </a>
+<div class="auth-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <h2 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Xác thực phi hành gia</h2>
+                        <p class="mb-0 mt-2 opacity-75">Nhập mã bí mật từ vũ trụ!</p>
+                    </div>
+                    <div class="auth-body">
+                        <form id="verifyForm">
+                            <div class="mb-3">
+                                <label for="verifyEmail" class="form-label">Email phi hành gia</label>
+                                <input type="email" class="form-control form-control-lg" id="verifyEmail" name="email"
+                                       required readonly
+                                       style="background-color: #eee; cursor: not-allowed;">
                             </div>
+                            <div class="mb-4">
+                                <label for="verifyOtp" class="form-label">Mã OTP từ vũ trụ</label>
+                                <input type="text" class="form-control form-control-lg text-center" id="verifyOtp"
+                                       name="otp" required
+                                       placeholder="Nhập 6 chữ số" maxlength="6">
+                            </div>
+                            <button type="submit" class="btn btn-success btn-lg w-100 mb-3">
+                                <i class="fas fa-rocket me-2"></i>Kích hoạt phi hành gia
+                            </button>
+                            <button id="resendOtpButton" type="button" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-satellite me-2"></i>Gửi lại tín hiệu
+                            </button>
+                        </form>
+
+                        <div id="verifyMessage" class="mt-3 d-none"></div>
+
+                        <div class="text-center mt-4">
+                            <a th:href="@{/}" class="text-decoration-none">
+                                <i class="fas fa-home me-1"></i>Về trạm vũ trụ
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div th:replace="~{fragments/footer :: footer}"></div>
-    <script th:src="@{/js/auth.js}" defer></script>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/auth.js}" defer></script>
 </body>
 </html>

@@ -4,161 +4,166 @@
     <title>🚀 T4M - Cửa hàng đồ chơi vũ trụ</title>
 </head>
 <body>
-    <div th:replace="~{fragments/header :: header}"></div>
+<div th:replace="~{fragments/header :: header}"></div>
 
-    <!-- Hero Section -->
-    <section class="hero-section space-bg">
-        <div class="container text-center">
-            <h1 class="display-4 fw-bold mb-4 fade-in">Chào mừng đến với T4M!</h1>
-            <p class="lead mb-4 fade-in">Khám phá thiên hà đồ chơi tuyệt vời nhất vũ trụ!</p>
-            <div class="fade-in">
-                <a href="#featured" class="btn btn-light btn-lg me-3">
-                    <i class="fas fa-rocket me-2"></i>Bay đến cửa hàng
+<!-- Hero Section -->
+<section class="hero-section space-bg">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-4 fade-in">Chào mừng đến với T4M!</h1>
+        <p class="lead mb-4 fade-in">Khám phá thiên hà đồ chơi tuyệt vời nhất vũ trụ!</p>
+        <div class="fade-in">
+            <a href="#featured" class="btn btn-light btn-lg me-3">
+                <i class="fas fa-rocket me-2"></i>Bay đến cửa hàng
+            </a>
+            <a href="#" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-star me-2"></i>Ưu đãi thiên hà
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section id="featured" class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold space-text">Đồ chơi siêu đặc biệt</h2>
+            <p class="text-muted">Những món đồ chơi được yêu thích nhất trong thiên hà!</p>
+        </div>
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card featured-card h-100">
+                    <img src="https://via.placeholder.com/300x200/e91e63/FFFFFF?text=Công+chúa" class="card-img-top"
+                         alt="Búp bê công chúa">
+                    <div class="card-body">
+                        <h5 class="card-title">Búp bê Công chúa Vũ trụ</h5>
+                        <p class="card-text text-muted">Công chúa xinh đẹp từ hành tinh xa xôi</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="h5 text-danger mb-0">299.000₫</span>
+                            <button class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card featured-card h-100">
+                    <img src="https://via.placeholder.com/300x200/1a237e/FFFFFF?text=Phi+thuyền" class="card-img-top"
+                         alt="Phi thuyền">
+                    <div class="card-body">
+                        <h5 class="card-title">Phi thuyền Siêu tốc</h5>
+                        <p class="card-text text-muted">Bay với tốc độ ánh sáng!</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="h5 text-danger mb-0">599.000₫</span>
+                            <button class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card featured-card h-100">
+                    <img src="https://via.placeholder.com/300x200/00bcd4/FFFFFF?text=Ghép+hình" class="card-img-top"
+                         alt="Ghép hình vũ trụ">
+                    <div class="card-body">
+                        <h5 class="card-title">Ghép hình Thiên hà</h5>
+                        <p class="card-text text-muted">Xây dựng thiên hà của riêng mình!</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="h5 text-danger mb-0">899.000₫</span>
+                            <button class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card featured-card h-100">
+                    <img src="https://via.placeholder.com/300x200/ffc107/FFFFFF?text=Khoa+học" class="card-img-top"
+                         alt="Bộ thí nghiệm">
+                    <div class="card-body">
+                        <h5 class="card-title">Bộ thí nghiệm Vũ trụ</h5>
+                        <p class="card-text text-muted">Trở thành nhà khoa học nhí!</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="h5 text-danger mb-0">459.000₫</span>
+                            <button class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Promotion Banner -->
+<section class="bg-light py-5" style="background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%) !important;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h3 class="fw-bold space-text mb-3">Ưu đãi Thiên hà Đặc biệt!</h3>
+                <p class="text-muted mb-0">Giảm giá lên đến 50% cho tất cả đồ chơi khoa học! Cơ hội trở thành nhà khoa
+                    học nhí đang chờ các bạn!</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="#" class="btn btn-danger btn-lg">
+                    <i class="fas fa-rocket me-2"></i>Khám phá ngay
                 </a>
-                <a href="#" class="btn btn-outline-light btn-lg">
-                    <i class="fas fa-star me-2"></i>Ưu đãi thiên hà
-                </a>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Featured Products -->
-    <section id="featured" class="py-5">
-        <div class="container">
-            <div class="text-center mb-5">
-                <h2 class="fw-bold space-text">Đồ chơi siêu đặc biệt</h2>
-                <p class="text-muted">Những món đồ chơi được yêu thích nhất trong thiên hà!</p>
+<!-- Fun Facts Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold space-text">Những điều thú vị về T4M</h2>
+        </div>
+        <div class="row text-center">
+            <div class="col-md-3 mb-4">
+                <div class="card h-100" style="border: 3px solid var(--nebula-cyan); border-radius: 20px;">
+                    <div class="card-body">
+                        <div class="display-4 mb-3">🚀</div>
+                        <h5 class="space-text">10,000+</h5>
+                        <p class="text-muted">Phi hành gia nhí hạnh phúc</p>
+                    </div>
+                </div>
             </div>
-            <div class="row">
-                <div class="col-lg-3 col-md-6 mb-4">
-                    <div class="card featured-card h-100">
-                        <img src="https://via.placeholder.com/300x200/e91e63/FFFFFF?text=Công+chúa" class="card-img-top" alt="Búp bê công chúa">
-                        <div class="card-body">
-                            <h5 class="card-title">Búp bê Công chúa Vũ trụ</h5>
-                            <p class="card-text text-muted">Công chúa xinh đẹp từ hành tinh xa xôi</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="h5 text-danger mb-0">299.000₫</span>
-                                <button class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-cart-plus"></i>
-                                </button>
-                            </div>
-                        </div>
+            <div class="col-md-3 mb-4">
+                <div class="card h-100" style="border: 3px solid var(--galaxy-pink); border-radius: 20px;">
+                    <div class="card-body">
+                        <div class="display-4 mb-3">🎯</div>
+                        <h5 class="space-text">5,000+</h5>
+                        <p class="text-muted">Đồ chơi tuyệt vời</p>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-6 mb-4">
-                    <div class="card featured-card h-100">
-                        <img src="https://via.placeholder.com/300x200/1a237e/FFFFFF?text=Phi+thuyền" class="card-img-top" alt="Phi thuyền">
-                        <div class="card-body">
-                            <h5 class="card-title">Phi thuyền Siêu tốc</h5>
-                            <p class="card-text text-muted">Bay với tốc độ ánh sáng!</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="h5 text-danger mb-0">599.000₫</span>
-                                <button class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-cart-plus"></i>
-                                </button>
-                            </div>
-                        </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card h-100" style="border: 3px solid var(--star-yellow); border-radius: 20px;">
+                    <div class="card-body">
+                        <div class="display-4 mb-3">⭐</div>
+                        <h5 class="space-text">100%</h5>
+                        <p class="text-muted">An toàn & Chất lượng</p>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-6 mb-4">
-                    <div class="card featured-card h-100">
-                        <img src="https://via.placeholder.com/300x200/00bcd4/FFFFFF?text=Ghép+hình" class="card-img-top" alt="Ghép hình vũ trụ">
-                        <div class="card-body">
-                            <h5 class="card-title">Ghép hình Thiên hà</h5>
-                            <p class="card-text text-muted">Xây dựng thiên hà của riêng mình!</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="h5 text-danger mb-0">899.000₫</span>
-                                <button class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-cart-plus"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6 mb-4">
-                    <div class="card featured-card h-100">
-                        <img src="https://via.placeholder.com/300x200/ffc107/FFFFFF?text=Khoa+học" class="card-img-top" alt="Bộ thí nghiệm">
-                        <div class="card-body">
-                            <h5 class="card-title">Bộ thí nghiệm Vũ trụ</h5>
-                            <p class="card-text text-muted">Trở thành nhà khoa học nhí!</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="h5 text-danger mb-0">459.000₫</span>
-                                <button class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-cart-plus"></i>
-                                </button>
-                            </div>
-                        </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card h-100" style="border: 3px solid var(--cosmic-purple); border-radius: 20px;">
+                    <div class="card-body">
+                        <div class="display-4 mb-3">🌟</div>
+                        <h5 class="space-text">24/7</h5>
+                        <p class="text-muted">Hỗ trợ vũ trụ</p>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Promotion Banner -->
-    <section class="bg-light py-5" style="background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%) !important;">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h3 class="fw-bold space-text mb-3">Ưu đãi Thiên hà Đặc biệt!</h3>
-                    <p class="text-muted mb-0">Giảm giá lên đến 50% cho tất cả đồ chơi khoa học! Cơ hội trở thành nhà khoa học nhí đang chờ các bạn!</p>
-                </div>
-                <div class="col-md-4 text-end">
-                    <a href="#" class="btn btn-danger btn-lg">
-                        <i class="fas fa-rocket me-2"></i>Khám phá ngay
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Fun Facts Section -->
-    <section class="py-5">
-        <div class="container">
-            <div class="text-center mb-5">
-                <h2 class="fw-bold space-text">Những điều thú vị về T4M</h2>
-            </div>
-            <div class="row text-center">
-                <div class="col-md-3 mb-4">
-                    <div class="card h-100" style="border: 3px solid var(--nebula-cyan); border-radius: 20px;">
-                        <div class="card-body">
-                            <div class="display-4 mb-3">🚀</div>
-                            <h5 class="space-text">10,000+</h5>
-                            <p class="text-muted">Phi hành gia nhí hạnh phúc</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="card h-100" style="border: 3px solid var(--galaxy-pink); border-radius: 20px;">
-                        <div class="card-body">
-                            <div class="display-4 mb-3">🎯</div>
-                            <h5 class="space-text">5,000+</h5>
-                            <p class="text-muted">Đồ chơi tuyệt vời</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="card h-100" style="border: 3px solid var(--star-yellow); border-radius: 20px;">
-                        <div class="card-body">
-                            <div class="display-4 mb-3">⭐</div>
-                            <h5 class="space-text">100%</h5>
-                            <p class="text-muted">An toàn & Chất lượng</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="card h-100" style="border: 3px solid var(--cosmic-purple); border-radius: 20px;">
-                        <div class="card-body">
-                            <div class="display-4 mb-3">🌟</div>
-                            <h5 class="space-text">24/7</h5>
-                            <p class="text-muted">Hỗ trợ vũ trụ</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <div th:replace="~{fragments/footer :: footer}"></div>
-    <script th:src="@{/js/auth.js}" defer></script>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/auth.js}" defer></script>
 </body>
 </html>

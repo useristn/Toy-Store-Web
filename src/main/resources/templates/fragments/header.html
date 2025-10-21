@@ -15,7 +15,7 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-6">
-                    <small><i class="fas fa-rocket me-2"></i>Hotline Vũ Trụ: 1800-SPACE</small>
+                    <small><i class="fas fa-rocket me-2"></i>Hotline Vũ Trụ: 1800-363-363</small>
                     <small class="ms-3"><i class="fas fa-satellite me-2"></i>space@t4m.vn</small>
                 </div>
                 <div class="col-md-6 text-end">
@@ -36,7 +36,8 @@
             <!-- Search Bar -->
             <div class="search-section flex-grow-1 mx-4">
                 <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Tìm kiếm đồ chơi tuyệt vời..." id="searchInput">
+                    <input type="text" class="form-control" placeholder="Tìm kiếm đồ chơi tuyệt vời..."
+                           id="searchInput">
                     <button class="btn btn-danger" type="button" id="searchBtn">
                         <i class="fas fa-search"></i>
                     </button>
@@ -60,11 +61,16 @@
                             <i class="fas fa-user me-1"></i><span id="userName">Phi hành gia</span>
                         </button>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" th:href="@{/profile}"><i class="fas fa-user-astronaut me-2"></i>Hồ sơ phi hành gia</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-box me-2"></i>Đơn hàng vũ trụ</a></li>
+                            <li><a class="dropdown-item" th:href="@{/profile}"><i
+                                    class="fas fa-user-astronaut me-2"></i>Hồ sơ phi hành gia</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-box me-2"></i>Đơn hàng vũ trụ</a>
+                            </li>
                             <li><a class="dropdown-item" href="#"><i class="fas fa-heart me-2"></i>Yêu thích</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#" id="logoutLink"><i class="fas fa-rocket me-2"></i>Bay về Trái Đất</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="#" id="logoutLink"><i class="fas fa-rocket me-2"></i>Bay
+                                về Trái Đất</a></li>
                         </ul>
                     </div>
                 </div>
