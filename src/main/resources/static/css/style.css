@@ -1,0 +1,509 @@
+:root {
+    --space-blue: #1a237e;
+    --deep-space: #0d47a1;
+    --cosmic-purple: #4a148c;
+    --galaxy-pink: #e91e63;
+    --star-yellow: #ffc107;
+    --nebula-cyan: #00bcd4;
+    --meteor-orange: #ff5722;
+    --white: #ffffff;
+    --light-gray: #f8f9fa;
+    --dark-gray: #343a40;
+}
+
+/* Global Styles */
+body {
+    font-family: 'Comic Sans MS', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--dark-gray);
+    background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+    min-height: 100vh;
+}
+
+/* Space Background Animation */
+.space-bg {
+    background: linear-gradient(135deg, var(--space-blue) 0%, var(--cosmic-purple) 50%, var(--deep-space) 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.space-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: radial-gradient(2px 2px at 20px 30px, var(--star-yellow), transparent),
+    radial-gradient(2px 2px at 40px 70px, var(--white), transparent),
+    radial-gradient(1px 1px at 90px 40px, var(--star-yellow), transparent),
+    radial-gradient(1px 1px at 130px 80px, var(--white), transparent),
+    radial-gradient(2px 2px at 160px 30px, var(--star-yellow), transparent);
+    background-repeat: repeat;
+    background-size: 200px 100px;
+    animation: twinkle 4s ease-in-out infinite alternate;
+}
+
+@keyframes twinkle {
+    0% {
+        opacity: 0.3;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Header Styles */
+.header-section .top-bar {
+    font-size: 0.875rem;
+    background: linear-gradient(135deg, var(--cosmic-purple) 0%, var(--space-blue) 100%) !important;
+}
+
+.header-section .navbar-brand {
+    color: var(--space-blue) !important;
+    transition: all 0.3s ease;
+    font-size: 2.5rem !important;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.header-section .navbar-brand:hover {
+    color: var(--galaxy-pink) !important;
+    transform: scale(1.05);
+}
+
+.rocket-icon {
+    animation: rocket-float 3s ease-in-out infinite;
+    color: var(--meteor-orange) !important;
+    font-size: 3rem !important;
+    text-shadow: 0 0 15px var(--star-yellow), 0 0 30px var(--meteor-orange);
+    filter: drop-shadow(0 0 10px var(--star-yellow));
+    transform-origin: center;
+}
+
+@keyframes rocket-float {
+    0%, 100% {
+        transform: translateY(0px) rotate(-5deg) scale(1);
+        text-shadow: 0 0 15px var(--star-yellow), 0 0 30px var(--meteor-orange);
+    }
+    50% {
+        transform: translateY(-8px) rotate(5deg) scale(1.1);
+        text-shadow: 0 0 20px var(--star-yellow), 0 0 40px var(--meteor-orange), 0 0 60px var(--galaxy-pink);
+    }
+}
+
+.search-section .form-control {
+    border: 2px solid var(--nebula-cyan);
+    border-radius: 25px 0 0 25px;
+    padding: 0.75rem 1.25rem;
+    transition: all 0.3s ease;
+}
+
+.search-section .btn {
+    border-radius: 0 25px 25px 0;
+    background: linear-gradient(135deg, var(--galaxy-pink) 0%, var(--meteor-orange) 100%);
+    border: 2px solid var(--galaxy-pink);
+    transition: all 0.3s ease;
+}
+
+.search-section .btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 15px rgba(233, 30, 99, 0.4);
+}
+
+.category-nav {
+    background: linear-gradient(135deg, var(--space-blue) 0%, var(--cosmic-purple) 100%) !important;
+    position: relative;
+    padding: 0.5rem 0 !important;
+}
+
+.category-nav::before {
+    content: '🌟 ⭐ 🚀 🛸 🌙 ⭐ 🌟 🚀 🛸 🌙 ⭐ 🌟';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    white-space: nowrap;
+    animation: scroll-stars 20s linear infinite;
+    opacity: 0.3;
+    font-size: 0.8rem;
+    z-index: 0;
+}
+
+@keyframes scroll-stars {
+    0% {
+        transform: translateX(100%) translateY(-50%);
+    }
+    100% {
+        transform: translateX(-100%) translateY(-50%);
+    }
+}
+
+.category-nav .navbar-nav {
+    position: relative;
+    z-index: 1;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+}
+
+.category-nav .nav-link {
+    transition: all 0.3s ease;
+    padding: 0.5rem 0.75rem !important;
+    border-radius: 15px;
+    margin: 0 0.125rem;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+.category-nav .nav-link:hover {
+    background: linear-gradient(135deg, var(--galaxy-pink) 0%, var(--star-yellow) 100%);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.3);
+}
+
+/* Cart Button with Bounce */
+.cart-btn {
+    background: linear-gradient(135deg, var(--star-yellow) 0%, var(--meteor-orange) 100%);
+    border: none;
+    border-radius: 50px;
+    animation: cart-bounce 2s ease-in-out infinite;
+}
+
+@keyframes cart-bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-3px);
+    }
+    60% {
+        transform: translateY(-2px);
+    }
+}
+
+.cart-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 20px rgba(255, 193, 7, 0.5);
+}
+
+/* Auth Forms - Space Theme */
+.auth-container {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 50%, #fff3e0 100%);
+}
+
+.auth-card {
+    background: white;
+    border-radius: 25px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    border: 3px solid var(--nebula-cyan);
+}
+
+.auth-header {
+    background: linear-gradient(135deg, var(--space-blue) 0%, var(--cosmic-purple) 100%);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+}
+
+.auth-header::before {
+    content: '✨';
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    font-size: 1.5rem;
+    animation: twinkle 2s ease-in-out infinite;
+}
+
+.auth-header::after {
+    content: '🚀';
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 1.5rem;
+    animation: rocket-float 3s ease-in-out infinite;
+}
+
+.auth-body {
+    padding: 2rem;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+}
+
+.form-control {
+    border-radius: 25px;
+    border: 2px solid var(--nebula-cyan);
+    padding: 0.75rem 1.25rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--galaxy-pink);
+    box-shadow: 0 0 0 0.2rem rgba(233, 30, 99, 0.25);
+    transform: scale(1.02);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--space-blue) 0%, var(--cosmic-purple) 100%);
+    border: none;
+    border-radius: 25px;
+    padding: 0.75rem 2rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(26, 35, 126, 0.3);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, var(--galaxy-pink) 0%, var(--meteor-orange) 100%);
+    border: none;
+    border-radius: 25px;
+    padding: 0.75rem 2rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(233, 30, 99, 0.3);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, var(--nebula-cyan) 0%, #4caf50 100%);
+    border: none;
+    border-radius: 25px;
+    padding: 0.75rem 2rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 188, 212, 0.3);
+}
+
+/* Footer Styles - Space Theme */
+.footer-section {
+    background: linear-gradient(135deg, var(--space-blue) 0%, var(--cosmic-purple) 100%) !important;
+    position: relative;
+}
+
+.footer-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: radial-gradient(2px 2px at 20px 30px, var(--star-yellow), transparent),
+    radial-gradient(1px 1px at 40px 70px, var(--white), transparent),
+    radial-gradient(1px 1px at 90px 40px, var(--star-yellow), transparent);
+    background-repeat: repeat;
+    background-size: 150px 75px;
+    animation: twinkle 3s ease-in-out infinite alternate;
+    opacity: 0.4;
+}
+
+.footer-section .container {
+    position: relative;
+    z-index: 1;
+}
+
+/* Home Page Styles - Space Theme */
+.hero-section {
+    background: linear-gradient(135deg, var(--space-blue) 0%, var(--cosmic-purple) 50%, var(--galaxy-pink) 100%);
+    color: white;
+    padding: 4rem 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '🌟 ⭐ 🚀 🛸 🌙 🪐 ☄️ 🌟 ⭐ 🚀 🛸 🌙 🪐 ☄️';
+    position: absolute;
+    top: 20%;
+    left: 0;
+    right: 0;
+    font-size: 2rem;
+    white-space: nowrap;
+    animation: float-symbols 25s linear infinite;
+    opacity: 0.3;
+}
+
+@keyframes float-symbols {
+    0% {
+        transform: translateX(100%);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+.featured-card {
+    border: none;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 3px solid transparent;
+    background: linear-gradient(white, white) padding-box,
+    linear-gradient(135deg, var(--nebula-cyan), var(--galaxy-pink)) border-box;
+}
+
+.featured-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    border-color: var(--star-yellow);
+}
+
+.featured-card .btn {
+    border-radius: 50px;
+    transition: all 0.3s ease;
+}
+
+.featured-card .btn:hover {
+    transform: scale(1.2) rotate(360deg);
+}
+
+/* Profile Page Styles */
+.profile-header {
+    background: linear-gradient(135deg, var(--space-blue) 0%, var(--cosmic-purple) 50%, var(--galaxy-pink) 100%);
+    color: white;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.profile-card {
+    border: none;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+    border: 2px solid var(--nebula-cyan);
+}
+
+/* Message Styles */
+#registerMessage,
+#verifyMessage,
+#loginMessage,
+#forgotMessage,
+#resetMessage,
+#profileMessage {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 15px;
+    font-weight: 600;
+    border: 2px solid;
+    animation: message-glow 0.5s ease-in-out;
+}
+
+@keyframes message-glow {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Fun Button Styles */
+.btn-outline-primary,
+.btn-outline-success,
+.btn-outline-info,
+.btn-outline-warning {
+    border-radius: 20px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    border-width: 2px;
+}
+
+.btn-outline-primary:hover {
+    background: linear-gradient(135deg, var(--space-blue) 0%, var(--cosmic-purple) 100%);
+    transform: translateY(-2px);
+}
+
+.btn-outline-success:hover {
+    background: linear-gradient(135deg, var(--nebula-cyan) 0%, #4caf50 100%);
+    transform: translateY(-2px);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .search-section {
+        margin: 1rem 0;
+    }
+
+    .user-actions {
+        flex-direction: row;
+        justify-content: center;
+    }
+
+    .auth-body {
+        padding: 1.5rem;
+    }
+
+    .hero-section {
+        padding: 2rem 0;
+    }
+
+    .header-section .navbar-brand {
+        font-size: 2rem !important;
+    }
+
+    .robot-icon {
+        font-size: 2.2rem !important;
+    }
+
+    .category-nav .nav-link {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.6rem !important;
+    }
+}
+
+/* Loading Animation */
+.loading-space {
+    display: inline-block;
+    animation: loading-spin 1s linear infinite;
+}
+
+@keyframes loading-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Playful Utility Classes */
+.space-text {
+    background: linear-gradient(135deg, var(--space-blue) 0%, var(--galaxy-pink) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: bold;
+}
+
+.cosmic-btn {
+    background: linear-gradient(135deg, var(--cosmic-purple) 0%, var(--space-blue) 100%);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 0.5rem 1.5rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.cosmic-btn:hover {
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 8px 25px rgba(74, 20, 140, 0.3);
+}
