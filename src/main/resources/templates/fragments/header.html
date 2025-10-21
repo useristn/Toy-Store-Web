@@ -145,18 +145,13 @@
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Header Search functionality
+    // Header Search functionality only
     document.addEventListener('DOMContentLoaded', function() {
         const searchBtn = document.getElementById('searchBtn');
         const searchInput = document.getElementById('searchInput');
 
         if (searchBtn && searchInput) {
-            // Search button click
-            searchBtn.addEventListener('click', function() {
-                performSearch();
-            });
-
-            // Enter key press
+            searchBtn.addEventListener('click', performSearch);
             searchInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -170,35 +165,6 @@
             if (keyword) {
                 window.location.href = `/products?search=${encodeURIComponent(keyword)}`;
             }
-        }
-
-        // Check auth status
-        const token = localStorage.getItem('token');
-        const userEmail = localStorage.getItem('userEmail');
-
-        if (token && userEmail) {
-            const authButtons = document.getElementById('authButtons');
-            const userMenu = document.getElementById('userMenu');
-
-            if (authButtons) authButtons.classList.add('d-none');
-            if (userMenu) {
-                userMenu.classList.remove('d-none');
-                const userName = document.getElementById('userName');
-                if (userName) {
-                    userName.textContent = userEmail.split('@')[0];
-                }
-            }
-        }
-
-        // Logout handler
-        const logoutLink = document.getElementById('logoutLink');
-        if (logoutLink) {
-            logoutLink.addEventListener('click', function(e) {
-                e.preventDefault();
-                localStorage.removeItem('token');
-                localStorage.removeItem('userEmail');
-                window.location.href = '/';
-            });
         }
     });
 </script>

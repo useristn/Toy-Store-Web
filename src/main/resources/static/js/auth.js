@@ -1,3 +1,48 @@
+// Check authentication status on page load
+document.addEventListener('DOMContentLoaded', function() {
+    checkAuthStatus();
+});
+
+function checkAuthStatus() {
+    const token = localStorage.getItem('token');
+    const userEmail = localStorage.getItem('userEmail');
+
+    const authButtons = document.getElementById('authButtons');
+    const userMenu = document.getElementById('userMenu');
+    const userName = document.getElementById('userName');
+
+    console.log('Checking auth:', { token: !!token, email: userEmail });
+
+    if (token && userEmail) {
+        // User is logged in
+        if (authButtons) authButtons.classList.add('d-none');
+        if (userMenu) {
+            userMenu.classList.remove('d-none');
+            if (userName) {
+                userName.textContent = userEmail.split('@')[0];
+            }
+        }
+    } else {
+        // User is not logged in
+        if (authButtons) authButtons.classList.remove('d-none');
+        if (userMenu) userMenu.classList.add('d-none');
+    }
+
+    // Setup logout handler
+    const logoutLink = document.getElementById('logoutLink');
+    if (logoutLink) {
+        logoutLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('token');
+            localStorage.removeItem('userEmail');
+            showMessage('loginMessage', 'Đã đăng xuất! Hẹn gặp lại phi hành gia! 👋', 'success');
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1000);
+        });
+    }
+}
+
 // Determine the base path for the API from a meta tag or default to '/'
 const ctx = document.querySelector('meta[name="ctx"]')?.content || '/';
 const base = ctx.endsWith('/') ? ctx.slice(0, -1) : ctx;
