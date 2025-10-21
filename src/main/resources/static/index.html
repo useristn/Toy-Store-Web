@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Toy Store Web - Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Login</h1>
+    <form id="login-form">
+        <label>
+            Email:
+            <input type="email" id="login-email" required />
+        </label>
+        <label>
+            Password:
+            <input type="password" id="login-password" required />
+        </label>
+        <button type="submit">Login</button>
+    </form>
+    <p id="login-message"></p>
+    <p>Don't have an account? <a href="register.html">Register</a></p>
+    <script>
+    document.getElementById('login-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                // Save JWT token and email for later use
+                if (data.token) {
+                    localStorage.setItem('token', data.token);
+                }
+                localStorage.setItem('email', email);
+                document.getElementById('login-message').textContent = data.message || 'Login successful';
+                // redirect to profile page after successful login
+                window.location.href = 'profile.html';
+            } else {
+                document.getElementById('login-message').textContent = data.message || 'Login failed';
+            }
+        } catch (err) {
+            document.getElementById('login-message').textContent = 'Error: ' + err.message;
+        }
+    });
+    </script>
+</body>
+</html>

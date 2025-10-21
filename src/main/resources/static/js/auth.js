@@ -1,0 +1,309 @@
+/*
+ * auth.js
+ *
+ * This file contains client‑side helpers for interacting with the
+ * authentication APIs exposed by the Toy Store backend. Each page
+ * includes this script via a `<script>` tag with the `defer`
+ * attribute so that the functions are available after the DOM
+ * loads. Functions are organised by feature: registration,
+ * account activation/verification, login, password reset and
+ * profile management. All network calls use the Fetch API and
+ * communicate with the Spring Boot backend using JSON. If a
+ * function succeeds, it will update the DOM with a success
+ * message or redirect the user to the appropriate page.
+ */
+
+const apiBase = '/api/auth';
+
+// Utility: display a message inside a container element
+function displayMessage(containerId, message, isError = false) {
+  const container = document.getElementById(containerId);
+  if (container) {
+    container.textContent = message;
+    container.style.color = isError ? 'red' : 'green';
+  }
+}
+
+// Registration handler
+function handleRegister(event) {
+  event.preventDefault();
+  const email = document.getElementById('registerEmail').value.trim();
+  const password = document.getElementById('registerPassword').value;
+  const confirmPassword = document.getElementById('registerConfirmPassword').value;
+  const role = document.getElementById('registerRole').value.trim();
+
+  if (password !== confirmPassword) {
+    displayMessage('registerMessage', 'Passwords do not match', true);
+    return;
+  }
+
+  fetch(`${apiBase}/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password, role })
+  }).then(async (response) => {
+    const data = await response.json().catch(() => ({}));
+    if (response.ok) {
+      displayMessage('registerMessage', data.message || 'Registration successful');
+      // After registration, redirect to verification page so user can enter OTP
+      setTimeout(() => { window.location.href = 'verify-otp.html'; }, 1500);
+    } else {
+      displayMessage('registerMessage', data.message || 'Registration failed', true);
+    }
+  }).catch((error) => {
+    displayMessage('registerMessage', 'Error: ' + error.message, true);
+  });
+}
+
+// Send activation OTP handler (resend)
+function handleSendActivationOtp(event) {
+  event.preventDefault();
+  const email = document.getElementById('verifyEmail').value.trim();
+  if (!email) {
+    displayMessage('verifyMessage', 'Please enter your email', true);
+    return;
+  }
+  fetch(`${apiBase}/active-account`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  }).then(async (response) => {
+    const data = await response.json().catch(() => ({}));
+    if (response.ok) {
+      displayMessage('verifyMessage', data.message || 'OTP has been sent');
+    } else {
+      displayMessage('verifyMessage', data.message || 'Failed to send OTP', true);
+    }
+  }).catch((error) => {
+    displayMessage('verifyMessage', 'Error: ' + error.message, true);
+  });
+}
+
+// Account verification handler
+function handleVerifyAccount(event) {
+  event.preventDefault();
+  const email = document.getElementById('verifyEmail').value.trim();
+  const otp = document.getElementById('verifyOtp').value.trim();
+  if (!email || !otp) {
+    displayMessage('verifyMessage', 'Email and OTP are required', true);
+    return;
+  }
+  fetch(`${apiBase}/verify-account`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, otp })
+  }).then(async (response) => {
+    const data = await response.json().catch(() => ({}));
+    if (response.ok) {
+      displayMessage('verifyMessage', data.message || 'Account verified');
+      setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+    } else {
+      displayMessage('verifyMessage', data.message || 'Verification failed', true);
+    }
+  }).catch((error) => {
+    displayMessage('verifyMessage', 'Error: ' + error.message, true);
+  });
+}
+
+// Login handler
+function handleLogin(event) {
+  event.preventDefault();
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  fetch(`${apiBase}/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  }).then(async (response) => {
+    const data = await response.json().catch(() => ({}));
+    if (response.ok && data.token) {
+      // Persist token and email for subsequent authenticated requests
+      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('authEmail', data.email || email);
+      displayMessage('loginMessage', data.message || 'Login successful');
+      setTimeout(() => { window.location.href = 'profile.html'; }, 1500);
+    } else {
+      displayMessage('loginMessage', data.message || 'Login failed', true);
+    }
+  }).catch((error) => {
+    displayMessage('loginMessage', 'Error: ' + error.message, true);
+  });
+}
+
+// Forgot password handler
+function handleForgotPassword(event) {
+  event.preventDefault();
+  const email = document.getElementById('forgotEmail').value.trim();
+  if (!email) {
+    displayMessage('forgotMessage', 'Please enter your email', true);
+    return;
+  }
+  fetch(`${apiBase}/forgot-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  }).then(async (response) => {
+    const data = await response.json().catch(() => ({}));
+    if (response.ok) {
+      displayMessage('forgotMessage', data.message || 'OTP sent to your email');
+      setTimeout(() => { window.location.href = 'reset-password.html'; }, 1500);
+    } else {
+      displayMessage('forgotMessage', data.message || 'Failed to send OTP', true);
+    }
+  }).catch((error) => {
+    displayMessage('forgotMessage', 'Error: ' + error.message, true);
+  });
+}
+
+// Reset password handler
+function handleResetPassword(event) {
+  event.preventDefault();
+  const email = document.getElementById('resetEmail').value.trim();
+  const otp = document.getElementById('resetOtp').value.trim();
+  const newPassword = document.getElementById('resetPassword').value;
+  const confirmNewPassword = document.getElementById('resetConfirmPassword').value;
+  if (newPassword !== confirmNewPassword) {
+    displayMessage('resetMessage', 'Passwords do not match', true);
+    return;
+  }
+  fetch(`${apiBase}/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, otp, newPassword })
+  }).then(async (response) => {
+    const data = await response.json().catch(() => ({}));
+    if (response.ok) {
+      displayMessage('resetMessage', data.message || 'Password reset successfully');
+      setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+    } else {
+      displayMessage('resetMessage', data.message || 'Failed to reset password', true);
+    }
+  }).catch((error) => {
+    displayMessage('resetMessage', 'Error: ' + error.message, true);
+  });
+}
+
+// Load user profile
+function loadProfile() {
+  const email = localStorage.getItem('authEmail');
+  const token = localStorage.getItem('authToken');
+  if (!email) {
+    // Not logged in
+    window.location.href = 'login.html';
+    return;
+  }
+  const headers = {};
+  if (token) {
+    headers['Authorization'] = 'Bearer ' + token;
+  }
+  fetch(`${apiBase}/user?email=${encodeURIComponent(email)}`, {
+    method: 'GET',
+    headers
+  }).then(async (response) => {
+    if (response.ok) {
+      const data = await response.json();
+      const infoDiv = document.getElementById('profileInfo');
+      if (infoDiv) {
+        infoDiv.innerHTML = '';
+        const list = document.createElement('ul');
+        const addItem = (label, value) => {
+          const li = document.createElement('li');
+          li.textContent = `${label}: ${value || ''}`;
+          list.appendChild(li);
+        };
+        addItem('Email', data.email);
+        addItem('Name', data.name);
+        addItem('Phone', data.phone);
+        addItem('Address', data.address);
+        if (data.roles) {
+          addItem('Roles', Array.isArray(data.roles) ? data.roles.join(', ') : data.roles);
+        }
+        infoDiv.appendChild(list);
+        // Pre-fill form fields
+        const nameField = document.getElementById('profileName');
+        const phoneField = document.getElementById('profilePhone');
+        const addressField = document.getElementById('profileAddress');
+        if (nameField) nameField.value = data.name || '';
+        if (phoneField) phoneField.value = data.phone || '';
+        if (addressField) addressField.value = data.address || '';
+      }
+    } else {
+      // If not found or unauthorized, redirect to login
+      window.location.href = 'login.html';
+    }
+  }).catch(() => {
+    window.location.href = 'login.html';
+  });
+}
+
+// Update profile handler
+function handleUpdateProfile(event) {
+  event.preventDefault();
+  const email = localStorage.getItem('authEmail');
+  const token = localStorage.getItem('authToken');
+  const name = document.getElementById('profileName').value.trim();
+  const phone = document.getElementById('profilePhone').value.trim();
+  const address = document.getElementById('profileAddress').value.trim();
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) {
+    headers['Authorization'] = 'Bearer ' + token;
+  }
+  fetch(`${apiBase}/update-profile?email=${encodeURIComponent(email)}`, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify({ name, phone, address })
+  }).then(async (response) => {
+    const data = await response.json().catch(() => ({}));
+    if (response.ok) {
+      displayMessage('profileMessage', data.message || 'Profile updated successfully');
+      // refresh the profile details after update
+      loadProfile();
+    } else {
+      displayMessage('profileMessage', data.message || 'Failed to update profile', true);
+    }
+  }).catch((error) => {
+    displayMessage('profileMessage', 'Error: ' + error.message, true);
+  });
+}
+
+// Logout handler
+function handleLogout() {
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('authEmail');
+  window.location.href = 'login.html';
+}
+
+// Attach event listeners once the DOM content is loaded on each page
+document.addEventListener('DOMContentLoaded', () => {
+  // Register page
+  const registerForm = document.getElementById('registerForm');
+  if (registerForm) registerForm.addEventListener('submit', handleRegister);
+
+  // Verify account page
+  const verifyForm = document.getElementById('verifyForm');
+  if (verifyForm) verifyForm.addEventListener('submit', handleVerifyAccount);
+  const resendOtpBtn = document.getElementById('resendOtpButton');
+  if (resendOtpBtn) resendOtpBtn.addEventListener('click', handleSendActivationOtp);
+
+  // Login page
+  const loginForm = document.getElementById('loginForm');
+  if (loginForm) loginForm.addEventListener('submit', handleLogin);
+
+  // Forgot password page
+  const forgotForm = document.getElementById('forgotForm');
+  if (forgotForm) forgotForm.addEventListener('submit', handleForgotPassword);
+
+  // Reset password page
+  const resetForm = document.getElementById('resetForm');
+  if (resetForm) resetForm.addEventListener('submit', handleResetPassword);
+
+  // Profile page
+  const updateProfileForm = document.getElementById('updateProfileForm');
+  if (updateProfileForm) updateProfileForm.addEventListener('submit', handleUpdateProfile);
+  const logoutBtn = document.getElementById('logoutButton');
+  if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+  // If on profile page, load profile data
+  if (document.getElementById('profileInfo')) {
+    loadProfile();
+  }
+});

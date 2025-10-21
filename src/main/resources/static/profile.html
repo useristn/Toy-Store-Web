@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile – Toy Store</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/auth.js" defer></script>
+</head>
+<body>
+  <h1>Your Profile</h1>
+  <div id="profileInfo">Loading profile...</div>
+  <h2>Update Profile</h2>
+  <form id="updateProfileForm">
+    <label for="profileName">Name</label>
+    <input type="text" id="profileName" name="name">
+
+    <label for="profilePhone">Phone</label>
+    <input type="tel" id="profilePhone" name="phone">
+
+    <label for="profileAddress">Address</label>
+    <input type="text" id="profileAddress" name="address">
+
+    <button type="submit">Update Profile</button>
+  </form>
+  <div id="profileMessage"></div>
+  <button id="logoutButton" style="margin-top:1rem; background-color:#dc3545;">Logout</button>
+  <p><a href="index.html">Back to Home</a></p>
+</body>
+</html>

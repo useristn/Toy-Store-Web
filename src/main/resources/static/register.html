@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register – Toy Store</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/auth.js" defer></script>
+</head>
+<body>
+  <h1>Register</h1>
+  <form id="registerForm">
+    <label for="registerEmail">Email</label>
+    <input type="email" id="registerEmail" name="email" required>
+
+    <label for="registerPassword">Password</label>
+    <input type="password" id="registerPassword" name="password" required>
+
+    <label for="registerConfirmPassword">Confirm Password</label>
+    <input type="password" id="registerConfirmPassword" name="confirmPassword" required>
+
+    <label for="registerRole">Role</label>
+    <input type="text" id="registerRole" name="role" value="USER" required>
+
+    <button type="submit">Register</button>
+  </form>
+  <div id="registerMessage"></div>
+  <p><a href="index.html">Back to Home</a></p>
+</body>
+</html>

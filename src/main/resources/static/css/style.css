@@ -1,0 +1,78 @@
+/*
+ * style.css
+ *
+ * Provides basic styling for the Toy Store frontend. The goal is
+ * to keep the UI simple and readable without depending on external
+ * frameworks. Feel free to extend this stylesheet as the project
+ * evolves.
+ */
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 2rem;
+  background-color: #f7f7f7;
+  color: #333;
+}
+
+h1, h2 {
+  color: #333;
+}
+
+form {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 4px;
+  max-width: 400px;
+}
+
+label {
+  display: block;
+  margin-top: 0.75rem;
+  font-weight: bold;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"] {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+button {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+#registerMessage,
+#verifyMessage,
+#loginMessage,
+#forgotMessage,
+#resetMessage,
+#profileMessage {
+  margin-top: 1rem;
+  font-weight: bold;
+}
+
+a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
