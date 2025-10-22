@@ -73,9 +73,10 @@ public class ProductController {
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) String sort,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size) {
-        Page<Product> products = productService.filterProducts(keyword, categoryId, minPrice, maxPrice, PageRequest.of(page, size));
+        Page<Product> products = productService.filterProducts(keyword, categoryId, minPrice, maxPrice, sort, PageRequest.of(page, size));
         Page<ProductResponse> response = products.map(ProductResponse::fromEntity);
         return ResponseEntity.ok(response);
     }

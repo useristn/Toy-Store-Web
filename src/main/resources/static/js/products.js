@@ -32,6 +32,13 @@ document.addEventListener('DOMContentLoaded', function() {
     loadCategories();
     loadProducts();
     
+    // Set default sort value in dropdown
+    const sortFilter = document.getElementById('sortFilter');
+    if (sortFilter) {
+        sortFilter.value = currentSort;
+        sortFilter.addEventListener('change', handleSortChange);
+    }
+    
     // Header search (same as home.js)
     const headerSearchBtn = document.getElementById('searchBtn');
     const headerSearchInput = document.getElementById('searchInput');
@@ -79,11 +86,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const priceFilter = document.getElementById('priceFilter');
     if (priceFilter) {
         priceFilter.addEventListener('change', handlePriceChange);
-    }
-    
-    const sortFilter = document.getElementById('sortFilter');
-    if (sortFilter) {
-        sortFilter.addEventListener('change', handleSortChange);
     }
 });
 
@@ -221,6 +223,12 @@ function loadProducts() {
         console.log('Filtering by price range:', minPrice, '-', maxPrice);
     }
     
+    // Add sort parameter to backend
+    if (currentSort) {
+        url += `&sort=${currentSort}`;
+        console.log('Sorting by:', currentSort);
+    }
+    
     console.log('Fetching products from:', url);
     
     fetch(url)
@@ -229,18 +237,14 @@ function loadProducts() {
             return response.json();
         })
         .then(data => {
-            let products = data.content;
-            
-            // Client-side sorting only
-            products = sortProducts(products, currentSort);
-            
-            displayProducts(products);
+            // No more client-side sorting - backend handles it
+            displayProducts(data.content);
             updatePagination(data);
             
             // Update product count with search info
             const countEl = document.getElementById('productCount');
             if (countEl) {
-                const totalElements = data.totalElements || products.length;
+                const totalElements = data.totalElements || data.content.length;
                 countEl.textContent = totalElements;
                 
                 // Show search info if searching
@@ -260,7 +264,7 @@ function loadProducts() {
                 }
             }
             
-            console.log(`Loaded ${products.length} products (total: ${data.totalElements})`);
+            console.log(`Loaded ${data.content.length} products (total: ${data.totalElements})`);
         })
         .catch(error => {
             console.error('Error loading products:', error);
@@ -274,34 +278,6 @@ function loadProducts() {
                 </div>
             `;
         });
-}
-
-function sortProducts(products, sortType) {
-    const sorted = [...products];
-    
-    switch(sortType) {
-        case 'price-asc':
-            return sorted.sort((a, b) => {
-                const priceA = a.discountPrice || a.price;
-                const priceB = b.discountPrice || b.price;
-                return priceA - priceB;
-            });
-        case 'price-desc':
-            return sorted.sort((a, b) => {
-                const priceA = a.discountPrice || a.price;
-                const priceB = b.discountPrice || b.price;
-                return priceB - priceA;
-            });
-        case 'name':
-            return sorted.sort((a, b) => a.name.localeCompare(b.name));
-        case 'newest':
-        default:
-            return sorted.sort((a, b) => {
-                const dateA = new Date(a.createdAt);
-                const dateB = new Date(b.createdAt);
-                return dateB - dateA;
-            });
-    }
 }
 
 function displayProducts(products) {
@@ -421,12 +397,20 @@ function updatePagination(data) {
     
     let html = '';
     
-    // Previous button
+    // Previous button with modern styling
     if (currentPage > 0) {
         html += `<li class="page-item">
-                    <a class="page-link" href="#" onclick="changePage(${currentPage - 1}); return false;">
+                    <a class="page-link rounded-start" href="#" onclick="changePage(${currentPage - 1}); return false;" 
+                       style="border: 2px solid #6c5ce7; color: #6c5ce7; font-weight: 500; padding: 0.5rem 0.75rem;">
                         <i class="fas fa-chevron-left"></i>
                     </a>
+                 </li>`;
+    } else {
+        html += `<li class="page-item disabled">
+                    <span class="page-link rounded-start" 
+                          style="border: 2px solid #dee2e6; color: #6c757d; padding: 0.5rem 0.75rem;">
+                        <i class="fas fa-chevron-left"></i>
+                    </span>
                  </li>`;
     }
     
@@ -441,34 +425,69 @@ function updatePagination(data) {
     
     if (startPage > 0) {
         html += `<li class="page-item">
-                    <a class="page-link" href="#" onclick="changePage(0); return false;">1</a>
+                    <a class="page-link mx-1" href="#" onclick="changePage(0); return false;"
+                       style="border: 2px solid #6c5ce7; color: #6c5ce7; font-weight: 500; padding: 0.5rem 0.75rem; border-radius: 0.5rem;">
+                        1
+                    </a>
                  </li>`;
         if (startPage > 1) {
-            html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            html += `<li class="page-item disabled">
+                        <span class="page-link" style="border: none; color: #6c757d; padding: 0.5rem 0.5rem;">...</span>
+                     </li>`;
         }
     }
     
     for (let i = startPage; i <= endPage; i++) {
-        html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
-                    <a class="page-link" href="#" onclick="changePage(${i}); return false;">${i + 1}</a>
-                 </li>`;
+        if (i === currentPage) {
+            html += `<li class="page-item active">
+                        <span class="page-link mx-1" 
+                              style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                                     border: 2px solid #6c5ce7; color: white; font-weight: 600; 
+                                     padding: 0.5rem 0.75rem; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(108, 92, 231, 0.3);">
+                            ${i + 1}
+                        </span>
+                     </li>`;
+        } else {
+            html += `<li class="page-item">
+                        <a class="page-link mx-1" href="#" onclick="changePage(${i}); return false;"
+                           style="border: 2px solid #6c5ce7; color: #6c5ce7; font-weight: 500; 
+                                  padding: 0.5rem 0.75rem; border-radius: 0.5rem; transition: all 0.3s ease;"
+                           onmouseover="this.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'; this.style.color='white';"
+                           onmouseout="this.style.background=''; this.style.color='#6c5ce7';">
+                            ${i + 1}
+                        </a>
+                     </li>`;
+        }
     }
     
     if (endPage < totalPages - 1) {
         if (endPage < totalPages - 2) {
-            html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            html += `<li class="page-item disabled">
+                        <span class="page-link" style="border: none; color: #6c757d; padding: 0.5rem 0.5rem;">...</span>
+                     </li>`;
         }
         html += `<li class="page-item">
-                    <a class="page-link" href="#" onclick="changePage(${totalPages - 1}); return false;">${totalPages}</a>
+                    <a class="page-link mx-1" href="#" onclick="changePage(${totalPages - 1}); return false;"
+                       style="border: 2px solid #6c5ce7; color: #6c5ce7; font-weight: 500; padding: 0.5rem 0.75rem; border-radius: 0.5rem;">
+                        ${totalPages}
+                    </a>
                  </li>`;
     }
     
-    // Next button
+    // Next button with modern styling
     if (currentPage < totalPages - 1) {
         html += `<li class="page-item">
-                    <a class="page-link" href="#" onclick="changePage(${currentPage + 1}); return false;">
+                    <a class="page-link rounded-end" href="#" onclick="changePage(${currentPage + 1}); return false;"
+                       style="border: 2px solid #6c5ce7; color: #6c5ce7; font-weight: 500; padding: 0.5rem 0.75rem;">
                         <i class="fas fa-chevron-right"></i>
                     </a>
+                 </li>`;
+    } else {
+        html += `<li class="page-item disabled">
+                    <span class="page-link rounded-end" 
+                          style="border: 2px solid #dee2e6; color: #6c757d; padding: 0.5rem 0.75rem;">
+                        <i class="fas fa-chevron-right"></i>
+                    </span>
                  </li>`;
     }
     
