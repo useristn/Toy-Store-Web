@@ -28,7 +28,12 @@
                         <label class="form-label fw-bold">
                             <i class="fas fa-search me-1"></i>Tìm kiếm
                         </label>
-                        <input type="text" id="searchInput" class="form-control" placeholder="Nhập tên đồ chơi...">
+                        <div class="input-group">
+                            <input type="text" id="filterSearchInput" class="form-control" placeholder="Nhập tên đồ chơi...">
+                            <button class="btn btn-primary" type="button" id="filterSearchBtn">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Categories -->
@@ -108,6 +113,6 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script th:src="@{/js/auth.js}"></script>
-<script th:src="@{/js/products.js}" defer></script>
+<script th:src="@{/js/products.js(v=3.0)}" defer></script>
 </body>
 </html>

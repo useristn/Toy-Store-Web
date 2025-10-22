@@ -70,4 +70,14 @@ public class PageController {
     public String orders() {
         return "orders";
     }
+    
+    @GetMapping("/test-search")
+    public String testSearch() {
+        return "test-search";
+    }
+    
+    @GetMapping("/favorites")
+    public String favorites() {
+        return "favorites";
+    }
 }

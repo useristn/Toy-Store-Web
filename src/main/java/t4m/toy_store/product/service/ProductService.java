@@ -9,6 +9,7 @@ import t4m.toy_store.product.entity.Product;
 import t4m.toy_store.product.repository.CategoryRepository;
 import t4m.toy_store.product.repository.ProductRepository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -35,6 +36,10 @@ public class ProductService {
 
     public Page<Product> searchProducts(String keyword, Pageable pageable) {
         return productRepository.findByNameContainingIgnoreCase(keyword, pageable);
+    }
+    
+    public Page<Product> filterProducts(String keyword, Long categoryId, BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
+        return productRepository.findByFilters(keyword, categoryId, minPrice, maxPrice, pageable);
     }
 
     public List<Category> getAllCategories() {

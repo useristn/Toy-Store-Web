@@ -80,6 +80,9 @@ function displayProductDetail(product) {
                             <button class="btn btn-outline-primary btn-lg" onclick="buyNow(${product.id})" ${product.stock <= 0 ? 'disabled' : ''}>
                                 <i class="fas fa-rocket me-2"></i>Mua ngay
                             </button>
+                            <button class="btn btn-outline-danger btn-lg" style="border-width: 2px;" onclick="toggleFavorite(${product.id})" id="favoriteBtn-detail">
+                                <i class="far fa-heart me-2"></i>Thêm vào yêu thích
+                            </button>
                         </div>
                         
                         <hr class="my-4">
@@ -103,6 +106,9 @@ function displayProductDetail(product) {
             </div>
         </div>
     `;
+    
+    // Load favorite state after rendering
+    loadFavoriteState(product.id);
 }
 
 function loadRelatedProducts(categoryId) {
@@ -308,4 +314,119 @@ function showNotification(message, type = 'info') {
     setTimeout(() => {
         notification.remove();
     }, 3000);
+}
+
+// ===== FAVORITE FUNCTIONS =====
+
+async function toggleFavorite(productId) {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
+    
+    if (!token || !userEmail) {
+        showNotification('Vui lòng đăng nhập để thêm yêu thích!', 'warning');
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 1500);
+        return;
+    }
+    
+    const btn = document.getElementById('favoriteBtn-detail');
+    if (!btn) return;
+    
+    try {
+        // Check current state
+        const checkResponse = await fetch(`/api/favorites/check/${productId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'X-User-Email': userEmail
+            }
+        });
+        
+        if (checkResponse.status === 401) {
+            showNotification('Phiên đăng nhập đã hết hạn!', 'warning');
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 1500);
+            return;
+        }
+        
+        const checkData = await checkResponse.json();
+        const isFavorite = checkData.isFavorite;
+        
+        if (isFavorite) {
+            // Remove from favorites
+            const response = await fetch(`/api/favorites/remove/${productId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'X-User-Email': userEmail
+                }
+            });
+            
+            if (!response.ok) throw new Error('Cannot remove favorite');
+            
+            btn.innerHTML = '<i class="far fa-heart me-2"></i>Thêm vào yêu thích';
+            btn.classList.remove('btn-danger');
+            btn.classList.add('btn-outline-danger');
+            btn.style.borderWidth = '2px';
+            showNotification('Đã xóa khỏi yêu thích!', 'success');
+        } else {
+            // Add to favorites
+            const response = await fetch('/api/favorites/add', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    'X-User-Email': userEmail
+                },
+                body: JSON.stringify({ productId: productId })
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Cannot add to favorites');
+            }
+            
+            btn.innerHTML = '<i class="fas fa-heart me-2"></i>Đã yêu thích';
+            btn.classList.remove('btn-outline-danger');
+            btn.classList.add('btn-danger');
+            btn.style.borderWidth = '2px';
+            showNotification('Đã thêm vào yêu thích! ❤️', 'success');
+        }
+    } catch (error) {
+        console.error('Error toggling favorite:', error);
+        showNotification(error.message || 'Có lỗi xảy ra!', 'danger');
+    }
+}
+
+async function loadFavoriteState(productId) {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
+    
+    if (!token || !userEmail) return;
+    
+    try {
+        const response = await fetch(`/api/favorites/check/${productId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'X-User-Email': userEmail
+            }
+        });
+        
+        if (!response.ok) return;
+        
+        const data = await response.json();
+        const btn = document.getElementById('favoriteBtn-detail');
+        
+        if (btn && data.isFavorite) {
+            btn.innerHTML = '<i class="fas fa-heart me-2"></i>Đã yêu thích';
+            btn.classList.remove('btn-outline-danger');
+            btn.classList.add('btn-danger');
+            btn.style.borderWidth = '2px';
+        } else if (btn) {
+            btn.style.borderWidth = '2px';
+        }
+    } catch (error) {
+        console.error('Error loading favorite state:', error);
+    }
 }

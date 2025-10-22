@@ -10,6 +10,7 @@ import t4m.toy_store.product.entity.Category;
 import t4m.toy_store.product.entity.Product;
 import t4m.toy_store.product.service.ProductService;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -62,6 +63,19 @@ public class ProductController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size) {
         Page<Product> products = productService.searchProducts(keyword, PageRequest.of(page, size));
+        Page<ProductResponse> response = products.map(ProductResponse::fromEntity);
+        return ResponseEntity.ok(response);
+    }
+    
+    @GetMapping("/filter")
+    public ResponseEntity<Page<ProductResponse>> filterProducts(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
+        Page<Product> products = productService.filterProducts(keyword, categoryId, minPrice, maxPrice, PageRequest.of(page, size));
         Page<ProductResponse> response = products.map(ProductResponse::fromEntity);
         return ResponseEntity.ok(response);
     }

@@ -5,6 +5,8 @@ let currentPriceRange = null;
 let currentSort = 'newest';
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Products page loaded - Version 3.0');
+    
     // Get parameters from URL
     const urlParams = new URLSearchParams(window.location.search);
     const categoryParam = urlParams.get('category');
@@ -16,25 +18,62 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (searchParam) {
         currentSearch = searchParam;
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.value = searchParam;
+        // Set value for BOTH search inputs (header and filter)
+        const headerSearchInput = document.getElementById('searchInput');
+        const filterSearchInput = document.getElementById('filterSearchInput');
+        if (headerSearchInput) {
+            headerSearchInput.value = searchParam;
+        }
+        if (filterSearchInput) {
+            filterSearchInput.value = searchParam;
         }
     }
     
     loadCategories();
     loadProducts();
     
-    // Event listeners
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        searchInput.addEventListener('input', debounce(handleSearch, 500));
-        searchInput.addEventListener('keypress', function(e) {
+    // Header search (same as home.js)
+    const headerSearchBtn = document.getElementById('searchBtn');
+    const headerSearchInput = document.getElementById('searchInput');
+    
+    if (headerSearchBtn && headerSearchInput) {
+        console.log('Header search found, attaching listeners');
+        headerSearchBtn.addEventListener('click', function() {
+            performHeaderSearch();
+        });
+        
+        headerSearchInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                handleSearch(e);
+                performHeaderSearch();
             }
         });
+    }
+    
+    // Filter search (simple version - just reload page with search param)
+    const filterSearchBtn = document.getElementById('filterSearchBtn');
+    const filterSearchInput = document.getElementById('filterSearchInput');
+    
+    if (filterSearchBtn && filterSearchInput) {
+        console.log('Filter search found, attaching listeners');
+        
+        filterSearchBtn.addEventListener('click', function() {
+            performFilterSearch();
+        });
+        
+        filterSearchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                performFilterSearch();
+            }
+        });
+        
+        // Also debounced search on input
+        filterSearchInput.addEventListener('input', debounce(function() {
+            performFilterSearch();
+        }, 800));
+    } else {
+        console.error('Filter search input NOT found!');
     }
     
     const priceFilter = document.getElementById('priceFilter');
@@ -47,6 +86,50 @@ document.addEventListener('DOMContentLoaded', function() {
         sortFilter.addEventListener('change', handleSortChange);
     }
 });
+
+function performHeaderSearch() {
+    const searchInput = document.getElementById('searchInput');
+    if (!searchInput) return;
+    
+    const keyword = searchInput.value.trim();
+    if (keyword) {
+        console.log('Header search:', keyword);
+        window.location.href = `/products?search=${encodeURIComponent(keyword)}`;
+    } else {
+        window.location.href = `/products`;
+    }
+}
+
+function performFilterSearch() {
+    const searchInput = document.getElementById('filterSearchInput');
+    if (!searchInput) return;
+    
+    const keyword = searchInput.value.trim();
+    console.log('Filter search triggered:', keyword);
+    
+    // Visual feedback
+    searchInput.style.borderColor = '#0d6efd';
+    searchInput.style.boxShadow = '0 0 0 0.25rem rgba(13, 110, 253, 0.25)';
+    setTimeout(() => {
+        searchInput.style.borderColor = '';
+        searchInput.style.boxShadow = '';
+    }, 300);
+    
+    // Build URL with current filters
+    const url = new URL(window.location.href);
+    url.search = ''; // Clear all params
+    
+    if (keyword) {
+        url.searchParams.set('search', keyword);
+    }
+    
+    if (currentCategory) {
+        url.searchParams.set('category', currentCategory);
+    }
+    
+    console.log('Redirecting to:', url.toString());
+    window.location.href = url.toString();
+}
 
 function loadCategories() {
     fetch('/api/products/categories')
@@ -103,22 +186,6 @@ function handleSortChange(e) {
     loadProducts();
 }
 
-function handleSearch(e) {
-    currentSearch = e.target.value.trim();
-    currentPage = 0;
-    
-    // Update URL without reload
-    const url = new URL(window.location);
-    if (currentSearch) {
-        url.searchParams.set('search', currentSearch);
-    } else {
-        url.searchParams.delete('search');
-    }
-    window.history.pushState({}, '', url);
-    
-    loadProducts();
-}
-
 function loadProducts() {
     const container = document.getElementById('productsContainer');
     if (!container) return;
@@ -132,17 +199,29 @@ function loadProducts() {
         </div>
     `;
     
-    let url = `/api/products?page=${currentPage}&size=12`;
+    // Build filter URL with all parameters
+    let url = `/api/products/filter?page=${currentPage}&size=12`;
     
-    // Apply category filter
+    // Add search keyword
+    if (currentSearch && currentSearch.trim() !== '') {
+        url += `&keyword=${encodeURIComponent(currentSearch.trim())}`;
+        console.log('Searching with keyword:', currentSearch);
+    }
+    
+    // Add category filter
     if (currentCategory) {
-        url = `/api/products/category/${currentCategory}?page=${currentPage}&size=12`;
+        url += `&categoryId=${currentCategory}`;
+        console.log('Filtering by category:', currentCategory);
     }
     
-    // Apply search filter
-    if (currentSearch) {
-        url = `/api/products/search?keyword=${encodeURIComponent(currentSearch)}&page=${currentPage}&size=12`;
+    // Add price range filter
+    if (currentPriceRange) {
+        const [minPrice, maxPrice] = currentPriceRange.split('-').map(Number);
+        url += `&minPrice=${minPrice}&maxPrice=${maxPrice}`;
+        console.log('Filtering by price range:', minPrice, '-', maxPrice);
     }
+    
+    console.log('Fetching products from:', url);
     
     fetch(url)
         .then(response => {
@@ -152,19 +231,36 @@ function loadProducts() {
         .then(data => {
             let products = data.content;
             
-            // Client-side price filtering
-            if (currentPriceRange) {
-                products = filterByPrice(products, currentPriceRange);
-            }
-            
-            // Client-side sorting
+            // Client-side sorting only
             products = sortProducts(products, currentSort);
             
             displayProducts(products);
             updatePagination(data);
             
+            // Update product count with search info
             const countEl = document.getElementById('productCount');
-            if (countEl) countEl.textContent = products.length;
+            if (countEl) {
+                const totalElements = data.totalElements || products.length;
+                countEl.textContent = totalElements;
+                
+                // Show search info if searching
+                const searchInfo = document.getElementById('searchInfo');
+                if (currentSearch) {
+                    if (!searchInfo) {
+                        const badge = document.createElement('span');
+                        badge.id = 'searchInfo';
+                        badge.className = 'badge bg-info ms-2';
+                        badge.textContent = `Tìm kiếm: "${currentSearch}"`;
+                        countEl.parentElement.appendChild(badge);
+                    } else {
+                        searchInfo.textContent = `Tìm kiếm: "${currentSearch}"`;
+                    }
+                } else if (searchInfo) {
+                    searchInfo.remove();
+                }
+            }
+            
+            console.log(`Loaded ${products.length} products (total: ${data.totalElements})`);
         })
         .catch(error => {
             console.error('Error loading products:', error);
@@ -178,17 +274,6 @@ function loadProducts() {
                 </div>
             `;
         });
-}
-
-function filterByPrice(products, priceRange) {
-    if (!priceRange) return products;
-    
-    const [min, max] = priceRange.split('-').map(Number);
-    
-    return products.filter(product => {
-        const price = product.discountPrice || product.price;
-        return price >= min && price <= max;
-    });
 }
 
 function sortProducts(products, sortType) {
@@ -263,9 +348,21 @@ function displayProducts(products) {
                                     `<div class="h5 text-danger mb-0">${formatPrice(product.price)}</div>`
                                 }
                             </div>
-                            <button class="btn btn-outline-primary btn-sm" onclick="viewProduct(${product.id})" title="Xem chi tiết">
-                                <i class="fas fa-eye"></i>
-                            </button>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-outline-danger btn-sm rounded-circle" 
+                                        style="width: 40px; height: 40px; padding: 0; border-width: 2px;" 
+                                        onclick="toggleFavorite(${product.id}, event)" 
+                                        title="Yêu thích" 
+                                        id="favoriteBtn-${product.id}">
+                                    <i class="far fa-heart"></i>
+                                </button>
+                                <button class="btn btn-outline-primary btn-sm rounded-circle" 
+                                        style="width: 40px; height: 40px; padding: 0; border-width: 2px;" 
+                                        onclick="viewProduct(${product.id})" 
+                                        title="Xem chi tiết">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="d-grid gap-2">
                             <button class="btn btn-outline-success btn-sm" onclick="addToCart(${product.id}, event)" title="Thêm vào giỏ">
@@ -280,6 +377,9 @@ function displayProducts(products) {
             </div>
         </div>
     `).join('');
+    
+    // Load favorite states after rendering
+    loadFavoriteStates();
 }
 
 function resetFilters() {
@@ -522,4 +622,122 @@ function showToast(message, type = 'success') {
         toastDiv.style.transition = 'opacity 0.5s';
         setTimeout(() => toastDiv.remove(), 500);
     }, 2000);
+}
+
+// ===== FAVORITE FUNCTIONS =====
+
+async function toggleFavorite(productId, event) {
+    if (event) event.stopPropagation();
+    
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
+    
+    if (!token || !userEmail) {
+        showToast('Vui lòng đăng nhập để thêm yêu thích!', 'warning');
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 1500);
+        return;
+    }
+    
+    const btn = document.getElementById(`favoriteBtn-${productId}`);
+    if (!btn) return;
+    
+    try {
+        // Check current state
+        const checkResponse = await fetch(`/api/favorites/check/${productId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'X-User-Email': userEmail
+            }
+        });
+        
+        if (checkResponse.status === 401) {
+            showToast('Phiên đăng nhập đã hết hạn!', 'warning');
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 1500);
+            return;
+        }
+        
+        const checkData = await checkResponse.json();
+        const isFavorite = checkData.isFavorite;
+        
+        if (isFavorite) {
+            // Remove from favorites
+            const response = await fetch(`/api/favorites/remove/${productId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'X-User-Email': userEmail
+                }
+            });
+            
+            if (!response.ok) throw new Error('Cannot remove favorite');
+            
+            btn.innerHTML = '<i class="far fa-heart"></i>';
+            btn.classList.remove('btn-danger');
+            btn.classList.add('btn-outline-danger');
+            btn.style.borderWidth = '2px';
+            showToast('Đã xóa khỏi yêu thích!', 'success');
+        } else {
+            // Add to favorites
+            const response = await fetch('/api/favorites/add', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    'X-User-Email': userEmail
+                },
+                body: JSON.stringify({ productId: productId })
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Cannot add to favorites');
+            }
+            
+            btn.innerHTML = '<i class="fas fa-heart"></i>';
+            btn.classList.remove('btn-outline-danger');
+            btn.classList.add('btn-danger');
+            btn.style.borderWidth = '2px';
+            showToast('Đã thêm vào yêu thích! ❤️', 'success');
+        }
+    } catch (error) {
+        console.error('Error toggling favorite:', error);
+        showToast(error.message || 'Có lỗi xảy ra!', 'danger');
+    }
+}
+
+async function loadFavoriteStates() {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
+    
+    if (!token || !userEmail) return;
+    
+    try {
+        const response = await fetch('/api/favorites/product-ids', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'X-User-Email': userEmail
+            }
+        });
+        
+        if (!response.ok) return;
+        
+        const favoriteIds = await response.json();
+        
+        // Update UI for favorite products
+        favoriteIds.forEach(productId => {
+            const btn = document.getElementById(`favoriteBtn-${productId}`);
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-heart"></i>';
+                btn.classList.remove('btn-outline-danger');
+                btn.classList.add('btn-danger');
+                btn.style.borderWidth = '2px';
+            }
+        });
+    } catch (error) {
+        console.error('Error loading favorite states:', error);
+    }
 }
