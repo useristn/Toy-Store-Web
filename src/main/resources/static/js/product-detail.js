@@ -199,9 +199,71 @@ async function addToCart(id) {
     }
 }
 
-function buyNow(id) {
-    const quantity = document.getElementById('quantity').value;
-    alert(`Mua ngay ${quantity} sản phẩm!`);
+async function buyNow(id) {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
+    
+    if (!token || !userEmail) {
+        showNotification('Vui lòng đăng nhập để mua hàng!', 'warning');
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 1500);
+        return;
+    }
+
+    const quantity = parseInt(document.getElementById('quantity').value);
+    
+    try {
+        // Disable button and show loading
+        const buyNowBtn = event.target.closest('button');
+        const originalContent = buyNowBtn.innerHTML;
+        buyNowBtn.disabled = true;
+        buyNowBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...';
+
+        // Add to cart first
+        const response = await fetch('/api/cart/add', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'X-User-Email': userEmail
+            },
+            body: JSON.stringify({
+                productId: id,
+                quantity: quantity
+            })
+        });
+
+        if (response.status === 401) {
+            showNotification('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!', 'warning');
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 1500);
+            return;
+        }
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Không thể thêm vào giỏ hàng');
+        }
+
+        // Success - redirect to checkout
+        showNotification('Đang chuyển đến trang thanh toán...', 'success');
+        
+        // Small delay for better UX
+        setTimeout(() => {
+            window.location.href = '/checkout';
+        }, 800);
+
+    } catch (error) {
+        console.error('Error buying now:', error);
+        showNotification(error.message || 'Không thể mua hàng. Vui lòng thử lại!', 'danger');
+        
+        // Re-enable button
+        const buyNowBtn = event.target.closest('button');
+        buyNowBtn.disabled = false;
+        buyNowBtn.innerHTML = '<i class="fas fa-rocket me-2"></i>Mua ngay';
+    }
 }
 
 function viewProduct(id) {

@@ -69,19 +69,22 @@ function displayFeaturedProducts(products) {
                      alt="${product.name}"
                      style="cursor: pointer;"
                      onclick="viewProduct(${product.id})">
-                <div class="card-body">
+                <div class="card-body d-flex flex-column">
                     <h5 class="card-title" style="cursor: pointer;" onclick="viewProduct(${product.id})">${product.name}</h5>
-                    <p class="card-text text-muted">${product.description ? (product.description.length > 50 ? product.description.substring(0, 50) + '...' : product.description) : 'Sản phẩm tuyệt vời!'}</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            ${product.discountPrice ? 
-                                `<span class="h5 text-danger mb-0">${formatPrice(product.discountPrice)}</span>
-                                 <span class="text-muted text-decoration-line-through small d-block">${formatPrice(product.price)}</span>` :
-                                `<span class="h5 text-danger mb-0">${formatPrice(product.price)}</span>`
-                            }
-                        </div>
-                        <button class="btn btn-outline-primary btn-sm" onclick="addToCart(${product.id}, event)">
-                            <i class="fas fa-cart-plus"></i>
+                    <p class="card-text text-muted flex-grow-1">${product.description ? (product.description.length > 50 ? product.description.substring(0, 50) + '...' : product.description) : 'Sản phẩm tuyệt vời!'}</p>
+                    <div class="mb-2">
+                        ${product.discountPrice ? 
+                            `<div class="h5 text-danger mb-0">${formatPrice(product.discountPrice)}</div>
+                             <small class="text-muted text-decoration-line-through">${formatPrice(product.price)}</small>` :
+                            `<div class="h5 text-danger mb-0">${formatPrice(product.price)}</div>`
+                        }
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-success btn-sm" onclick="addToCart(${product.id}, event)">
+                            <i class="fas fa-cart-plus me-1"></i>Thêm vào giỏ
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="buyNow(${product.id}, event)">
+                            <i class="fas fa-rocket me-1"></i>Mua ngay
                         </button>
                     </div>
                 </div>
@@ -146,6 +149,63 @@ async function addToCart(id, event) {
     } catch (error) {
         console.error('Error adding to cart:', error);
         showToast(error.message || 'Không thể thêm vào giỏ hàng!', 'danger');
+    }
+}
+
+async function buyNow(id, event) {
+    if (event) {
+        event.stopPropagation();
+    }
+    
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
+    
+    if (!token || !userEmail) {
+        showToast('Vui lòng đăng nhập để mua hàng!', 'warning');
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 1500);
+        return;
+    }
+    
+    try {
+        // Add to cart first
+        const response = await fetch('/api/cart/add', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'X-User-Email': userEmail
+            },
+            body: JSON.stringify({
+                productId: id,
+                quantity: 1
+            })
+        });
+        
+        if (response.status === 401) {
+            showToast('Phiên đăng nhập đã hết hạn!', 'warning');
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 1500);
+            return;
+        }
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Không thể thêm vào giỏ hàng');
+        }
+        
+        // Success - redirect to checkout
+        showToast('Đang chuyển đến trang thanh toán...', 'success');
+        
+        setTimeout(() => {
+            window.location.href = '/checkout';
+        }, 800);
+        
+    } catch (error) {
+        console.error('Error buying now:', error);
+        showToast(error.message || 'Không thể mua hàng!', 'danger');
     }
 }
 

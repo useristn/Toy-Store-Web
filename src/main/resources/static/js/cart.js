@@ -8,11 +8,11 @@ document.addEventListener('DOMContentLoaded', function() {
         clearCartBtn.addEventListener('click', clearCart);
     }
 
-    // Checkout button (placeholder for now)
+    // Checkout button
     const checkoutBtn = document.getElementById('checkoutBtn');
     if (checkoutBtn) {
         checkoutBtn.addEventListener('click', function() {
-            alert('Chức năng thanh toán sẽ được triển khai sau!');
+            window.location.href = '/checkout';
         });
     }
 });

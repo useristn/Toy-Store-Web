@@ -386,7 +386,7 @@ body {
 }
 
 .featured-card .btn:hover {
-    transform: scale(1.2) rotate(360deg);
+    transform: scale(1.05);
 }
 
 /* Profile Page Styles */
@@ -522,4 +522,73 @@ body {
 .cosmic-btn:hover {
     transform: scale(1.05) translateY(-2px);
     box-shadow: 0 8px 25px rgba(74, 20, 140, 0.3);
+}
+
+/* Checkout Page Styles */
+.payment-option {
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 15px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.payment-option:hover {
+    border-color: var(--nebula-cyan);
+    background-color: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.payment-option input[type="radio"]:checked ~ label {
+    border-color: var(--space-blue);
+}
+
+.payment-option .form-check-input:checked {
+    background-color: var(--space-blue);
+    border-color: var(--space-blue);
+}
+
+.checkout-item,
+.order-item {
+    transition: background-color 0.2s ease;
+}
+
+.checkout-item:hover,
+.order-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* Order Confirmation Styles */
+.success-animation {
+    animation: bounceIn 0.6s ease-out;
+}
+
+@keyframes bounceIn {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.order-number-box {
+    animation: fadeInUp 0.8s ease-out 0.3s both;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

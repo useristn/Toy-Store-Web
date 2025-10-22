@@ -254,20 +254,25 @@ function displayProducts(products) {
                     
                     ${product.category ? `<div class="mb-2"><span class="badge bg-primary">${product.category.icon || ''} ${product.category.name}</span></div>` : ''}
                     
-                    <div class="d-flex justify-content-between align-items-end mt-auto">
-                        <div>
-                            ${product.discountPrice ? 
-                                `<div class="h5 text-danger mb-0">${formatPrice(product.discountPrice)}</div>
-                                 <small class="text-muted text-decoration-line-through">${formatPrice(product.price)}</small>` :
-                                `<div class="h5 text-danger mb-0">${formatPrice(product.price)}</div>`
-                            }
-                        </div>
-                        <div>
-                            <button class="btn btn-outline-primary btn-sm me-1" onclick="viewProduct(${product.id})" title="Xem chi tiết">
+                    <div class="mt-auto">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                ${product.discountPrice ? 
+                                    `<div class="h5 text-danger mb-0">${formatPrice(product.discountPrice)}</div>
+                                     <small class="text-muted text-decoration-line-through">${formatPrice(product.price)}</small>` :
+                                    `<div class="h5 text-danger mb-0">${formatPrice(product.price)}</div>`
+                                }
+                            </div>
+                            <button class="btn btn-outline-primary btn-sm" onclick="viewProduct(${product.id})" title="Xem chi tiết">
                                 <i class="fas fa-eye"></i>
                             </button>
+                        </div>
+                        <div class="d-grid gap-2">
                             <button class="btn btn-outline-success btn-sm" onclick="addToCart(${product.id}, event)" title="Thêm vào giỏ">
-                                <i class="fas fa-cart-plus"></i>
+                                <i class="fas fa-cart-plus me-1"></i>Thêm vào giỏ
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="buyNow(${product.id}, event)" title="Mua ngay">
+                                <i class="fas fa-rocket me-1"></i>Mua ngay
                             </button>
                         </div>
                     </div>
@@ -447,6 +452,61 @@ function debounce(func, wait) {
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
+}
+
+async function buyNow(id, event) {
+    if (event) event.stopPropagation();
+    
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
+    
+    if (!token || !userEmail) {
+        showToast('Vui lòng đăng nhập để mua hàng!', 'warning');
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 1500);
+        return;
+    }
+    
+    try {
+        // Add to cart first
+        const response = await fetch('/api/cart/add', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'X-User-Email': userEmail
+            },
+            body: JSON.stringify({
+                productId: id,
+                quantity: 1
+            })
+        });
+        
+        if (response.status === 401) {
+            showToast('Phiên đăng nhập đã hết hạn!', 'warning');
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 1500);
+            return;
+        }
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Không thể thêm vào giỏ hàng');
+        }
+        
+        // Success - redirect to checkout
+        showToast('Đang chuyển đến trang thanh toán...', 'success');
+        
+        setTimeout(() => {
+            window.location.href = '/checkout';
+        }, 800);
+        
+    } catch (error) {
+        console.error('Error buying now:', error);
+        showToast(error.message || 'Không thể mua hàng!', 'danger');
+    }
 }
 
 function showToast(message, type = 'success') {

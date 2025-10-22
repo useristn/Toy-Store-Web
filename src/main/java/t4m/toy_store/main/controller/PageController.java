@@ -55,4 +55,19 @@ public class PageController {
     public String cart() {
         return "cart";
     }
+
+    @GetMapping("/checkout")
+    public String checkout() {
+        return "checkout";
+    }
+
+    @GetMapping("/order-confirmation/{orderNumber}")
+    public String orderConfirmation() {
+        return "order-confirmation";
+    }
+
+    @GetMapping("/orders")
+    public String orders() {
+        return "orders";
+    }
 }
