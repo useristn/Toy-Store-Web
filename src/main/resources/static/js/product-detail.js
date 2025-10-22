@@ -147,8 +147,10 @@ async function addToCart(id) {
     const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
     
     if (!token || !userEmail) {
-        alert('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!');
-        window.location.href = '/login';
+        showNotification('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!', 'warning');
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 1500);
         return;
     }
 
@@ -169,8 +171,10 @@ async function addToCart(id) {
         });
 
         if (response.status === 401) {
-            alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!');
-            window.location.href = '/login';
+            showNotification('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!', 'warning');
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 1500);
             return;
         }
 
@@ -179,16 +183,19 @@ async function addToCart(id) {
             throw new Error(error.error || 'Không thể thêm vào giỏ hàng');
         }
 
-        // Show success notification
-        showNotification('Đã thêm sản phẩm vào giỏ hàng!', 'success');
+        // Show success notification with quantity
+        const message = quantity > 1 
+            ? `Đã thêm ${quantity} sản phẩm vào giỏ hàng! 🚀` 
+            : 'Đã thêm vào giỏ hàng! 🚀';
+        showNotification(message, 'success');
         
-        // Optionally ask if user wants to go to cart
-        if (confirm('Đã thêm vào giỏ hàng! Bạn có muốn xem giỏ hàng không?')) {
-            window.location.href = '/cart';
+        // Update cart badge in header
+        if (typeof updateCartBadge === 'function') {
+            updateCartBadge();
         }
     } catch (error) {
         console.error('Error adding to cart:', error);
-        showNotification(error.message || 'Không thể thêm vào giỏ hàng!', 'error');
+        showNotification(error.message || 'Không thể thêm vào giỏ hàng!', 'danger');
     }
 }
 
@@ -209,9 +216,26 @@ function formatPrice(price) {
 function showNotification(message, type = 'info') {
     // Create notification element
     const notification = document.createElement('div');
-    notification.className = `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'warning'} alert-dismissible fade show position-fixed`;
+    
+    // Map type to Bootstrap alert class
+    let alertClass = 'info';
+    let icon = 'info-circle';
+    
+    if (type === 'success') {
+        alertClass = 'success';
+        icon = 'check-circle';
+    } else if (type === 'warning') {
+        alertClass = 'warning';
+        icon = 'exclamation-triangle';
+    } else if (type === 'danger' || type === 'error') {
+        alertClass = 'danger';
+        icon = 'exclamation-circle';
+    }
+    
+    notification.className = `alert alert-${alertClass} alert-dismissible fade show position-fixed`;
     notification.style.cssText = 'top: 80px; right: 20px; z-index: 9999; min-width: 300px;';
     notification.innerHTML = `
+        <i class="fas fa-${icon} me-2"></i>
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;

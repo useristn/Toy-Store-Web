@@ -147,7 +147,13 @@ public class CartService {
             throw new RuntimeException("Unauthorized access to cart item");
         }
 
+        // Remove from cart's collection first (for orphanRemoval to work properly)
+        Cart cart = cartItem.getCart();
+        cart.getCartItems().remove(cartItem);
+        
+        // Then delete the cart item
         cartItemRepository.delete(cartItem);
+        cartItemRepository.flush(); // Force immediate deletion
 
         return getCartByUser(userEmail);
     }

@@ -654,9 +654,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // Update cart badge with number of items
 async function updateCartBadge() {
     const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
     const cartBadge = document.getElementById('cartBadge');
     
-    if (!token || !cartBadge) {
+    if (!token || !userEmail || !cartBadge) {
         return;
     }
 
@@ -664,17 +665,27 @@ async function updateCartBadge() {
         const response = await fetch('/api/cart', {
             headers: {
                 'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-User-Email': userEmail
             }
         });
 
         if (response.ok) {
             const cart = await response.json();
             const totalItems = cart.totalItems || 0;
-            cartBadge.textContent = totalItems;
             
+            // Update badge text (show 99+ if more than 99)
+            cartBadge.textContent = totalItems > 99 ? '99+' : totalItems;
+            
+            // Show/hide badge and add pulse animation
             if (totalItems > 0) {
                 cartBadge.classList.remove('d-none');
+                
+                // Add pulse animation
+                cartBadge.style.animation = 'none';
+                setTimeout(() => {
+                    cartBadge.style.animation = 'pulse 0.5s ease-in-out';
+                }, 10);
             } else {
                 cartBadge.classList.add('d-none');
             }

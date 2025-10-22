@@ -94,32 +94,76 @@ function viewProduct(id) {
     window.location.href = `/product/${id}`;
 }
 
-function addToCart(id, event) {
+async function addToCart(id, event) {
     if (event) {
         event.stopPropagation();
     }
     
-    // TODO: Implement add to cart functionality
-    const Toast = {
-        show: function(message, type = 'success') {
-            const toastDiv = document.createElement('div');
-            toastDiv.className = `alert alert-${type} position-fixed top-0 start-50 translate-middle-x mt-3`;
-            toastDiv.style.zIndex = '9999';
-            toastDiv.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
-                ${message}
-            `;
-            document.body.appendChild(toastDiv);
-            
-            setTimeout(() => {
-                toastDiv.style.opacity = '0';
-                toastDiv.style.transition = 'opacity 0.5s';
-                setTimeout(() => toastDiv.remove(), 500);
-            }, 2000);
-        }
-    };
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
     
-    Toast.show('Đã thêm vào giỏ hàng! 🚀', 'success');
+    if (!token || !userEmail) {
+        showToast('Vui lòng đăng nhập để thêm vào giỏ hàng!', 'warning');
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 1500);
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/cart/add', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'X-User-Email': userEmail
+            },
+            body: JSON.stringify({
+                productId: id,
+                quantity: 1
+            })
+        });
+        
+        if (response.status === 401) {
+            showToast('Phiên đăng nhập đã hết hạn!', 'warning');
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 1500);
+            return;
+        }
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Không thể thêm vào giỏ hàng');
+        }
+        
+        showToast('Đã thêm vào giỏ hàng! 🚀', 'success');
+        
+        // Update cart badge
+        if (typeof updateCartBadge === 'function') {
+            updateCartBadge();
+        }
+    } catch (error) {
+        console.error('Error adding to cart:', error);
+        showToast(error.message || 'Không thể thêm vào giỏ hàng!', 'danger');
+    }
+}
+
+function showToast(message, type = 'success') {
+    const toastDiv = document.createElement('div');
+    toastDiv.className = `alert alert-${type} position-fixed top-0 start-50 translate-middle-x mt-3`;
+    toastDiv.style.zIndex = '9999';
+    toastDiv.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'exclamation-circle'} me-2"></i>
+        ${message}
+    `;
+    document.body.appendChild(toastDiv);
+    
+    setTimeout(() => {
+        toastDiv.style.opacity = '0';
+        toastDiv.style.transition = 'opacity 0.5s';
+        setTimeout(() => toastDiv.remove(), 500);
+    }, 2000);
 }
 
 function formatPrice(price) {

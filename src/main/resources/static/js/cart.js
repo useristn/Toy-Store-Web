@@ -19,11 +19,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Load cart from API
 async function loadCart() {
+    console.log('loadCart() called');
     const cartLoading = document.getElementById('cartLoading');
     const emptyCartMessage = document.getElementById('emptyCartMessage');
     const cartItemsList = document.getElementById('cartItemsList');
     const checkoutBtn = document.getElementById('checkoutBtn');
     const clearCartBtn = document.getElementById('clearCartBtn');
+
+    // Show loading
+    if (cartLoading) cartLoading.style.display = 'block';
 
     try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('token');
@@ -52,11 +56,13 @@ async function loadCart() {
         }
 
         const cart = await response.json();
+        console.log('Cart loaded:', cart);
 
         // Hide loading
         cartLoading.style.display = 'none';
 
         if (cart.items && cart.items.length > 0) {
+            console.log('Displaying', cart.items.length, 'items');
             // Show cart items
             emptyCartMessage.style.display = 'none';
             cartItemsList.innerHTML = '';
@@ -87,12 +93,14 @@ async function loadCart() {
         }
     } catch (error) {
         console.error('Error loading cart:', error);
-        cartLoading.innerHTML = `
+        if (cartLoading) {
+            cartLoading.innerHTML = `
             <div class="alert alert-danger">
                 <i class="fas fa-exclamation-circle me-2"></i>
                 Không thể tải giỏ hàng. Vui lòng thử lại sau.
             </div>
         `;
+        }
     }
 }
 
@@ -210,6 +218,11 @@ async function updateCartItemQuantity(itemId, quantity) {
         // Update summary
         updateCartSummary(cart);
         showNotification('Đã cập nhật số lượng!', 'success');
+        
+        // Update cart badge
+        if (typeof updateCartBadge === 'function') {
+            updateCartBadge();
+        }
     } catch (error) {
         console.error('Error updating cart item:', error);
         showNotification(error.message || 'Không thể cập nhật số lượng!', 'error');
@@ -220,9 +233,7 @@ async function updateCartItemQuantity(itemId, quantity) {
 
 // Remove cart item
 async function removeCartItem(itemId) {
-    if (!confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?')) {
-        return;
-    }
+    console.log('Attempting to remove item with ID:', itemId);
 
     try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('token');
@@ -233,6 +244,7 @@ async function removeCartItem(itemId) {
             return;
         }
 
+        console.log('Sending DELETE request to:', `/api/cart/items/${itemId}`);
         const response = await fetch(`/api/cart/items/${itemId}`, {
             method: 'DELETE',
             headers: {
@@ -242,6 +254,8 @@ async function removeCartItem(itemId) {
             }
         });
 
+        console.log('Response status:', response.status);
+        
         if (response.status === 401) {
             window.location.href = '/login';
             return;
@@ -249,12 +263,21 @@ async function removeCartItem(itemId) {
 
         if (!response.ok) {
             const error = await response.json();
+            console.error('Error response:', error);
             throw new Error(error.error || 'Failed to remove cart item');
         }
 
+        console.log('Successfully removed item');
         showNotification('Đã xóa sản phẩm khỏi giỏ hàng!', 'success');
         
+        // Update cart badge immediately
+        if (typeof updateCartBadge === 'function') {
+            console.log('Updating cart badge...');
+            updateCartBadge();
+        }
+        
         // Reload cart
+        console.log('Reloading cart...');
         loadCart();
     } catch (error) {
         console.error('Error removing cart item:', error);
@@ -264,10 +287,6 @@ async function removeCartItem(itemId) {
 
 // Clear entire cart
 async function clearCart() {
-    if (!confirm('Bạn có chắc muốn xóa toàn bộ giỏ hàng?')) {
-        return;
-    }
-
     try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('token');
         const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
@@ -297,6 +316,11 @@ async function clearCart() {
         }
 
         showNotification('Đã xóa toàn bộ giỏ hàng!', 'success');
+        
+        // Reset cart badge immediately
+        if (typeof updateCartBadge === 'function') {
+            updateCartBadge();
+        }
         
         // Reload cart
         loadCart();
