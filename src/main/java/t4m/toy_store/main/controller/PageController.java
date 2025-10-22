@@ -80,4 +80,20 @@ public class PageController {
     public String favorites() {
         return "favorites";
     }
+
+    // Admin pages
+    @GetMapping("/admin")
+    public String adminDashboard() {
+        return "admin/admin-dashboard";
+    }
+
+    @GetMapping("/admin/products")
+    public String adminProducts() {
+        return "admin/admin-products";
+    }
+
+    @GetMapping("/admin/orders")
+    public String adminOrders() {
+        return "admin/admin-orders";
+    }
 }

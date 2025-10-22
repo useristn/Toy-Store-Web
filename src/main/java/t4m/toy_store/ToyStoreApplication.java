@@ -4,14 +4,18 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import t4m.toy_store.auth.entity.Role;
+import t4m.toy_store.auth.entity.User;
 import t4m.toy_store.auth.repository.RoleRepository;
+import t4m.toy_store.auth.repository.UserRepository;
 import t4m.toy_store.product.entity.Category;
 import t4m.toy_store.product.entity.Product;
 import t4m.toy_store.product.repository.CategoryRepository;
 import t4m.toy_store.product.repository.ProductRepository;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -36,6 +40,42 @@ public class ToyStoreApplication {
                 } else {
                     System.out.println("Role already exists: " + rname);
                 }
+            }
+        };
+    }
+
+    @Bean
+    public ApplicationRunner initAdminUser(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+        return args -> {
+            String adminEmail = "admin@toystore.com";
+            
+            // Check if admin user already exists
+            if (userRepository.findByEmail(adminEmail).isEmpty()) {
+                // Get ADMIN role
+                Role adminRole = roleRepository.findByRname("ROLE_ADMIN")
+                    .orElseThrow(() -> new RuntimeException("ROLE_ADMIN not found. Please ensure initRoles runs first."));
+                
+                // Create admin user
+                User adminUser = new User();
+                adminUser.setEmail(adminEmail);
+                adminUser.setPasswd(passwordEncoder.encode("admin123")); // Password: admin123
+                adminUser.setName("Admin User");
+                adminUser.setPhone("0987654321");
+                adminUser.setAddress("Admin Office");
+                adminUser.setActivated(true);
+                adminUser.setCreated(LocalDateTime.now());
+                adminUser.setUpdated(LocalDateTime.now());
+                adminUser.getRoles().add(adminRole);
+                
+                userRepository.save(adminUser);
+                
+                System.out.println("==================================================");
+                System.out.println("✅ Admin user created successfully!");
+                System.out.println("📧 Email: " + adminEmail);
+                System.out.println("🔑 Password: admin123");
+                System.out.println("==================================================");
+            } else {
+                System.out.println("Admin user already exists: " + adminEmail);
             }
         };
     }

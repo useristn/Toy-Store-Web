@@ -7,12 +7,13 @@ document.addEventListener('DOMContentLoaded', function() {
 function checkAuthStatus() {
     const token = localStorage.getItem('authToken') || localStorage.getItem('token');
     const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
+    const userRole = localStorage.getItem('userRole');
 
     const authButtons = document.getElementById('authButtons');
     const userMenu = document.getElementById('userMenu');
     const userName = document.getElementById('userName');
 
-    console.log('Checking auth:', { token: !!token, email: userEmail });
+    console.log('Checking auth:', { token: !!token, email: userEmail, role: userRole });
 
     if (token && userEmail) {
         // User is logged in
@@ -22,6 +23,14 @@ function checkAuthStatus() {
             if (userName) {
                 userName.textContent = userEmail.split('@')[0];
             }
+        }
+
+        // Show admin menu if user is admin
+        if (userRole && userRole.includes('ADMIN')) {
+            const adminMenuLink = document.getElementById('adminMenuLink');
+            const adminDashboardLink = document.getElementById('adminDashboardLink');
+            if (adminMenuLink) adminMenuLink.classList.remove('d-none');
+            if (adminDashboardLink) adminDashboardLink.classList.remove('d-none');
         }
     } else {
         // User is not logged in
@@ -39,6 +48,7 @@ function checkAuthStatus() {
             localStorage.removeItem('authEmail');
             localStorage.removeItem('token');
             localStorage.removeItem('userEmail');
+            localStorage.removeItem('userRole');
             showMessage('loginMessage', 'Đã đăng xuất! Hẹn gặp lại phi hành gia! 👋', 'success');
             setTimeout(() => {
                 window.location.href = '/';
@@ -180,10 +190,24 @@ function handleLogin(event) {
             // 1. Handle successful login
             localStorage.setItem('authToken', data.token);
             localStorage.setItem('authEmail', data.email || email);
-            displayMessage('loginMessage', data.message || 'Đăng nhập thành công! Đang chuyển đến trang cá nhân...');
-            setTimeout(() => {
-                window.location.href = '/profile';
-            }, 1500);
+            
+            // Store user role if provided
+            if (data.role) {
+                localStorage.setItem('userRole', data.role);
+            }
+            
+            // Check if user is admin and redirect accordingly
+            if (data.role && data.role.includes('ADMIN')) {
+                displayMessage('loginMessage', 'Đăng nhập Admin thành công! Đang chuyển đến trang quản trị...');
+                setTimeout(() => {
+                    window.location.href = '/admin';
+                }, 1500);
+            } else {
+                displayMessage('loginMessage', data.message || 'Đăng nhập thành công! Đang chuyển đến trang cá nhân...');
+                setTimeout(() => {
+                    window.location.href = '/profile';
+                }, 1500);
+            }
         } else {
             // 2. Handle login failure
             // Check for the specific "Account not activated" message from the backend.

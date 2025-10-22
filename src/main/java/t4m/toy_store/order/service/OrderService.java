@@ -3,6 +3,8 @@ package t4m.toy_store.order.service;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import t4m.toy_store.auth.entity.User;
@@ -143,5 +145,35 @@ public class OrderService {
                 .items(items)
                 .createdAt(order.getCreatedAt())
                 .build();
+    }
+
+    // Admin methods
+    public Page<Order> getAllOrders(Pageable pageable) {
+        return orderRepository.findAll(pageable);
+    }
+
+    public Page<Order> getOrdersByStatus(OrderStatus status, Pageable pageable) {
+        return orderRepository.findByStatus(status, pageable);
+    }
+
+    public Order getOrderById(Long id) {
+        return orderRepository.findById(id).orElse(null);
+    }
+
+    @Transactional
+    public Order updateOrderStatus(Long id, OrderStatus newStatus) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        
+        order.setStatus(newStatus);
+        return orderRepository.save(order);
+    }
+
+    public long getTotalOrders() {
+        return orderRepository.count();
+    }
+
+    public long getOrderCountByStatus(OrderStatus status) {
+        return orderRepository.countByStatus(status);
     }
 }
