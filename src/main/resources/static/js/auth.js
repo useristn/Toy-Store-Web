@@ -1,11 +1,12 @@
 // Check authentication status on page load
 document.addEventListener('DOMContentLoaded', function() {
     checkAuthStatus();
+    updateCartBadge();
 });
 
 function checkAuthStatus() {
-    const token = localStorage.getItem('token');
-    const userEmail = localStorage.getItem('userEmail');
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
 
     const authButtons = document.getElementById('authButtons');
     const userMenu = document.getElementById('userMenu');
@@ -33,6 +34,9 @@ function checkAuthStatus() {
     if (logoutLink) {
         logoutLink.addEventListener('click', function(e) {
             e.preventDefault();
+            // Remove both old and new token keys
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('authEmail');
             localStorage.removeItem('token');
             localStorage.removeItem('userEmail');
             showMessage('loginMessage', 'Đã đăng xuất! Hẹn gặp lại phi hành gia! 👋', 'success');
@@ -646,3 +650,36 @@ document.addEventListener('DOMContentLoaded', () => {
         loadProfile();
     }
 });
+
+// Update cart badge with number of items
+async function updateCartBadge() {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    const cartBadge = document.getElementById('cartBadge');
+    
+    if (!token || !cartBadge) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/cart', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const cart = await response.json();
+            const totalItems = cart.totalItems || 0;
+            cartBadge.textContent = totalItems;
+            
+            if (totalItems > 0) {
+                cartBadge.classList.remove('d-none');
+            } else {
+                cartBadge.classList.add('d-none');
+            }
+        }
+    } catch (error) {
+        console.error('Error updating cart badge:', error);
+    }
+}

@@ -46,9 +46,9 @@
 
             <!-- User Actions -->
             <div class="user-actions d-flex align-items-center">
-                <a href="#" class="btn cart-btn text-white me-3" id="cartBtn">
+                <a th:href="@{/cart}" class="btn cart-btn text-white me-3" id="cartBtn">
                     <i class="fas fa-shopping-cart"></i>
-                    <span class="badge bg-danger ms-1">0</span>
+                    <span class="badge bg-danger ms-1" id="cartBadge">0</span>
                 </a>
                 <div class="auth-buttons" id="authButtons">
                     <a th:href="@{/login}" class="btn cosmic-btn">

@@ -142,9 +142,54 @@ function loadRelatedProducts(categoryId) {
         });
 }
 
-function addToCart(id) {
-    const quantity = document.getElementById('quantity').value;
-    alert(`Thêm ${quantity} sản phẩm vào giỏ hàng!`);
+async function addToCart(id) {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
+    
+    if (!token || !userEmail) {
+        alert('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!');
+        window.location.href = '/login';
+        return;
+    }
+
+    const quantity = parseInt(document.getElementById('quantity').value);
+    
+    try {
+        const response = await fetch('/api/cart/add', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'X-User-Email': userEmail
+            },
+            body: JSON.stringify({
+                productId: id,
+                quantity: quantity
+            })
+        });
+
+        if (response.status === 401) {
+            alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!');
+            window.location.href = '/login';
+            return;
+        }
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Không thể thêm vào giỏ hàng');
+        }
+
+        // Show success notification
+        showNotification('Đã thêm sản phẩm vào giỏ hàng!', 'success');
+        
+        // Optionally ask if user wants to go to cart
+        if (confirm('Đã thêm vào giỏ hàng! Bạn có muốn xem giỏ hàng không?')) {
+            window.location.href = '/cart';
+        }
+    } catch (error) {
+        console.error('Error adding to cart:', error);
+        showNotification(error.message || 'Không thể thêm vào giỏ hàng!', 'error');
+    }
 }
 
 function buyNow(id) {
@@ -158,4 +203,23 @@ function viewProduct(id) {
 
 function formatPrice(price) {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+}
+
+// Show notification
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'warning'} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 80px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    document.body.appendChild(notification);
+
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
 }

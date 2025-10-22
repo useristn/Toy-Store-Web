@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head}">
+    <title>🛒 Giỏ hàng – T4M</title>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<!-- Page Header -->
+<section class="profile-header">
+    <div class="container text-center">
+        <h1 class="display-5 fw-bold"><i class="fas fa-shopping-cart me-3"></i>Giỏ hàng của bạn</h1>
+        <p class="lead">Quản lý các sản phẩm bạn muốn mua</p>
+    </div>
+</section>
+
+<div class="container py-5">
+    <div class="row">
+        <!-- Cart Items -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-list me-2"></i>Sản phẩm trong giỏ</h5>
+                </div>
+                <div class="card-body" id="cartItemsContainer">
+                    <!-- Loading spinner -->
+                    <div id="cartLoading" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Đang tải...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Đang tải giỏ hàng...</p>
+                    </div>
+
+                    <!-- Empty cart message -->
+                    <div id="emptyCartMessage" class="text-center py-5" style="display: none;">
+                        <i class="fas fa-shopping-basket fa-4x text-muted mb-3"></i>
+                        <h4 class="text-muted">Giỏ hàng trống</h4>
+                        <p class="text-muted">Hãy thêm sản phẩm vào giỏ hàng của bạn!</p>
+                        <a href="/products" class="btn btn-primary mt-3">
+                            <i class="fas fa-shopping-bag me-2"></i>Tiếp tục mua sắm
+                        </a>
+                    </div>
+
+                    <!-- Cart items will be dynamically loaded here -->
+                    <div id="cartItemsList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cart Summary -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm sticky-top" style="top: 80px;">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-calculator me-2"></i>Tổng kết đơn hàng</h5>
+                </div>
+                <div class="card-body">
+                    <div id="cartSummary">
+                        <!-- Summary details -->
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Số lượng sản phẩm:</span>
+                            <strong id="totalItems">0</strong>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-3">
+                            <h5>Tổng cộng:</h5>
+                            <h5 class="text-success" id="totalPrice">0 ₫</h5>
+                        </div>
+                        <button class="btn btn-success w-100 mb-2" id="checkoutBtn" disabled>
+                            <i class="fas fa-credit-card me-2"></i>Thanh toán
+                        </button>
+                        <a href="/products" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-arrow-left me-2"></i>Tiếp tục mua sắm
+                        </a>
+                        <button class="btn btn-outline-danger w-100 mt-2" id="clearCartBtn" disabled>
+                            <i class="fas fa-trash me-2"></i>Xóa toàn bộ giỏ hàng
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cart Item Template -->
+<template id="cartItemTemplate">
+    <div class="cart-item border rounded p-3 mb-3" data-item-id="">
+        <div class="row align-items-center">
+            <div class="col-md-2 text-center">
+                <img src="" alt="" class="img-fluid rounded cart-item-image" style="max-height: 100px; object-fit: cover;">
+            </div>
+            <div class="col-md-4">
+                <h5 class="cart-item-name mb-1"></h5>
+                <p class="text-muted mb-0">Đơn giá: <span class="cart-item-price"></span></p>
+                <small class="text-muted">Còn lại: <span class="cart-item-stock"></span> sản phẩm</small>
+            </div>
+            <div class="col-md-3">
+                <div class="input-group">
+                    <button class="btn btn-outline-secondary btn-sm quantity-decrease" type="button">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <input type="number" class="form-control form-control-sm text-center quantity-input" 
+                           value="1" min="1" style="max-width: 70px;">
+                    <button class="btn btn-outline-secondary btn-sm quantity-increase" type="button">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-2 text-end">
+                <h5 class="text-success mb-2 cart-item-subtotal"></h5>
+                <button class="btn btn-sm btn-outline-danger remove-item">
+                    <i class="fas fa-trash"></i> Xóa
+                </button>
+            </div>
+        </div>
+    </div>
+</template>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<!-- JavaScript -->
+<script src="/js/auth.js"></script>
+<script src="/js/cart.js"></script>
+</body>
+</html>

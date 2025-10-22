@@ -50,4 +50,9 @@ public class PageController {
     public String productDetail() {
         return "product-detail";
     }
+
+    @GetMapping("/cart")
+    public String cart() {
+        return "cart";
+    }
 }
