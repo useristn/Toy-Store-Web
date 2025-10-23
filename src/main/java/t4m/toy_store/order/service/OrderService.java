@@ -176,4 +176,38 @@ public class OrderService {
     public long getOrderCountByStatus(OrderStatus status) {
         return orderRepository.countByStatus(status);
     }
+
+    @Transactional
+    public OrderResponse cancelOrder(Long orderId, String userEmail) {
+        // Find order
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
+        
+        // Find user
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        
+        // Verify order belongs to user
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Bạn không có quyền hủy đơn hàng này");
+        }
+        
+        // Check if order can be cancelled (only PENDING and COD)
+        if (order.getStatus() != OrderStatus.PENDING) {
+            throw new RuntimeException("Chỉ có thể hủy đơn hàng đang chờ xử lý");
+        }
+        
+        // Only allow cancellation for COD orders
+        if (!"COD".equalsIgnoreCase(order.getPaymentMethod())) {
+            throw new RuntimeException("Chỉ có thể hủy đơn hàng thanh toán COD. Vui lòng liên hệ hỗ trợ để hủy đơn hàng thanh toán online.");
+        }
+        
+        // Update order status to CANCELLED
+        order.setStatus(OrderStatus.CANCELLED);
+        Order cancelledOrder = orderRepository.save(order);
+        
+        logger.info("Order {} cancelled by user {}", orderId, userEmail);
+        
+        return convertToOrderResponse(cancelledOrder);
+    }
 }
