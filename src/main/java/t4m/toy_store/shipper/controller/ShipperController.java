@@ -134,10 +134,15 @@ public class ShipperController {
      * Lấy chi tiết một đơn hàng
      */
     @GetMapping("/orders/{id}")
-    public ResponseEntity<OrderResponse> getOrderById(@PathVariable Long id) {
-        // Sử dụng service để lấy thông tin
-        // (Có thể thêm kiểm tra quyền truy cập nếu cần)
-        return ResponseEntity.ok().build();
+    public ResponseEntity<OrderResponse> getOrderById(
+            @PathVariable Long id,
+            @RequestHeader("X-User-Email") String shipperEmail) {
+        try {
+            Order order = shipperService.getOrderById(id, shipperEmail);
+            return ResponseEntity.ok(OrderResponse.fromEntity(order));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     /**

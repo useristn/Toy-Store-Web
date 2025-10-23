@@ -148,6 +148,29 @@ public class ShipperService {
     }
 
     /**
+     * Lấy chi tiết một đơn hàng
+     */
+    public Order getOrderById(Long orderId, String shipperEmail) {
+        User shipper = userRepository.findByEmail(shipperEmail)
+                .orElseThrow(() -> new UserNotFoundException("Shipper not found"));
+        
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        
+        // Kiểm tra quyền xem đơn hàng:
+        // - Đơn đang PROCESSING (có thể nhận) thì tất cả shipper đều xem được
+        // - Đơn đang SHIPPING, DELIVERED, FAILED thì chỉ shipper được gán mới xem được
+        if (order.getStatus() != OrderStatus.PROCESSING) {
+            if (order.getShipper() == null || !order.getShipper().getId().equals(shipper.getId())) {
+                throw new RuntimeException("Bạn không có quyền xem đơn hàng này");
+            }
+        }
+        
+        logger.info("Shipper {} viewed order {}", shipperEmail, orderId);
+        return order;
+    }
+
+    /**
      * Lấy thống kê cho shipper dashboard
      */
     public ShipperStats getShipperStats(String shipperEmail) {

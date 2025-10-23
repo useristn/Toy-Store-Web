@@ -92,16 +92,258 @@ async function loadDashboardStats() {
             animateCounter('completedDeliveries', stats.completedDeliveries || 0);
             animateCounter('failedDeliveries', stats.failedDeliveries || 0);
             
-            // Show notification if there are available orders
-            if (stats.availableOrders > 0) {
-                showNotification(`Có ${stats.availableOrders} đơn hàng đang chờ bạn nhận!`, 'info');
+            // Calculate and display success rate
+            const totalCompleted = (stats.completedDeliveries || 0) + (stats.failedDeliveries || 0);
+            const successRate = totalCompleted > 0 
+                ? ((stats.completedDeliveries || 0) / totalCompleted * 100).toFixed(1) 
+                : 0;
+            document.getElementById('successRate').textContent = successRate + '%';
+            
+            // Update progress bar
+            const successPercent = successRate;
+            const progressBar = document.getElementById('successProgress');
+            if (progressBar) {
+                progressBar.style.width = successPercent + '%';
             }
+            
+            // Calculate estimated earnings (example: 20,000 VND per successful delivery)
+            const earningsPerDelivery = 20000;
+            const estimatedEarnings = (stats.completedDeliveries || 0) * earningsPerDelivery;
+            document.getElementById('estimatedEarnings').textContent = formatCurrency(estimatedEarnings);
+            
+            // Update alerts
+            updateAlerts(stats);
+            
+            // Update charts
+            updateDeliveryChart(stats);
+            updateStatusChart(stats);
+            
+            // Load recent activity
+            loadRecentActivity();
+            
         } else {
             console.error('Failed to load stats');
         }
     } catch (error) {
         console.error('Error loading stats:', error);
     }
+}
+
+// Update alerts based on stats
+function updateAlerts(stats) {
+    let hasAlerts = false;
+    
+    // Check for available orders
+    if (stats.availableOrders > 0) {
+        document.getElementById('availableCount').textContent = stats.availableOrders;
+        document.getElementById('availableOrderAlert').classList.remove('d-none');
+        document.getElementById('noAlerts').classList.add('d-none');
+        hasAlerts = true;
+    } else {
+        document.getElementById('availableOrderAlert').classList.add('d-none');
+    }
+    
+    // Check for active deliveries
+    if (stats.activeDeliveries > 0) {
+        document.getElementById('activeCount').textContent = stats.activeDeliveries;
+        document.getElementById('activeOrderAlert').classList.remove('d-none');
+        document.getElementById('noAlerts').classList.add('d-none');
+        hasAlerts = true;
+    } else {
+        document.getElementById('activeOrderAlert').classList.add('d-none');
+    }
+    
+    // Show no alerts message if no alerts
+    if (!hasAlerts) {
+        document.getElementById('noAlerts').classList.remove('d-none');
+    }
+}
+
+// Chart instances
+let deliveryChartInstance = null;
+let statusChartInstance = null;
+
+// Update delivery chart
+function updateDeliveryChart(stats) {
+    const ctx = document.getElementById('deliveryChart');
+    if (!ctx) return;
+    
+    // Destroy existing chart
+    if (deliveryChartInstance) {
+        deliveryChartInstance.destroy();
+    }
+    
+    deliveryChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Có thể nhận', 'Đang giao', 'Đã giao hôm nay', 'Giao thành công', 'Giao thất bại'],
+            datasets: [{
+                label: 'Số đơn hàng',
+                data: [
+                    stats.availableOrders || 0,
+                    stats.activeDeliveries || 0,
+                    stats.completedDeliveries || 0,
+                    stats.completedDeliveries || 0,
+                    stats.failedDeliveries || 0
+                ],
+                backgroundColor: [
+                    'rgba(54, 185, 204, 0.8)',
+                    'rgba(78, 115, 223, 0.8)',
+                    'rgba(28, 200, 138, 0.8)',
+                    'rgba(28, 200, 138, 0.8)',
+                    'rgba(231, 74, 59, 0.8)'
+                ],
+                borderColor: [
+                    'rgb(54, 185, 204)',
+                    'rgb(78, 115, 223)',
+                    'rgb(28, 200, 138)',
+                    'rgb(28, 200, 138)',
+                    'rgb(231, 74, 59)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.label + ': ' + context.parsed.y + ' đơn';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Update status chart
+function updateStatusChart(stats) {
+    const ctx = document.getElementById('statusChart');
+    if (!ctx) return;
+    
+    // Destroy existing chart
+    if (statusChartInstance) {
+        statusChartInstance.destroy();
+    }
+    
+    const totalCompleted = (stats.completedDeliveries || 0);
+    const totalFailed = (stats.failedDeliveries || 0);
+    const totalActive = (stats.activeDeliveries || 0);
+    
+    statusChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Thành công', 'Thất bại', 'Đang giao'],
+            datasets: [{
+                data: [totalCompleted, totalFailed, totalActive],
+                backgroundColor: [
+                    'rgba(28, 200, 138, 0.8)',
+                    'rgba(231, 74, 59, 0.8)',
+                    'rgba(78, 115, 223, 0.8)'
+                ],
+                borderColor: [
+                    'rgb(28, 200, 138)',
+                    'rgb(231, 74, 59)',
+                    'rgb(78, 115, 223)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                            return label + ': ' + value + ' (' + percentage + '%)';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Load recent activity
+async function loadRecentActivity() {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
+    
+    if (!token || !userEmail) return;
+
+    try {
+        const response = await fetch('/api/shipper/orders/history?limit=10', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'X-User-Email': userEmail
+            }
+        });
+
+        if (response.ok) {
+            const orders = await response.json();
+            displayRecentActivity(orders);
+        } else {
+            document.getElementById('activityTable').innerHTML = 
+                '<tr><td colspan="4" class="text-center text-muted">Không có hoạt động gần đây</td></tr>';
+        }
+    } catch (error) {
+        console.error('Error loading recent activity:', error);
+        document.getElementById('activityTable').innerHTML = 
+            '<tr><td colspan="4" class="text-center text-danger">Lỗi tải dữ liệu</td></tr>';
+    }
+}
+
+// Display recent activity
+function displayRecentActivity(orders) {
+    const tableBody = document.getElementById('activityTable');
+    
+    if (orders.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Chưa có hoạt động nào</td></tr>';
+        return;
+    }
+    
+    tableBody.innerHTML = orders.slice(0, 10).map(order => {
+        const action = order.status === 'DELIVERED' ? 'Đã giao hàng' : 
+                      order.status === 'FAILED' ? 'Giao hàng thất bại' : 
+                      order.status === 'SHIPPING' ? 'Đang giao hàng' : 'Nhận đơn hàng';
+        
+        return `
+            <tr>
+                <td>${formatDateTime(order.updatedAt || order.createdAt)}</td>
+                <td><strong>${order.orderNumber}</strong></td>
+                <td>${action}</td>
+                <td>${getStatusBadge(order.status)}</td>
+            </tr>
+        `;
+    }).join('');
 }
 
 // Load available orders (PROCESSING status)
@@ -213,7 +455,7 @@ function displayActiveOrders(orders) {
             <td>${formatDateTime(order.createdAt)}</td>
             <td>
                 <button class="btn btn-sm btn-success me-1" onclick="completeOrder(${order.id})">
-                    <i class="fas fa-check me-1"></i>Đã giao
+                    <i class="fas fa-check me-1"></i>Giao thành công
                 </button>
                 <button class="btn btn-sm btn-danger me-1" onclick="failOrder(${order.id})">
                     <i class="fas fa-times me-1"></i>Thất bại
@@ -230,6 +472,9 @@ function displayActiveOrders(orders) {
 }
 
 // Load delivery history
+let allHistoryOrders = []; // Store all orders for filtering
+let currentFilter = 'ALL'; // Current filter status
+
 async function loadHistory() {
     const token = localStorage.getItem('authToken') || localStorage.getItem('token');
     const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
@@ -246,7 +491,9 @@ async function loadHistory() {
 
         if (response.ok) {
             const orders = await response.json();
-            displayHistory(orders);
+            allHistoryOrders = orders; // Store all orders
+            updateHistoryStats(orders);
+            filterHistory(currentFilter); // Apply current filter
         } else {
             document.getElementById('historyTable').innerHTML = 
                 '<tr><td colspan="6" class="text-center text-danger">Không thể tải lịch sử</td></tr>';
@@ -258,12 +505,63 @@ async function loadHistory() {
     }
 }
 
+// Update history statistics
+function updateHistoryStats(orders) {
+    const totalCount = orders.length;
+    const successCount = orders.filter(o => o.status === 'DELIVERED').length;
+    const failedCount = orders.filter(o => o.status === 'FAILED').length;
+    
+    // Count today's deliveries
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayCount = orders.filter(o => {
+        const orderDate = new Date(o.createdAt);
+        orderDate.setHours(0, 0, 0, 0);
+        return orderDate.getTime() === today.getTime() && (o.status === 'DELIVERED' || o.status === 'FAILED');
+    }).length;
+    
+    document.getElementById('historyTotalCount').textContent = totalCount;
+    document.getElementById('historyTodayCount').textContent = todayCount;
+    document.getElementById('historySuccessCount').textContent = successCount;
+    document.getElementById('historyFailedCount').textContent = failedCount;
+}
+
+// Filter history by status
+function filterHistory(status) {
+    currentFilter = status;
+    
+    // Filter orders
+    let filteredOrders = allHistoryOrders;
+    if (status === 'DELIVERED') {
+        filteredOrders = allHistoryOrders.filter(order => order.status === 'DELIVERED');
+    } else if (status === 'FAILED') {
+        filteredOrders = allHistoryOrders.filter(order => order.status === 'FAILED');
+    } else if (status === 'TODAY') {
+        // Filter today's deliveries (both success and failed)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        filteredOrders = allHistoryOrders.filter(order => {
+            const orderDate = new Date(order.createdAt);
+            orderDate.setHours(0, 0, 0, 0);
+            return orderDate.getTime() === today.getTime() && (order.status === 'DELIVERED' || order.status === 'FAILED');
+        });
+    }
+    // If status === 'ALL', show all orders
+    
+    // Display filtered orders
+    displayHistory(filteredOrders);
+}
+
 // Display delivery history
 function displayHistory(orders) {
     const tableBody = document.getElementById('historyTable');
     
     if (orders.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Chưa có lịch sử giao hàng</td></tr>';
+        const filterText = currentFilter === 'DELIVERED' ? 'giao thành công' : 
+                          currentFilter === 'FAILED' ? 'giao thất bại' : 
+                          currentFilter === 'TODAY' ? 'giao thành công hôm nay' : '';
+        const message = filterText ? `Không có đơn hàng ${filterText}` : 'Chưa có lịch sử giao hàng';
+        tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">${message}</td></tr>`;
         return;
     }
     
@@ -396,10 +694,191 @@ function openGoogleMaps(address) {
 }
 
 // Show order detail modal
-function showOrderDetail(orderId) {
-    // TODO: Implement order detail modal
-    showToast('Chức năng chi tiết đơn hàng đang được phát triển', 'info');
+async function showOrderDetail(orderId) {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
+    
+    if (!token || !userEmail) return;
+
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('orderDetailModal'));
+    modal.show();
+    
+    // Show loading state
+    document.getElementById('orderDetailContent').innerHTML = `
+        <div class="text-center py-5">
+            <span class="spinner-border spinner-border-lg text-primary" role="status"></span>
+            <p class="mt-3 text-muted">Đang tải thông tin...</p>
+        </div>
+    `;
+
+    try {
+        const response = await fetch(`/api/shipper/orders/${orderId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'X-User-Email': userEmail
+            }
+        });
+
+        if (response.ok) {
+            const order = await response.json();
+            displayOrderDetail(order);
+        } else {
+            document.getElementById('orderDetailContent').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Không thể tải thông tin đơn hàng
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading order detail:', error);
+        document.getElementById('orderDetailContent').innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Lỗi kết nối. Vui lòng thử lại!
+            </div>
+        `;
+    }
 }
+
+// Display order detail in modal
+function displayOrderDetail(order) {
+    const content = `
+        <!-- Order Info -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card border-left-primary">
+                    <div class="card-body">
+                        <h6 class="text-primary mb-3"><i class="fas fa-info-circle me-2"></i>Thông tin đơn hàng</h6>
+                        <table class="table table-sm table-borderless mb-0">
+                            <tr>
+                                <td class="text-muted" width="40%">Mã đơn hàng:</td>
+                                <td><strong>${order.orderNumber}</strong></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Trạng thái:</td>
+                                <td>${getStatusBadge(order.status)}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Ngày đặt:</td>
+                                <td>${formatDateTime(order.createdAt)}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Tổng tiền:</td>
+                                <td><strong class="text-success">${formatCurrency(order.totalAmount)}</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-left-success">
+                    <div class="card-body">
+                        <h6 class="text-success mb-3"><i class="fas fa-user me-2"></i>Thông tin khách hàng</h6>
+                        <table class="table table-sm table-borderless mb-0">
+                            <tr>
+                                <td class="text-muted" width="40%">Tên khách hàng:</td>
+                                <td><strong>${order.customerName}</strong></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Số điện thoại:</td>
+                                <td>
+                                    <a href="tel:${order.customerPhone}" class="text-decoration-none">
+                                        <i class="fas fa-phone me-1"></i>${order.customerPhone}
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Email:</td>
+                                <td>${order.customerEmail || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Địa chỉ:</td>
+                                <td>
+                                    ${order.shippingAddress}
+                                    <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.shippingAddress)}" 
+                                       target="_blank" class="btn btn-sm btn-outline-primary ms-2">
+                                        <i class="fas fa-map-marked-alt"></i> Bản đồ
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Items -->
+        <div class="card border-left-info">
+            <div class="card-header bg-white">
+                <h6 class="mb-0 text-info"><i class="fas fa-box me-2"></i>Sản phẩm trong đơn hàng</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th width="60">Hình</th>
+                                <th>Sản phẩm</th>
+                                <th width="100">Đơn giá</th>
+                                <th width="80">Số lượng</th>
+                                <th width="120">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${order.items && order.items.length > 0 ? order.items.map(item => `
+                                <tr>
+                                    <td>
+                                        <img src="${item.productImageUrl || '/images/no-image.png'}" 
+                                             alt="${item.productName}" 
+                                             class="img-thumbnail" 
+                                             style="width: 50px; height: 50px; object-fit: cover;">
+                                    </td>
+                                    <td>
+                                        <strong>${item.productName}</strong>
+                                    </td>
+                                    <td>${formatCurrency(item.price)}</td>
+                                    <td class="text-center"><span class="badge bg-secondary">${item.quantity}</span></td>
+                                    <td><strong>${formatCurrency(item.subtotal)}</strong></td>
+                                </tr>
+                            `).join('') : `
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">Không có sản phẩm</td>
+                                </tr>
+                            `}
+                        </tbody>
+                        <tfoot class="bg-light">
+                            <tr>
+                                <td colspan="4" class="text-end"><strong>Tổng cộng:</strong></td>
+                                <td><strong class="text-success fs-5">${formatCurrency(order.totalAmount)}</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Info -->
+        ${order.paymentMethod ? `
+        <div class="alert alert-info mt-3">
+            <i class="fas fa-credit-card me-2"></i>
+            <strong>Phương thức thanh toán:</strong> ${order.paymentMethod}
+        </div>
+        ` : ''}
+
+        <!-- Notes -->
+        ${order.notes ? `
+        <div class="alert alert-secondary mt-3">
+            <i class="fas fa-sticky-note me-2"></i>
+            <strong>Ghi chú:</strong> ${order.notes}
+        </div>
+        ` : ''}
+    `;
+    
+    document.getElementById('orderDetailContent').innerHTML = content;
+}
+
 
 // Check for new orders (real-time notification)
 let lastAvailableCount = 0;
@@ -496,7 +975,9 @@ function showTab(tabName) {
         document.getElementById(tabId).style.display = 'block';
         
         // Set active nav link
-        event.target.classList.add('active');
+        if (event && event.target) {
+            event.target.classList.add('active');
+        }
         
         // Load data for the tab
         switch(tabName) {
@@ -513,6 +994,20 @@ function showTab(tabName) {
                 loadHistory();
                 break;
         }
+    }
+}
+
+// Tab navigation with filter (for history tab)
+function showTabWithFilter(tabName, filterStatus) {
+    // First show the tab
+    showTab(tabName);
+    
+    // Then apply the filter if it's history tab
+    if (tabName === 'history' && filterStatus) {
+        // Wait a bit for the data to load
+        setTimeout(() => {
+            filterHistory(filterStatus);
+        }, 500);
     }
 }
 
@@ -565,7 +1060,7 @@ function getStatusBadge(status) {
         'CONFIRMED': { text: 'Đã xác nhận', class: 'info' },
         'PROCESSING': { text: 'Đang xử lý', class: 'primary' },
         'SHIPPING': { text: 'Đang giao', class: 'primary' },
-        'DELIVERED': { text: 'Đã giao', class: 'success' },
+        'DELIVERED': { text: 'Giao thành công', class: 'success' },
         'FAILED': { text: 'Giao thất bại', class: 'danger' },
         'CANCELLED': { text: 'Đã hủy', class: 'danger' },
         'REFUNDED': { text: 'Đã hoàn tiền', class: 'secondary' }
