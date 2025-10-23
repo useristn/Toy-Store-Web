@@ -1,10 +1,12 @@
 package t4m.toy_store.product.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import t4m.toy_store.image.service.ImageService;
 import t4m.toy_store.product.dto.ProductResponse;
 import t4m.toy_store.product.entity.Category;
 import t4m.toy_store.product.entity.Product;
@@ -12,6 +14,7 @@ import t4m.toy_store.product.service.ProductService;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -19,6 +22,17 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductService productService;
+
+    @Autowired
+    private ImageService imageService;
+
+    @PostMapping("/admin/products/{id}/image-from-url")
+    public ResponseEntity<?> setImageFromUrl(@PathVariable Long id, @RequestParam String url) throws Exception {
+        String secureUrl = imageService.uploadFromUrl(url, "product-" + id);
+        // TODO: lưu secureUrl vào field imageUrl của Product rồi save.
+        return ResponseEntity.ok(Map.of("imageUrl", secureUrl));
+    }
+
 
     @GetMapping
     public ResponseEntity<Page<ProductResponse>> getAllProducts(
