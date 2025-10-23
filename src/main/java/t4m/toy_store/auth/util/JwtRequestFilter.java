@@ -63,8 +63,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         // If no authorization header
         if (authorizationHeader == null || !authorizationHeader.startsWith(BEARER_PREFIX)) {
-            // For API requests, this is an error (except /api/auth/*)
-            if (isApiRequest && !requestUri.startsWith("/api/auth/") && !requestUri.startsWith("/api/products")) {
+            // For API requests, this is an error (except public APIs)
+            if (isApiRequest && 
+                !requestUri.startsWith("/api/auth/") && 
+                !requestUri.startsWith("/api/products") &&
+                !requestUri.startsWith("/api/chatbot/")) {
                 logger.warn("No JWT token in API request to: {}", requestUri);
                 response.sendError(HttpStatus.UNAUTHORIZED.value(), "Missing JWT token");
                 return;

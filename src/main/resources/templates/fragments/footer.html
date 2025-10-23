@@ -126,42 +126,12 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Load Categories for Footer -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            loadFooterCategories();
-        });
 
-        async function loadFooterCategories() {
-            try {
-                const response = await fetch('/api/products/categories');
-                if (!response.ok) return;
-                
-                const categories = await response.json();
-                const container = document.getElementById('footerCategories');
-                
-                if (!container) return;
-                
-                // Keep the "All Products" link
-                let html = '<li class="mb-2"><a href="/products" class="text-light text-decoration-none hover-danger">Tất cả sản phẩm</a></li>';
-                
-                // Add first 6 categories
-                categories.slice(0, 6).forEach(category => {
-                    html += `
-                        <li class="mb-2">
-                            <a href="/products?category=${category.id}" class="text-light text-decoration-none hover-danger">
-                                ${category.name}
-                            </a>
-                        </li>
-                    `;
-                });
-                
-                container.innerHTML = html;
-            } catch (error) {
-                console.error('Error loading footer categories:', error);
-            }
-        }
-    </script>
+    <!-- Chatbot widget root -->
+    <div id="chatbot-root"></div>
+
+    <!-- Chatbot styles & script -->
+    <link rel="stylesheet" th:href="@{/css/chatbot.css}">
+    <script th:src="@{/js/chatbot.js}" defer></script>
 </footer>
 </html>

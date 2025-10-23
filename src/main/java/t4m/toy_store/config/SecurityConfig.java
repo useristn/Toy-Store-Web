@@ -148,6 +148,7 @@ public class SecurityConfig {
                         // Public API endpoints
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/products/**").permitAll()
+                        .requestMatchers("/api/chatbot/**").permitAll()
                         
                         // Protected API endpoints - require authentication
                         .requestMatchers("/api/cart/**").authenticated()
