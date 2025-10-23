@@ -108,7 +108,7 @@
                 </div>
 
                 <div class="col-xl-3 col-md-6 mb-4">
-                    <a href="/admin/products" class="text-decoration-none">
+                    <a href="/admin/products?filter=in-stock" class="text-decoration-none">
                         <div class="card border-left-success shadow-sm h-100 hover-lift">
                             <div class="card-body">
                                 <div class="row no-gutters align-items-center">
@@ -180,6 +180,94 @@
                 </div>
             </div>
 
+            <!-- Stats Cards - Revenue Stats -->
+            <h5 class="mb-3"><i class="fas fa-dollar-sign me-2"></i>Thống kê doanh số</h5>
+            <div class="row mb-4">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-success shadow-sm h-100 hover-lift">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Tổng doanh thu
+                                    </div>
+                                    <div class="h4 mb-0 font-weight-bold text-gray-800" id="totalRevenue">
+                                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                                    </div>
+                                    <small class="text-success">💰 Tất cả đơn hàng</small>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-coins fa-3x text-success opacity-25"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-success shadow-sm h-100 hover-lift">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Doanh thu tháng này
+                                    </div>
+                                    <div class="h4 mb-0 font-weight-bold text-gray-800" id="monthlyRevenue">
+                                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                                    </div>
+                                    <small class="text-muted">📅 Tháng hiện tại</small>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-calendar-check fa-3x text-success opacity-25"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-info shadow-sm h-100 hover-lift">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                        Doanh thu hôm nay
+                                    </div>
+                                    <div class="h4 mb-0 font-weight-bold text-gray-800" id="todayRevenue">
+                                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                                    </div>
+                                    <small class="text-muted">📊 Ngày hiện tại</small>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-chart-line fa-3x text-info opacity-25"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-warning shadow-sm h-100 hover-lift">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        Giá trị trung bình
+                                    </div>
+                                    <div class="h4 mb-0 font-weight-bold text-gray-800" id="averageOrderValue">
+                                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                                    </div>
+                                    <small class="text-muted">📈 Mỗi đơn hàng</small>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-receipt fa-3x text-warning opacity-25"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Stats Cards - Order Stats -->
             <h5 class="mb-3"><i class="fas fa-shopping-cart me-2"></i>Thống kê đơn hàng</h5>
             <div class="row mb-4">
@@ -206,6 +294,28 @@
                 </div>
 
                 <div class="col-xl-3 col-md-6 mb-4">
+                    <a href="/admin/orders" class="text-decoration-none">
+                        <div class="card border-left-secondary shadow-sm h-100 hover-lift">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
+                                            Đơn hôm nay
+                                        </div>
+                                        <div class="h4 mb-0 font-weight-bold text-gray-800" id="todayOrders">
+                                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-calendar-day fa-3x text-secondary opacity-25"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
                     <a href="/admin/orders?status=PENDING" class="text-decoration-none">
                         <div class="card border-left-warning shadow-sm h-100 hover-lift">
                             <div class="card-body">
@@ -217,7 +327,6 @@
                                         <div class="h4 mb-0 font-weight-bold text-gray-800" id="pendingOrders">
                                             <span class="spinner-border spinner-border-sm" role="status"></span>
                                         </div>
-                                        <small class="text-warning">⚠️ Cần xử lý ngay</small>
                                     </div>
                                     <div class="col-auto">
                                         <i class="fas fa-clock fa-3x text-warning opacity-25"></i>
@@ -240,10 +349,31 @@
                                         <div class="h4 mb-0 font-weight-bold text-gray-800" id="processingOrders">
                                             <span class="spinner-border spinner-border-sm" role="status"></span>
                                         </div>
-                                        <small class="text-muted">Đang giao hàng</small>
                                     </div>
                                     <div class="col-auto">
-                                        <i class="fas fa-shipping-fast fa-3x text-primary opacity-25"></i>
+                                        <i class="fas fa-cogs fa-3x text-primary opacity-25"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <a href="/admin/orders?status=SHIPPING" class="text-decoration-none">
+                        <div class="card border-left-info shadow-sm h-100 hover-lift">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                            Đang giao
+                                        </div>
+                                        <div class="h4 mb-0 font-weight-bold text-gray-800" id="shippingOrders">
+                                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-shipping-fast fa-3x text-info opacity-25"></i>
                                     </div>
                                 </div>
                             </div>
@@ -258,15 +388,58 @@
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
                                         <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                            Đã giao
+                                            Thành công
                                         </div>
                                         <div class="h4 mb-0 font-weight-bold text-gray-800" id="deliveredOrders">
                                             <span class="spinner-border spinner-border-sm" role="status"></span>
                                         </div>
-                                        <small class="text-success">✓ Hoàn thành</small>
                                     </div>
                                     <div class="col-auto">
                                         <i class="fas fa-check-double fa-3x text-success opacity-25"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <a href="/admin/orders?status=FAILED" class="text-decoration-none">
+                        <div class="card border-left-danger shadow-sm h-100 hover-lift">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                            Thất bại
+                                        </div>
+                                        <div class="h4 mb-0 font-weight-bold text-gray-800" id="failedOrders">
+                                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-times-circle fa-3x text-danger opacity-25"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <a href="/admin/orders?status=CANCELLED" class="text-decoration-none">
+                        <div class="card border-left-secondary shadow-sm h-100 hover-lift">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
+                                            Bị hủy
+                                        </div>
+                                        <div class="h4 mb-0 font-weight-bold text-gray-800" id="cancelledOrders">
+                                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-ban fa-3x text-secondary opacity-25"></i>
                                     </div>
                                 </div>
                             </div>

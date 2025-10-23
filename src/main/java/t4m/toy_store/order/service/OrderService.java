@@ -177,6 +177,65 @@ public class OrderService {
         return orderRepository.countByStatus(status);
     }
 
+    // Revenue statistics
+    public BigDecimal getTotalRevenue() {
+        List<Order> orders = orderRepository.findAll();
+        return orders.stream()
+                .filter(order -> order.getStatus() == OrderStatus.DELIVERED)
+                .map(Order::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal getMonthlyRevenue() {
+        List<Order> orders = orderRepository.findAll();
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        java.time.LocalDateTime startOfMonth = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
+        
+        return orders.stream()
+                .filter(order -> order.getStatus() == OrderStatus.DELIVERED)
+                .filter(order -> order.getCreatedAt() != null && order.getCreatedAt().isAfter(startOfMonth))
+                .map(Order::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal getTodayRevenue() {
+        List<Order> orders = orderRepository.findAll();
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        java.time.LocalDateTime startOfDay = now.withHour(0).withMinute(0).withSecond(0);
+        
+        return orders.stream()
+                .filter(order -> order.getStatus() == OrderStatus.DELIVERED)
+                .filter(order -> order.getCreatedAt() != null && order.getCreatedAt().isAfter(startOfDay))
+                .map(Order::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal getAverageOrderValue() {
+        List<Order> completedOrders = orderRepository.findAll().stream()
+                .filter(order -> order.getStatus() == OrderStatus.DELIVERED)
+                .collect(Collectors.toList());
+        
+        if (completedOrders.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        
+        BigDecimal total = completedOrders.stream()
+                .map(Order::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        return total.divide(new BigDecimal(completedOrders.size()), 0, java.math.RoundingMode.HALF_UP);
+    }
+
+    public long getTodayOrderCount() {
+        List<Order> orders = orderRepository.findAll();
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        java.time.LocalDateTime startOfDay = now.withHour(0).withMinute(0).withSecond(0);
+        
+        return orders.stream()
+                .filter(order -> order.getCreatedAt() != null && order.getCreatedAt().isAfter(startOfDay))
+                .count();
+    }
+
     @Transactional
     public OrderResponse cancelOrder(Long orderId, String userEmail) {
         // Find order

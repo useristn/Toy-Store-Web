@@ -73,13 +73,27 @@ public class AdminOrderController {
         Map<String, Object> stats = new HashMap<>();
         
         stats.put("total", orderService.getTotalOrders());
+        stats.put("today", orderService.getTodayOrderCount());
         stats.put("pending", orderService.getOrderCountByStatus(OrderStatus.PENDING));
         stats.put("processing", orderService.getOrderCountByStatus(OrderStatus.PROCESSING));
-        stats.put("shipped", orderService.getOrderCountByStatus(OrderStatus.SHIPPING)); // SHIPPING enum
+        stats.put("shipping", orderService.getOrderCountByStatus(OrderStatus.SHIPPING));
+        stats.put("shipped", orderService.getOrderCountByStatus(OrderStatus.SHIPPING)); // SHIPPING enum (backward compatibility)
         stats.put("delivered", orderService.getOrderCountByStatus(OrderStatus.DELIVERED));
         stats.put("failed", orderService.getOrderCountByStatus(OrderStatus.FAILED));
         stats.put("cancelled", orderService.getOrderCountByStatus(OrderStatus.CANCELLED));
         
         return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/revenue")
+    public ResponseEntity<Map<String, Object>> getRevenueStats() {
+        Map<String, Object> revenue = new HashMap<>();
+        
+        revenue.put("total", orderService.getTotalRevenue());
+        revenue.put("monthly", orderService.getMonthlyRevenue());
+        revenue.put("today", orderService.getTodayRevenue());
+        revenue.put("average", orderService.getAverageOrderValue());
+        
+        return ResponseEntity.ok(revenue);
     }
 }

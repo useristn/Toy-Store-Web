@@ -117,17 +117,22 @@ async function loadDashboardStats() {
             
             // Update order stats - map API response to UI
             animateCounter('totalOrders', orderStats.total || 0);
+            animateCounter('todayOrders', orderStats.today || 0);
             animateCounter('pendingOrders', orderStats.pending || 0);
             animateCounter('processingOrders', orderStats.processing || 0);
+            animateCounter('shippingOrders', orderStats.shipping || 0);
             animateCounter('deliveredOrders', orderStats.delivered || 0);
+            animateCounter('failedOrders', orderStats.failed || 0);
+            animateCounter('cancelledOrders', orderStats.cancelled || 0);
             
             // Update order chart with correct mapping
             updateOrderChart({
                 totalOrders: orderStats.total || 0,
                 pendingOrders: orderStats.pending || 0,
                 processingOrders: orderStats.processing || 0,
-                shippingOrders: orderStats.shipped || 0,
+                shippingOrders: orderStats.shipping || 0,
                 deliveredOrders: orderStats.delivered || 0,
+                failedOrders: orderStats.failed || 0,
                 cancelledOrders: orderStats.cancelled || 0
             });
             
@@ -139,10 +144,38 @@ async function loadDashboardStats() {
             }
         }
 
+        // Load revenue stats
+        const revenueResponse = await fetch('/api/admin/orders/revenue', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'X-User-Email': userEmail
+            }
+        });
+
+        if (revenueResponse.ok) {
+            const revenue = await revenueResponse.json();
+            
+            // Format and update revenue stats
+            document.getElementById('totalRevenue').textContent = formatCurrency(revenue.total || 0);
+            document.getElementById('monthlyRevenue').textContent = formatCurrency(revenue.monthly || 0);
+            document.getElementById('todayRevenue').textContent = formatCurrency(revenue.today || 0);
+            document.getElementById('averageOrderValue').textContent = formatCurrency(revenue.average || 0);
+        }
+
     } catch (error) {
         console.error('Error loading dashboard stats:', error);
         showToast('Không thể tải thống kê!', 'danger');
     }
+}
+
+// Format currency
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(amount);
 }
 
 // Animate counter
@@ -204,7 +237,7 @@ function updateOrderChart(orderStats) {
     orderChartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: ['Chờ xử lý', 'Đang xử lý', 'Đang giao', 'Đã giao', 'Đã hủy'],
+            labels: ['Chờ xử lý', 'Đang xử lý', 'Đang giao', 'Giao thành công', 'Giao thất bại', 'Đã hủy'],
             datasets: [{
                 label: 'Số đơn hàng',
                 data: [
@@ -212,6 +245,7 @@ function updateOrderChart(orderStats) {
                     orderStats.processingOrders || 0,
                     orderStats.shippingOrders || 0,
                     orderStats.deliveredOrders || 0,
+                    orderStats.failedOrders || 0,
                     orderStats.cancelledOrders || 0
                 ],
                 backgroundColor: [
@@ -219,6 +253,7 @@ function updateOrderChart(orderStats) {
                     'rgba(78, 115, 223, 0.8)',
                     'rgba(54, 185, 204, 0.8)',
                     'rgba(28, 200, 138, 0.8)',
+                    'rgba(255, 193, 7, 0.8)',
                     'rgba(231, 74, 59, 0.8)'
                 ],
                 borderColor: [
@@ -226,6 +261,7 @@ function updateOrderChart(orderStats) {
                     'rgb(78, 115, 223)',
                     'rgb(54, 185, 204)',
                     'rgb(28, 200, 138)',
+                    'rgb(255, 193, 7)',
                     'rgb(231, 74, 59)'
                 ],
                 borderWidth: 2
@@ -368,6 +404,10 @@ async function loadRecentActivity() {
                     case 'DELIVERED':
                         description += 'đã giao thành công';
                         status = 'success';
+                        break;
+                    case 'FAILED':
+                        description += 'giao thất bại';
+                        status = 'warning';
                         break;
                     case 'CANCELLED':
                         description += 'đã bị hủy';

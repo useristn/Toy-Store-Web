@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const filterParam = urlParams.get('filter');
     if (filterParam) {
         const stockFilterEl = document.getElementById('stockFilter');
-        if (stockFilterEl && (filterParam === 'low-stock' || filterParam === 'out-of-stock')) {
+        if (stockFilterEl && (filterParam === 'in-stock' || filterParam === 'low-stock' || filterParam === 'out-of-stock')) {
             stockFilterEl.value = filterParam;
             currentStockFilter = filterParam;
         }
@@ -98,6 +98,9 @@ async function loadProducts() {
             needsClientSearch = currentSearch.length > 0;
         } else if (currentStockFilter === 'low-stock') {
             url = `/api/admin/products/low-stock?page=0&size=1000`; // Load all for client-side filtering
+            needsClientSearch = currentSearch.length > 0;
+        } else if (currentStockFilter === 'in-stock') {
+            url = `/api/admin/products/in-stock?page=0&size=1000`; // Load all for client-side filtering
             needsClientSearch = currentSearch.length > 0;
         } else {
             // Normal listing with backend search

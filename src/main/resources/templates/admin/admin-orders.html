@@ -78,53 +78,96 @@
                 <h1 class="h2">🛒 Quản lý Đơn hàng</h1>
             </div>
 
-            <!-- Stats Row -->
-            <div class="row mb-3">
-                <div class="col-md-2 col-sm-4 mb-2">
-                    <div class="card text-center shadow-sm status-card border-primary border-3" data-status="" id="stat-all" onclick="filterByStatus('', this)" style="cursor: pointer;">
-                        <div class="card-body">
-                            <h3 id="totalOrders" class="text-primary">0</h3>
-                            <small class="text-muted">Tất cả</small>
+            <!-- Stats Row - Tất cả trạng thái trên 1 dòng -->
+            <div class="row mb-3 g-2">
+                <div class="col">
+                    <div class="card text-center shadow-sm status-card active" data-status="" id="stat-all" onclick="filterByStatus('', this)" style="cursor: pointer;">
+                        <div class="card-body py-2">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <i class="fas fa-list-ul me-2 text-primary"></i>
+                                <div>
+                                    <h5 id="totalOrders" class="mb-0 text-primary fw-bold">0</h5>
+                                    <small class="text-muted d-block">Tất cả</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-2 col-sm-4 mb-2">
+                <div class="col">
                     <div class="card text-center shadow-sm status-card" data-status="PENDING" id="stat-pending" onclick="filterByStatus('PENDING', this)" style="cursor: pointer;">
-                        <div class="card-body">
-                            <h3 id="pendingOrders" class="text-warning">0</h3>
-                            <small class="text-muted">Chờ xử lý</small>
+                        <div class="card-body py-2">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <i class="fas fa-clock me-2 text-warning"></i>
+                                <div>
+                                    <h5 id="pendingOrders" class="mb-0 text-warning fw-bold">0</h5>
+                                    <small class="text-muted d-block">Chờ xử lý</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-2 col-sm-4 mb-2">
+                <div class="col">
                     <div class="card text-center shadow-sm status-card" data-status="PROCESSING" id="stat-processing" onclick="filterByStatus('PROCESSING', this)" style="cursor: pointer;">
-                        <div class="card-body">
-                            <h3 id="processingOrders" class="text-info">0</h3>
-                            <small class="text-muted">Đang xử lý</small>
+                        <div class="card-body py-2">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <i class="fas fa-cogs me-2 text-info"></i>
+                                <div>
+                                    <h5 id="processingOrders" class="mb-0 text-info fw-bold">0</h5>
+                                    <small class="text-muted d-block">Đang xử lý</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-2 col-sm-4 mb-2">
+                <div class="col">
                     <div class="card text-center shadow-sm status-card" data-status="SHIPPING" id="stat-shipping" onclick="filterByStatus('SHIPPING', this)" style="cursor: pointer;">
-                        <div class="card-body">
-                            <h3 id="shippedOrders" class="text-primary">0</h3>
-                            <small class="text-muted">Đang giao</small>
+                        <div class="card-body py-2">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <i class="fas fa-shipping-fast me-2 text-primary"></i>
+                                <div>
+                                    <h5 id="shippedOrders" class="mb-0 text-primary fw-bold">0</h5>
+                                    <small class="text-muted d-block">Đang giao</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-2 col-sm-4 mb-2">
+                <div class="col">
                     <div class="card text-center shadow-sm status-card" data-status="DELIVERED" id="stat-delivered" onclick="filterByStatus('DELIVERED', this)" style="cursor: pointer;">
-                        <div class="card-body">
-                            <h3 id="deliveredOrders" class="text-success">0</h3>
-                            <small class="text-muted">Đã giao</small>
+                        <div class="card-body py-2">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <i class="fas fa-check-circle me-2 text-success"></i>
+                                <div>
+                                    <h5 id="deliveredOrders" class="mb-0 text-success fw-bold">0</h5>
+                                    <small class="text-muted d-block">Giao thành công</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-2 col-sm-4 mb-2">
+                <div class="col">
+                    <div class="card text-center shadow-sm status-card" data-status="FAILED" id="stat-failed" onclick="filterByStatus('FAILED', this)" style="cursor: pointer;">
+                        <div class="card-body py-2">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+                                <div>
+                                    <h5 id="failedOrders" class="mb-0 text-warning fw-bold">0</h5>
+                                    <small class="text-muted d-block">Giao thất bại</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
                     <div class="card text-center shadow-sm status-card" data-status="CANCELLED" id="stat-cancelled" onclick="filterByStatus('CANCELLED', this)" style="cursor: pointer;">
-                        <div class="card-body">
-                            <h3 id="cancelledOrders" class="text-danger">0</h3>
-                            <small class="text-muted">Đã hủy</small>
+                        <div class="card-body py-2">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <i class="fas fa-times-circle me-2 text-danger"></i>
+                                <div>
+                                    <h5 id="cancelledOrders" class="mb-0 text-danger fw-bold">0</h5>
+                                    <small class="text-muted d-block">Đã hủy</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -310,19 +353,79 @@
         background: rgba(255,255,255,0.5);
     }
 
+    /* ========== STATUS CARD STYLES - ĐƠN GIẢN ========== */
+    
+    /* Base card style */
     .stat-card {
-        transition: all 0.3s ease;
-        border: 2px solid transparent;
+        transition: all 0.2s ease;
+        border: 2px solid #e0e0e0;
+        position: relative;
+        overflow: hidden;
+        background: #ffffff;
+        cursor: pointer;
     }
     
-    .stat-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    /* NON-ACTIVE CARDS */
+    .stat-card:not(.active):not(.border-primary) {
+        background: #ffffff;
+        border-color: #e0e0e0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     
+    /* Hover cho non-active cards */
+    .stat-card:not(.active):not(.border-primary):hover {
+        border-color: #bbb;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    }
+    
+    /* ========== ACTIVE STATE - ĐƠN GIẢN ========== */
+    .stat-card.active,
     .stat-card.border-primary {
         border-color: #0d6efd !important;
-        background-color: rgba(13, 110, 253, 0.05);
+        border-width: 3px !important;
+        background: #ffffff !important;
+        box-shadow: 0 2px 8px rgba(13, 110, 253, 0.2) !important;
+    }
+    
+    /* Thanh dưới cho active card */
+    .stat-card.active::after,
+    .stat-card.border-primary::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: #0d6efd;
+    }
+    
+
+    
+    /* ========== CARD CONTENT STYLING ========== */
+    .stat-card .card-body {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    /* Icon styling */
+    .stat-card i {
+        font-size: 1.5rem;
+        transition: all 0.2s ease;
+    }
+    
+    /* Text styling */
+    .stat-card h5 {
+        font-size: 1.1rem;
+        margin-bottom: 0;
+    }
+    
+    .stat-card small {
+        font-size: 0.75rem;
+    }
+    
+    /* Active card - chỉ làm đậm text */
+    .stat-card.active h5,
+    .stat-card.border-primary h5 {
+        font-weight: 600;
     }
     
     .order-id {
@@ -421,6 +524,52 @@
 
     .badge {
         padding: 0.5em 0.8em;
+    }
+
+    /* Responsive adjustments for status cards */
+    @media (max-width: 1400px) {
+        .stat-card .card-body {
+            padding: 0.5rem 0.3rem;
+        }
+        
+        .stat-card h5 {
+            font-size: 1rem;
+        }
+        
+        .stat-card small {
+            font-size: 0.7rem;
+        }
+        
+        .stat-card i {
+            font-size: 1.2rem;
+        }
+    }
+
+    @media (max-width: 992px) {
+        .row.g-2 {
+            flex-wrap: wrap;
+        }
+        
+        .row.g-2 > .col {
+            flex: 0 0 auto;
+            width: calc(33.333% - 0.5rem);
+            margin-bottom: 0.5rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .row.g-2 > .col {
+            width: calc(50% - 0.5rem);
+        }
+        
+        .stat-card .d-flex {
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .stat-card i {
+            margin: 0 !important;
+        }
     }
 </style>
 </body>
