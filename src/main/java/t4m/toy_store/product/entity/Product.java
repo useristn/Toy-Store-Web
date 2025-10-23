@@ -31,6 +31,9 @@ public class Product {
     private BigDecimal discountPrice;
 
     private String imageUrl;
+    
+    @Column(name = "cloudinary_public_id")
+    private String cloudinaryPublicId;
 
     private Integer stock;
 

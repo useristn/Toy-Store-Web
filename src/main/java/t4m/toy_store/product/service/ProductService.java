@@ -197,4 +197,8 @@ public class ProductService {
         
         return new PageImpl<>(pageContent, pageable, inStock.size());
     }
+
+    public Product saveProduct(Product product) {
+        return productRepository.save(product);
+    }
 }

@@ -2,6 +2,7 @@ package t4m.toy_store.product.dto;
 
 import lombok.*;
 import t4m.toy_store.product.entity.Product;
+import t4m.toy_store.product.util.CloudinaryUrlHelper;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -42,13 +43,19 @@ public class ProductResponse {
             );
         }
 
+        // Apply Cloudinary transformations to image URL
+        String imageUrl = product.getImageUrl();
+        if (imageUrl != null && imageUrl.contains("cloudinary.com")) {
+            imageUrl = CloudinaryUrlHelper.getThumbnailUrl(imageUrl);
+        }
+
         return ProductResponse.builder()
             .id(product.getId())
             .name(product.getName())
             .description(product.getDescription())
             .price(product.getPrice())
             .discountPrice(product.getDiscountPrice())
-            .imageUrl(product.getImageUrl())
+            .imageUrl(imageUrl)
             .stock(product.getStock())
             .featured(product.getFeatured())
             .category(categoryInfo)
