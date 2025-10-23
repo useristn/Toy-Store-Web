@@ -8,6 +8,18 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!checkAdminAuth()) {
         return; // Stop execution if not authenticated
     }
+    
+    // Check URL parameters for auto-filter
+    const urlParams = new URLSearchParams(window.location.search);
+    const filterParam = urlParams.get('filter');
+    if (filterParam) {
+        const stockFilterEl = document.getElementById('stockFilter');
+        if (stockFilterEl && (filterParam === 'in-stock' || filterParam === 'low-stock' || filterParam === 'out-of-stock')) {
+            stockFilterEl.value = filterParam;
+            currentStockFilter = filterParam;
+        }
+    }
+    
     loadCategories();
     loadProducts();
 });
@@ -87,6 +99,9 @@ async function loadProducts() {
         } else if (currentStockFilter === 'low-stock') {
             url = `/api/admin/products/low-stock?page=0&size=1000`; // Load all for client-side filtering
             needsClientSearch = currentSearch.length > 0;
+        } else if (currentStockFilter === 'in-stock') {
+            url = `/api/admin/products/in-stock?page=0&size=1000`; // Load all for client-side filtering
+            needsClientSearch = currentSearch.length > 0;
         } else {
             // Normal listing with backend search
             url = `/api/admin/products?page=${currentPage}&size=${pageSize}`;
@@ -150,6 +165,14 @@ async function loadProducts() {
         updatePagination(data);
         
         document.getElementById('totalProducts').textContent = data.totalElements || 0;
+        
+        // Update search result text
+        const resultText = document.getElementById('searchResultText');
+        if (currentSearch && resultText) {
+            const totalResults = data.totalElements || 0;
+            resultText.textContent = `Tìm thấy ${totalResults} sản phẩm phù hợp với "${currentSearch}"`;
+            resultText.style.display = 'block';
+        }
 
     } catch (error) {
         console.error('Error loading products:', error);
@@ -280,8 +303,46 @@ function changePage(page) {
 }
 
 function searchProducts() {
-    currentSearch = document.getElementById('searchInput').value.trim();
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearSearchBtn');
+    const resultText = document.getElementById('searchResultText');
+    
+    currentSearch = searchInput.value.trim();
     currentPage = 0;
+    
+    // Show/hide clear button and result text
+    if (currentSearch) {
+        clearBtn.style.display = 'block';
+        resultText.style.display = 'block';
+        resultText.textContent = `Đang tìm kiếm: "${currentSearch}"...`;
+    } else {
+        clearBtn.style.display = 'none';
+        resultText.style.display = 'none';
+    }
+    
+    loadProducts();
+}
+
+// Handle Enter key in search input
+function handleSearchKeypress(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        searchProducts();
+    }
+}
+
+// Clear search function
+function clearSearch() {
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearSearchBtn');
+    const resultText = document.getElementById('searchResultText');
+    
+    searchInput.value = '';
+    currentSearch = '';
+    currentPage = 0;
+    clearBtn.style.display = 'none';
+    resultText.style.display = 'none';
+    
     loadProducts();
 }
 
@@ -447,3 +508,29 @@ function showToast(message, type = 'success') {
         setTimeout(() => toastDiv.remove(), 500);
     }, 3000);
 }
+
+// Logout function
+function logout() {
+    if (confirm('Bạn có chắc muốn đăng xuất?')) {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('token');
+        localStorage.removeItem('authEmail');
+        localStorage.removeItem('userEmail');
+        localStorage.removeItem('userRole');
+        showToast('Đã đăng xuất thành công!', 'success');
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 1000);
+    }
+}
+
+// Update admin info in sidebar
+document.addEventListener('DOMContentLoaded', function() {
+    const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
+    if (userEmail) {
+        const adminEmailEl = document.getElementById('adminEmail');
+        const adminNameEl = document.getElementById('adminName');
+        if (adminEmailEl) adminEmailEl.textContent = userEmail;
+        if (adminNameEl) adminNameEl.textContent = userEmail.split('@')[0];
+    }
+});

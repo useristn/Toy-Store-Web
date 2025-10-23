@@ -104,4 +104,28 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
         }
     }
+
+    @PutMapping("/{orderId}/cancel")
+    public ResponseEntity<?> cancelOrder(
+            @PathVariable Long orderId,
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestHeader(value = "X-User-Email", required = false) String userEmail) {
+        try {
+            // Get email from UserDetails or fallback to header
+            String email = userDetails != null ? userDetails.getUsername() : userEmail;
+            
+            if (email == null || email.isEmpty()) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "User not authenticated");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+            }
+            
+            OrderResponse cancelledOrder = orderService.cancelOrder(orderId, email);
+            return ResponseEntity.ok(cancelledOrder);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
+    }
 }

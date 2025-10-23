@@ -29,6 +29,8 @@ public class OrderResponse {
     private String notes;
     private List<OrderItemResponse> items;
     private LocalDateTime createdAt;
+    private Long shipperId;
+    private String shipperEmail;
 
     public static OrderResponse fromEntity(Order order) {
         List<OrderItemResponse> items = order.getOrderItems().stream()
@@ -56,6 +58,8 @@ public class OrderResponse {
                 .notes(order.getNotes())
                 .items(items)
                 .createdAt(order.getCreatedAt())
+                .shipperId(order.getShipper() != null ? order.getShipper().getId() : null)
+                .shipperEmail(order.getShipper() != null ? order.getShipper().getEmail() : null)
                 .build();
     }
 }

@@ -139,6 +139,9 @@ public class SecurityConfig {
                         // Admin HTML pages - allow access, JS will check role
                         .requestMatchers("/admin", "/admin/**").permitAll()
                         
+                        // Shipper HTML pages - allow access, JS will check role
+                        .requestMatchers("/shipper", "/shipper/**").permitAll()
+                        
                         // Static resources
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                         

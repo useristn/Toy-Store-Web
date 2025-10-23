@@ -176,4 +176,97 @@ public class OrderService {
     public long getOrderCountByStatus(OrderStatus status) {
         return orderRepository.countByStatus(status);
     }
+
+    // Revenue statistics
+    public BigDecimal getTotalRevenue() {
+        List<Order> orders = orderRepository.findAll();
+        return orders.stream()
+                .filter(order -> order.getStatus() == OrderStatus.DELIVERED)
+                .map(Order::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal getMonthlyRevenue() {
+        List<Order> orders = orderRepository.findAll();
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        java.time.LocalDateTime startOfMonth = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
+        
+        return orders.stream()
+                .filter(order -> order.getStatus() == OrderStatus.DELIVERED)
+                .filter(order -> order.getCreatedAt() != null && order.getCreatedAt().isAfter(startOfMonth))
+                .map(Order::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal getTodayRevenue() {
+        List<Order> orders = orderRepository.findAll();
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        java.time.LocalDateTime startOfDay = now.withHour(0).withMinute(0).withSecond(0);
+        
+        return orders.stream()
+                .filter(order -> order.getStatus() == OrderStatus.DELIVERED)
+                .filter(order -> order.getCreatedAt() != null && order.getCreatedAt().isAfter(startOfDay))
+                .map(Order::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal getAverageOrderValue() {
+        List<Order> completedOrders = orderRepository.findAll().stream()
+                .filter(order -> order.getStatus() == OrderStatus.DELIVERED)
+                .collect(Collectors.toList());
+        
+        if (completedOrders.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        
+        BigDecimal total = completedOrders.stream()
+                .map(Order::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        return total.divide(new BigDecimal(completedOrders.size()), 0, java.math.RoundingMode.HALF_UP);
+    }
+
+    public long getTodayOrderCount() {
+        List<Order> orders = orderRepository.findAll();
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        java.time.LocalDateTime startOfDay = now.withHour(0).withMinute(0).withSecond(0);
+        
+        return orders.stream()
+                .filter(order -> order.getCreatedAt() != null && order.getCreatedAt().isAfter(startOfDay))
+                .count();
+    }
+
+    @Transactional
+    public OrderResponse cancelOrder(Long orderId, String userEmail) {
+        // Find order
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
+        
+        // Find user
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        
+        // Verify order belongs to user
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Bạn không có quyền hủy đơn hàng này");
+        }
+        
+        // Check if order can be cancelled (only PENDING and COD)
+        if (order.getStatus() != OrderStatus.PENDING) {
+            throw new RuntimeException("Chỉ có thể hủy đơn hàng đang chờ xử lý");
+        }
+        
+        // Only allow cancellation for COD orders
+        if (!"COD".equalsIgnoreCase(order.getPaymentMethod())) {
+            throw new RuntimeException("Chỉ có thể hủy đơn hàng thanh toán COD. Vui lòng liên hệ hỗ trợ để hủy đơn hàng thanh toán online.");
+        }
+        
+        // Update order status to CANCELLED
+        order.setStatus(OrderStatus.CANCELLED);
+        Order cancelledOrder = orderRepository.save(order);
+        
+        logger.info("Order {} cancelled by user {}", orderId, userEmail);
+        
+        return convertToOrderResponse(cancelledOrder);
+    }
 }

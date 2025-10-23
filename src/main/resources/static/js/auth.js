@@ -32,6 +32,14 @@ function checkAuthStatus() {
             if (adminMenuLink) adminMenuLink.classList.remove('d-none');
             if (adminDashboardLink) adminDashboardLink.classList.remove('d-none');
         }
+
+        // Show shipper dashboard link if user is shipper
+        if (userRole && userRole.includes('SHIPPER')) {
+            const dashboardMenuDivider = document.getElementById('dashboardMenuDivider');
+            const shipperDashboardLink = document.getElementById('shipperDashboardLink');
+            if (dashboardMenuDivider) dashboardMenuDivider.classList.remove('d-none');
+            if (shipperDashboardLink) shipperDashboardLink.classList.remove('d-none');
+        }
     } else {
         // User is not logged in
         if (authButtons) authButtons.classList.remove('d-none');

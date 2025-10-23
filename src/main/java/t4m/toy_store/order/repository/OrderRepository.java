@@ -18,4 +18,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     // Admin methods
     Page<Order> findByStatus(OrderStatus status, Pageable pageable);
     long countByStatus(OrderStatus status);
+    
+    // Shipper methods
+    List<Order> findByShipperIdAndStatus(Long shipperId, OrderStatus status);
+    List<Order> findByShipperId(Long shipperId);
+    long countByShipperIdAndStatus(Long shipperId, OrderStatus status);
+    long countByShipperId(Long shipperId);
 }

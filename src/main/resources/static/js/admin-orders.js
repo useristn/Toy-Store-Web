@@ -7,6 +7,22 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!checkAdminAuth()) {
         return; // Stop execution if not authenticated
     }
+    
+    // Check URL parameters for auto-filter
+    const urlParams = new URLSearchParams(window.location.search);
+    const statusParam = urlParams.get('status');
+    if (statusParam) {
+        currentStatus = statusParam;
+        // Find and highlight the corresponding status card
+        const statusCards = document.querySelectorAll('.status-card');
+        statusCards.forEach(card => {
+            card.classList.remove('border-primary', 'border-3', 'active');
+            if (card.dataset.status === statusParam) {
+                card.classList.add('border-primary', 'border-3', 'active');
+            }
+        });
+    }
+    
     loadOrderStats();
     loadOrders();
 });
@@ -55,6 +71,7 @@ async function loadOrderStats() {
             document.getElementById('processingOrders').textContent = stats.processing || 0;
             document.getElementById('shippedOrders').textContent = stats.shipped || 0;
             document.getElementById('deliveredOrders').textContent = stats.delivered || 0;
+            document.getElementById('failedOrders').textContent = stats.failed || 0;
             document.getElementById('cancelledOrders').textContent = stats.cancelled || 0;
         }
     } catch (error) {
@@ -83,14 +100,9 @@ async function loadOrders() {
             url += `&status=${currentStatus}`;
         }
         
-        if (currentSearch) {
-            url += `&search=${encodeURIComponent(currentSearch)}`;
+        if (currentStatus) {
+            url += `&status=${currentStatus}`;
         }
-        
-        const dateFrom = document.getElementById('dateFrom').value;
-        const dateTo = document.getElementById('dateTo').value;
-        if (dateFrom) url += `&dateFrom=${dateFrom}`;
-        if (dateTo) url += `&dateTo=${dateTo}`;
 
         const response = await fetch(url, {
             headers: {
@@ -170,11 +182,12 @@ function displayOrders(data) {
                 <td>
                     <select class="status-select ${getStatusClass(order.status)}" 
                             onchange="updateOrderStatus(${order.id}, this.value)"
-                            ${order.status === 'DELIVERED' || order.status === 'CANCELLED' ? 'disabled' : ''}>
+                            ${order.status === 'DELIVERED' || order.status === 'FAILED' || order.status === 'CANCELLED' ? 'disabled' : ''}>
                         <option value="PENDING" ${order.status === 'PENDING' ? 'selected' : ''}>Chờ xử lý</option>
                         <option value="PROCESSING" ${order.status === 'PROCESSING' ? 'selected' : ''}>Đang xử lý</option>
                         <option value="SHIPPING" ${order.status === 'SHIPPING' ? 'selected' : ''}>Đang giao</option>
-                        <option value="DELIVERED" ${order.status === 'DELIVERED' ? 'selected' : ''}>Đã giao</option>
+                        <option value="DELIVERED" ${order.status === 'DELIVERED' ? 'selected' : ''}>Giao thành công</option>
+                        <option value="FAILED" ${order.status === 'FAILED' ? 'selected' : ''}>Giao thất bại</option>
                         <option value="CANCELLED" ${order.status === 'CANCELLED' ? 'selected' : ''}>Đã hủy</option>
                     </select>
                 </td>
@@ -196,7 +209,8 @@ function getStatusBadge(status) {
         'PENDING': '<span class="badge bg-warning">Chờ xử lý</span>',
         'PROCESSING': '<span class="badge bg-info">Đang xử lý</span>',
         'SHIPPING': '<span class="badge bg-primary">Đang giao</span>',
-        'DELIVERED': '<span class="badge bg-success">Đã giao</span>',
+        'DELIVERED': '<span class="badge bg-success">Giao thành công</span>',
+        'FAILED': '<span class="badge bg-warning text-dark">Giao thất bại</span>',
         'CANCELLED': '<span class="badge bg-danger">Đã hủy</span>'
     };
     return badges[status] || '<span class="badge bg-secondary">N/A</span>';
@@ -208,20 +222,47 @@ function getStatusClass(status) {
         'PROCESSING': 'bg-info',
         'SHIPPING': 'bg-primary',
         'DELIVERED': 'bg-success',
+        'FAILED': 'bg-warning',
         'CANCELLED': 'bg-danger'
     };
     return classes[status] || '';
 }
 
-function filterByStatus(status) {
+function filterByStatus(status, element) {
     currentStatus = status;
     currentPage = 0;
     
-    // Update active stat card
-    document.querySelectorAll('.stat-card').forEach(card => card.classList.remove('active'));
-    event.target.closest('.stat-card').classList.add('active');
+    // Remove active states from all cards
+    document.querySelectorAll('.stat-card').forEach(card => {
+        card.classList.remove('border-primary', 'border-3', 'active');
+    });
+    
+    // Add active state to clicked card
+    if (element) {
+        element.classList.add('border-primary', 'border-3', 'active');
+    }
     
     loadOrders();
+}
+
+function clearFilters() {
+    currentStatus = '';
+    currentSearch = '';
+    currentPage = 0;
+    
+    // Reset all stat cards
+    document.querySelectorAll('.stat-card').forEach(card => {
+        card.classList.remove('border-primary', 'border-3', 'active');
+    });
+    
+    // Set "Tất cả" as active
+    const allCard = document.getElementById('stat-all');
+    if (allCard) {
+        allCard.classList.add('border-primary', 'border-3', 'active');
+    }
+    
+    loadOrders();
+    showToast('Đã xóa bộ lọc', 'info');
 }
 
 function searchOrders() {
@@ -416,7 +457,8 @@ function getStatusText(status) {
         'PENDING': 'Chờ xử lý',
         'PROCESSING': 'Đang xử lý',
         'SHIPPING': 'Đang giao',
-        'DELIVERED': 'Đã giao',
+        'DELIVERED': 'Giao thành công',
+        'FAILED': 'Giao thất bại',
         'CANCELLED': 'Đã hủy'
     };
     return texts[status] || status;
@@ -503,3 +545,29 @@ function showToast(message, type = 'success') {
         setTimeout(() => toastDiv.remove(), 500);
     }, 3000);
 }
+
+// Logout function
+function logout() {
+    if (confirm('Bạn có chắc muốn đăng xuất?')) {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('token');
+        localStorage.removeItem('authEmail');
+        localStorage.removeItem('userEmail');
+        localStorage.removeItem('userRole');
+        showToast('Đã đăng xuất thành công!', 'success');
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 1000);
+    }
+}
+
+// Update admin info in sidebar on page load
+window.addEventListener('DOMContentLoaded', function() {
+    const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
+    if (userEmail) {
+        const adminEmailEl = document.getElementById('adminEmail');
+        const adminNameEl = document.getElementById('adminName');
+        if (adminEmailEl) adminEmailEl.textContent = userEmail;
+        if (adminNameEl) adminNameEl.textContent = userEmail.split('@')[0];
+    }
+});

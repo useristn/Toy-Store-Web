@@ -25,6 +25,10 @@ public class Order {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shipper_id")
+    private User shipper;
+
     @Column(name = "order_number", unique = true, nullable = false)
     private String orderNumber;
 

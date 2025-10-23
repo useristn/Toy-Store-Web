@@ -500,6 +500,30 @@ body {
     }
 }
 
+/* Product Card Image Styles */
+.card-img-top {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    object-position: center;
+}
+
+/* Product Detail Page - Keep Original Aspect Ratio */
+/* Ảnh chính trong trang chi tiết sản phẩm */
+#productDetailContainer .col-lg-6 .card .card-img-top {
+    height: auto;
+    max-height: 600px;
+    object-fit: contain;
+    background-color: #f8f9fa;
+    padding: 1rem;
+}
+
+/* Sản phẩm liên quan vẫn dùng crop */
+#relatedProducts .card-img-top {
+    height: 250px;
+    object-fit: cover;
+}
+
 /* Playful Utility Classes */
 .space-text {
     background: linear-gradient(135deg, var(--space-blue) 0%, var(--galaxy-pink) 100%);

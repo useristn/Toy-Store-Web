@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shipper Dashboard – T4M Toy Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css">
+</head>
+<body>
+
+<!-- Mobile Menu Toggle -->
+<button class="btn btn-dark d-md-none mobile-menu-toggle" type="button" data-bs-toggle="offcanvas" data-bs-target="#shipperSidebar">
+    <i class="fas fa-bars"></i>
+</button>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-3 col-lg-2 d-md-block bg-gradient-dark sidebar offcanvas-md offcanvas-start" id="shipperSidebar" style="min-height: 100vh;">
+            <div class="offcanvas-header d-md-none">
+                <h5 class="offcanvas-title text-white">Menu Shipper</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#shipperSidebar"></button>
+            </div>
+            <div class="position-sticky pt-3">
+                <!-- Shipper Profile -->
+                <div class="shipper-profile text-center mb-4 px-3">
+                    <div class="profile-avatar mb-2">
+                        <i class="fas fa-shipping-fast fa-3x text-white"></i>
+                    </div>
+                    <h6 class="text-white mb-0" id="shipperName">Shipper</h6>
+                    <small class="text-white-50" id="shipperEmail">shipper@t4m.com</small>
+                </div>
+
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
+                    <span class="text-white-50">🚚 GIAO HÀNG</span>
+                </h6>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/shipper">
+                            <i class="fas fa-home me-2"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showTab('orders'); return false;">
+                            <i class="fas fa-box me-2"></i>Đơn hàng có thể nhận
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showTab('active'); return false;">
+                            <i class="fas fa-truck me-2"></i>Đang giao hàng
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showTab('history'); return false;">
+                            <i class="fas fa-history me-2"></i>Lịch sử giao hàng
+                        </a>
+                    </li>
+                </ul>
+
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
+                    <span class="text-white-50">⚙️ HỆ THỐNG</span>
+                </h6>
+                <ul class="nav flex-column mb-2">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            <i class="fas fa-store me-2"></i>Xem cửa hàng
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="logout()">
+                            <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 bg-light">
+            <!-- Tab: Dashboard -->
+            <div id="dashboardTab" class="content-tab">
+                <!-- Top Bar -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom bg-white shadow-sm px-3 rounded">
+                    <h1 class="h2 mb-0">🚚 Dashboard Shipper - Tổng quan</h1>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="refreshDashboard()">
+                        <i class="fas fa-sync-alt me-1"></i>Làm mới
+                    </button>
+                </div>
+
+                <!-- Stats Cards -->
+                <h5 class="mb-3"><i class="fas fa-truck me-2"></i>Thống kê giao hàng</h5>
+                <div class="row mb-4">
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <a href="#" onclick="showTab('orders'); return false;" class="text-decoration-none">
+                            <div class="card border-left-info shadow-sm h-100 hover-lift">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                                Đơn có thể nhận
+                                            </div>
+                                            <div class="h4 mb-0 font-weight-bold text-gray-800" id="availableOrders">
+                                                <span class="spinner-border spinner-border-sm" role="status"></span>
+                                            </div>
+                                            <small class="text-muted">Đang chờ</small>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-box-open fa-3x text-info opacity-25"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <a href="#" onclick="showTab('active'); return false;" class="text-decoration-none">
+                            <div class="card border-left-primary shadow-sm h-100 hover-lift">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                Đang giao
+                                            </div>
+                                            <div class="h4 mb-0 font-weight-bold text-gray-800" id="activeDeliveries">
+                                                <span class="spinner-border spinner-border-sm" role="status"></span>
+                                            </div>
+                                            <small class="text-muted">Đơn của bạn</small>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-truck fa-3x text-primary opacity-25"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <a href="#" onclick="showTab('history'); return false;" class="text-decoration-none">
+                            <div class="card border-left-info shadow-sm h-100 hover-lift">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                                Tỷ lệ thành công
+                                            </div>
+                                            <div class="h4 mb-0 font-weight-bold text-gray-800" id="successRate">
+                                                <span class="spinner-border spinner-border-sm" role="status"></span>
+                                            </div>
+                                            <small class="text-muted">Hiệu suất</small>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-percentage fa-3x text-info opacity-25"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-warning shadow-sm h-100 hover-lift">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                            Thu nhập ước tính
+                                        </div>
+                                        <div class="h4 mb-0 font-weight-bold text-gray-800" id="estimatedEarnings">
+                                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                                        </div>
+                                        <small class="text-muted">💰 Tháng này</small>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-wallet fa-3x text-warning opacity-25"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Row 2 - Performance Stats -->
+                <h5 class="mb-3"><i class="fas fa-chart-bar me-2"></i>Hiệu suất giao hàng</h5>
+                <div class="row mb-4">
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <a href="#" onclick="showTabWithFilter('history', 'TODAY'); return false;" class="text-decoration-none">
+                            <div class="card border-left-success shadow-sm h-100 hover-lift">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                Giao thành công hôm nay
+                                            </div>
+                                            <div class="h4 mb-0 font-weight-bold text-gray-800" id="completedToday">
+                                                <span class="spinner-border spinner-border-sm" role="status"></span>
+                                            </div>
+                                            <small class="text-success">✓ Hoàn thành</small>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-check-double fa-3x text-success opacity-25"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <a href="#" onclick="showTabWithFilter('history', 'ALL'); return false;" class="text-decoration-none">
+                            <div class="card border-left-warning shadow-sm h-100 hover-lift">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                Tổng đã giao
+                                            </div>
+                                            <div class="h4 mb-0 font-weight-bold text-gray-800" id="totalDeliveries">
+                                                <span class="spinner-border spinner-border-sm" role="status"></span>
+                                            </div>
+                                            <small class="text-muted">Tất cả thời gian</small>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-chart-line fa-3x text-warning opacity-25"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <a href="#" onclick="showTabWithFilter('history', 'DELIVERED'); return false;" class="text-decoration-none">
+                            <div class="card border-left-success shadow-sm h-100 hover-lift">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                Giao thành công
+                                            </div>
+                                            <div class="h4 mb-0 font-weight-bold text-gray-800" id="completedDeliveries">
+                                                <span class="spinner-border spinner-border-sm" role="status"></span>
+                                            </div>
+                                            <div class="mt-2">
+                                                <div class="progress" style="height: 4px;">
+                                                    <div class="progress-bar bg-success" id="successProgress" style="width: 0%"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-check-circle fa-3x text-success opacity-25"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <a href="#" onclick="showTabWithFilter('history', 'FAILED'); return false;" class="text-decoration-none">
+                            <div class="card border-left-danger shadow-sm h-100 hover-lift">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                                Giao thất bại
+                                            </div>
+                                            <div class="h4 mb-0 font-weight-bold text-gray-800" id="failedDeliveries">
+                                                <span class="spinner-border spinner-border-sm" role="status"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-times-circle fa-3x text-danger opacity-25"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="row mb-4">
+                    <!-- Delivery Performance Chart -->
+                    <div class="col-lg-8 mb-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">
+                                    <i class="fas fa-chart-line me-2"></i>Biểu đồ hiệu suất giao hàng
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="deliveryChart" height="100"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Distribution -->
+                    <div class="col-lg-4 mb-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white py-3">
+                                <h6 class="m-0 font-weight-bold text-success">
+                                    <i class="fas fa-chart-pie me-2"></i>Phân bổ trạng thái
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="statusChart" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alerts and Quick Actions -->
+                <div class="row mb-4">
+                    <div class="col-lg-6 mb-4">
+                        <div class="card shadow-sm border-left-warning">
+                            <div class="card-header bg-white py-3">
+                                <h6 class="m-0 font-weight-bold text-warning">
+                                    <i class="fas fa-bell me-2"></i>Thông báo & Cảnh báo
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="alertArea">
+                                    <div class="alert alert-info mb-2 d-none" id="availableOrderAlert">
+                                        <i class="fas fa-box me-2"></i>
+                                        <strong>Thông báo:</strong> Có <span id="availableCount">0</span> đơn hàng đang chờ bạn nhận!
+                                        <a href="#" onclick="showTab('orders'); return false;" class="alert-link">Xem ngay</a>
+                                    </div>
+                                    <div class="alert alert-warning mb-2 d-none" id="activeOrderAlert">
+                                        <i class="fas fa-truck me-2"></i>
+                                        <strong>Đang giao:</strong> Bạn có <span id="activeCount">0</span> đơn hàng cần hoàn thành!
+                                        <a href="#" onclick="showTab('active'); return false;" class="alert-link">Xem chi tiết</a>
+                                    </div>
+                                    <div class="alert alert-success mb-0" id="noAlerts">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        Không có thông báo mới. Hệ thống hoạt động bình thường!
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 mb-4">
+                        <div class="card shadow-sm border-left-primary">
+                            <div class="card-header bg-white py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">
+                                    <i class="fas fa-bolt me-2"></i>Thao tác nhanh
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-primary btn-lg" onclick="showTab('orders')">
+                                        <i class="fas fa-box me-2"></i>Xem đơn có thể nhận
+                                    </button>
+                                    <button class="btn btn-success btn-lg" onclick="showTab('active')">
+                                        <i class="fas fa-truck me-2"></i>Đơn đang giao
+                                    </button>
+                                    <button class="btn btn-info btn-lg" onclick="refreshDashboard()">
+                                        <i class="fas fa-sync-alt me-2"></i>Làm mới dữ liệu
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-lg" onclick="showTab('history')">
+                                        <i class="fas fa-history me-2"></i>Xem lịch sử
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                                <h6 class="m-0 font-weight-bold text-primary">
+                                    <i class="fas fa-history me-2"></i>Hoạt động gần đây
+                                </h6>
+                                <button class="btn btn-sm btn-outline-primary" onclick="loadRecentActivity()">
+                                    <i class="fas fa-sync-alt me-1"></i>Tải lại
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Thời gian</th>
+                                                <th>Mã đơn</th>
+                                                <th>Hành động</th>
+                                                <th>Trạng thái</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="activityTable">
+                                            <tr>
+                                                <td colspan="4" class="text-center text-muted">
+                                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                                    Đang tải dữ liệu...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Đơn hàng có thể nhận -->
+            <div id="ordersTab" class="content-tab" style="display: none;">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom bg-white shadow-sm px-3 rounded">
+                    <h1 class="h2 mb-0">📦 Đơn hàng có thể nhận</h1>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="loadAvailableOrders()">
+                        <i class="fas fa-sync-alt me-1"></i>Làm mới
+                    </button>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Mã đơn</th>
+                                        <th>Khách hàng</th>
+                                        <th>Điện thoại</th>
+                                        <th>Địa chỉ</th>
+                                        <th>Tổng tiền</th>
+                                        <th>Thời gian</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="availableOrdersTable">
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">
+                                            <span class="spinner-border spinner-border-sm me-2"></span>
+                                            Đang tải dữ liệu...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Đang giao hàng -->
+            <div id="activeTab" class="content-tab" style="display: none;">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom bg-white shadow-sm px-3 rounded">
+                    <h1 class="h2 mb-0">🚚 Đơn hàng đang giao</h1>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="loadActiveOrders()">
+                        <i class="fas fa-sync-alt me-1"></i>Làm mới
+                    </button>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Mã đơn</th>
+                                        <th>Khách hàng</th>
+                                        <th>Điện thoại</th>
+                                        <th>Địa chỉ</th>
+                                        <th>Tổng tiền</th>
+                                        <th>Thời gian nhận</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="activeOrdersTable">
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">
+                                            <span class="spinner-border spinner-border-sm me-2"></span>
+                                            Đang tải dữ liệu...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Lịch sử -->
+            <div id="historyTab" class="content-tab" style="display: none;">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom bg-white shadow-sm px-3 rounded">
+                    <h1 class="h2 mb-0">📋 Lịch sử giao hàng</h1>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="loadHistory()">
+                        <i class="fas fa-sync-alt me-1"></i>Làm mới
+                    </button>
+                </div>
+
+                <!-- Filter Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3">
+                        <div class="card border-left-info shadow-sm h-100 hover-lift cursor-pointer" onclick="filterHistory('ALL')">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                            Tất cả đơn hàng
+                                        </div>
+                                        <div class="h4 mb-0 font-weight-bold text-gray-800" id="historyTotalCount">0</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-list fa-2x text-info opacity-25"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card border-left-warning shadow-sm h-100 hover-lift cursor-pointer" onclick="filterHistory('TODAY')">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                            Giao thành công hôm nay
+                                        </div>
+                                        <div class="h4 mb-0 font-weight-bold text-gray-800" id="historyTodayCount">0</div>
+                                        <small class="text-muted">📅 Hôm nay</small>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-calendar-day fa-2x text-warning opacity-25"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card border-left-success shadow-sm h-100 hover-lift cursor-pointer" onclick="filterHistory('DELIVERED')">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                            Giao thành công
+                                        </div>
+                                        <div class="h4 mb-0 font-weight-bold text-gray-800" id="historySuccessCount">0</div>
+                                        <small class="text-success">✓ Delivered</small>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-check-circle fa-2x text-success opacity-25"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card border-left-danger shadow-sm h-100 hover-lift cursor-pointer" onclick="filterHistory('FAILED')">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                            Giao thất bại
+                                        </div>
+                                        <div class="h4 mb-0 font-weight-bold text-gray-800" id="historyFailedCount">0</div>
+                                        <small class="text-danger">✗ Failed</small>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-times-circle fa-2x text-danger opacity-25"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Mã đơn</th>
+                                        <th>Khách hàng</th>
+                                        <th>Địa chỉ</th>
+                                        <th>Tổng tiền</th>
+                                        <th>Trạng thái</th>
+                                        <th>Thời gian</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyTable">
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted">
+                                            <span class="spinner-border spinner-border-sm me-2"></span>
+                                            Đang tải dữ liệu...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Order Detail Modal -->
+<div class="modal fade" id="orderDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-file-invoice me-2"></i>Chi tiết đơn hàng
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="orderDetailContent">
+                <div class="text-center py-5">
+                    <span class="spinner-border spinner-border-lg text-primary" role="status"></span>
+                    <p class="mt-3 text-muted">Đang tải thông tin...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/shipper-dashboard.js}"></script>
+
+<style>
+/* Sidebar Styles */
+.sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+}
+
+.sidebar .nav-link {
+    font-weight: 500;
+    color: #ecf0f1;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+}
+
+.sidebar .nav-link:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-left-color: #3498db;
+    transform: translateX(5px);
+}
+
+.sidebar .nav-link.active {
+    color: #fff;
+    background-color: rgba(52, 152, 219, 0.3);
+    border-left: 3px solid #3498db;
+    font-weight: 600;
+}
+
+.sidebar .nav-link i {
+    width: 20px;
+}
+
+.sidebar-heading {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Shipper Profile */
+.shipper-profile {
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.profile-avatar {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Card Styles */
+.card {
+    border: none;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+}
+
+.border-left-primary {
+    border-left: 4px solid #4e73df !important;
+}
+
+.border-left-success {
+    border-left: 4px solid #1cc88a !important;
+}
+
+.border-left-info {
+    border-left: 4px solid #36b9cc !important;
+}
+
+.border-left-warning {
+    border-left: 4px solid #f6c23e !important;
+}
+
+.border-left-danger {
+    border-left: 4px solid #e74a3b !important;
+}
+
+.border-left-secondary {
+    border-left: 4px solid #858796 !important;
+}
+
+/* Typography */
+.text-xs {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.font-weight-bold {
+    font-weight: 700 !important;
+}
+
+.text-gray-800 {
+    color: #5a5c69 !important;
+}
+
+/* Background */
+main {
+    min-height: 100vh;
+}
+
+.bg-gradient-dark {
+    background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Progress Bar */
+.progress {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+/* Alert Styles */
+.alert {
+    border-radius: 0.5rem;
+    border-left: 4px solid;
+}
+
+/* Table Styles */
+.table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    color: #6c757d;
+    border-top: none;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0,0,0,0.02);
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1040;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+/* Content Tab Management */
+.content-tab {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Badge for order status */
+.badge-status {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+/* Button Styles */
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+}
+
+/* Filter buttons */
+.filter-btn {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.filter-btn.active {
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.filter-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* Gap utility for flexbox */
+.gap-2 {
+    gap: 0.5rem;
+}
+
+/* Card Header */
+.card-header {
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Scrollbar */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.1);
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 10px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.5);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        position: relative;
+        height: auto;
+    }
+    
+    main {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        margin-top: 60px;
+    }
+    
+    .hover-lift:hover {
+        transform: none;
+    }
+}
+
+@media (min-width: 768px) {
+    .mobile-menu-toggle {
+        display: none;
+    }
+}
+</style>
+</body>
+</html>
