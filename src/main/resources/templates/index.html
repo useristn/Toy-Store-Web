@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head}">
+    <title>🚀 T4M - Cửa hàng đồ chơi vũ trụ</title>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<!-- Hero Section -->
+<section class="hero-section space-bg">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-4 fade-in">Chào mừng đến với T4M!</h1>
+        <p class="lead mb-4 fade-in">Khám phá thiên hà đồ chơi tuyệt vời nhất vũ trụ!</p>
+        <div class="fade-in">
+            <a href="#featured" class="btn btn-light btn-lg me-3">
+                <i class="fas fa-rocket me-2"></i>Bay đến cửa hàng
+            </a>
+            <a th:href="@{/products}" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-star me-2"></i>Xem tất cả sản phẩm
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section id="featured" class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold space-text">Đồ chơi siêu đặc biệt</h2>
+            <p class="text-muted">Những món đồ chơi được yêu thích nhất trong thiên hà!</p>
+        </div>
+        <div id="featuredProducts" class="row">
+            <!-- Loading State -->
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Đang tải...</span>
+                </div>
+                <p class="mt-3 text-muted">Đang tải sản phẩm nổi bật...</p>
+            </div>
+        </div>
+        <div class="text-center mt-4">
+            <a th:href="@{/products}" class="btn btn-primary btn-lg">
+                <i class="fas fa-rocket me-2"></i>Khám phá thêm
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Promotion Banner -->
+<section class="bg-light py-5" style="background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%) !important;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h3 class="fw-bold space-text mb-3">Ưu đãi Thiên hà Đặc biệt!</h3>
+                <p class="text-muted mb-0">Giảm giá lên đến 50% cho tất cả đồ chơi khoa học! Cơ hội trở thành nhà khoa
+                    học nhí đang chờ các bạn!</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a th:href="@{/products}" class="btn btn-danger btn-lg">
+                    <i class="fas fa-rocket me-2"></i>Khám phá ngay
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Fun Facts Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold space-text">Những điều thú vị về T4M</h2>
+        </div>
+        <div class="row text-center">
+            <div class="col-md-3 mb-4">
+                <div class="card h-100" style="border: 3px solid var(--nebula-cyan); border-radius: 20px;">
+                    <div class="card-body">
+                        <div class="display-4 mb-3">🚀</div>
+                        <h5 class="space-text">10,000+</h5>
+                        <p class="text-muted">Phi hành gia nhí hạnh phúc</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card h-100" style="border: 3px solid var(--galaxy-pink); border-radius: 20px;">
+                    <div class="card-body">
+                        <div class="display-4 mb-3">🎯</div>
+                        <h5 class="space-text">5,000+</h5>
+                        <p class="text-muted">Đồ chơi tuyệt vời</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card h-100" style="border: 3px solid var(--star-yellow); border-radius: 20px;">
+                    <div class="card-body">
+                        <div class="display-4 mb-3">⭐</div>
+                        <h5 class="space-text">100%</h5>
+                        <p class="text-muted">An toàn & Chất lượng</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card h-100" style="border: 3px solid var(--cosmic-purple); border-radius: 20px;">
+                    <div class="card-body">
+                        <div class="display-4 mb-3">🌟</div>
+                        <h5 class="space-text">24/7</h5>
+                        <p class="text-muted">Hỗ trợ vũ trụ</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/home.js}" defer></script>
+</body>
+</html>

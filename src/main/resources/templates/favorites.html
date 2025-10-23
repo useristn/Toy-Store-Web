@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head}">
+    <title>❤️ Yêu Thích – T4M</title>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<!-- Page Header -->
+<section class="profile-header">
+    <div class="container text-center">
+        <h1 class="display-5 fw-bold"><i class="fas fa-heart me-3 text-danger"></i>Sản phẩm yêu thích</h1>
+        <p class="lead">Những món đồ chơi bạn đã lưu lại!</p>
+    </div>
+</section>
+
+<div class="container py-5">
+    <!-- Stats -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card bg-gradient-danger text-white">
+                <div class="card-body text-center">
+                    <h2 class="mb-0"><i class="fas fa-heart me-2"></i><span id="favoriteCount">0</span> sản phẩm</h2>
+                    <p class="mb-0">Trong danh sách yêu thích của bạn</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Favorites Grid -->
+    <div id="favoritesContainer" class="row">
+        <!-- Loading State -->
+        <div class="col-12 text-center py-5">
+            <div class="spinner-border text-danger" role="status">
+                <span class="visually-hidden">Đang tải...</span>
+            </div>
+            <p class="mt-3 text-muted">Đang tải danh sách yêu thích...</p>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/favorites.js}" defer></script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="ctx" th:content="@{/}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<header th:fragment="header" class="header-section">
+    <!-- Top Bar -->
+    <div class="top-bar text-white py-2">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <small><i class="fas fa-rocket me-2"></i>Hotline Vũ Trụ: 1800-363-363</small>
+                    <small class="ms-3"><i class="fas fa-satellite me-2"></i>space@t4m.vn</small>
+                </div>
+                <div class="col-md-6 text-end">
+                    <small>🚀 Giao hàng tốc độ ánh sáng cho đơn từ 300K! 🌟</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white py-3 shadow-sm">
+        <div class="container">
+            <!-- Logo -->
+            <a class="navbar-brand fw-bold space-text" th:href="@{/}">
+                <i class="fas fa-robot me-2 robot-icon"></i>T4M
+            </a>
+
+            <!-- Search Bar -->
+            <div class="search-section flex-grow-1 mx-4">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Tìm kiếm đồ chơi tuyệt vời..."
+                           id="searchInput">
+                    <button class="btn btn-danger" type="button" id="searchBtn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- User Actions -->
+            <div class="user-actions d-flex align-items-center">
+                <a th:href="@{/cart}" class="btn cart-btn text-white me-3" id="cartBtn">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="badge bg-danger ms-1" id="cartBadge">0</span>
+                </a>
+                <div class="auth-buttons" id="authButtons">
+                    <a th:href="@{/login}" class="btn cosmic-btn">
+                        <i class="fas fa-sign-in-alt me-1"></i>Đăng nhập
+                    </a>
+                </div>
+                <div class="user-menu d-none" id="userMenu">
+                    <div class="dropdown">
+                        <button class="btn cosmic-btn dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user me-1"></i><span id="userName">Phi hành gia</span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" th:href="@{/profile}"><i
+                                    class="fas fa-user-astronaut me-2"></i>Hồ sơ phi hành gia</a></li>
+                            <li><a class="dropdown-item" th:href="@{/orders}"><i class="fas fa-list-alt me-2"></i>Đơn hàng của tôi</a></li>
+                            <li><a class="dropdown-item" th:href="@{/cart}"><i class="fas fa-shopping-cart me-2"></i>Giỏ hàng vũ trụ</a>
+                            </li>
+                            <li><a class="dropdown-item" th:href="@{/favorites}"><i class="fas fa-heart me-2 text-danger"></i>Yêu thích</a></li>
+                            <li id="dashboardMenuDivider" class="d-none">
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li id="adminDashboardLink" class="d-none">
+                                <a class="dropdown-item text-primary fw-bold" th:href="@{/admin}">
+                                    <i class="fas fa-shield-alt me-2"></i>Admin Dashboard
+                                </a>
+                            </li>
+                            <li id="shipperDashboardLink" class="d-none">
+                                <a class="dropdown-item text-success fw-bold" th:href="@{/shipper}">
+                                    <i class="fas fa-truck me-2"></i>Shipper Dashboard
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="#" id="logoutLink"><i class="fas fa-rocket me-2"></i>Bay
+                                về Trái Đất</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Toggle -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Category Navigation - Separate Section -->
+    <nav class="category-nav space-bg py-2">
+        <div class="container">
+            <ul class="navbar-nav d-flex flex-row justify-content-center flex-wrap" id="categoryNavigation">
+                <li class="nav-item">
+                    <a class="nav-link text-white fw-semibold px-2 px-lg-3" th:href="@{/}">
+                        <i class="fas fa-home me-1"></i>Trang chủ
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white fw-semibold px-2 px-lg-3" th:href="@{/products}">
+                        <i class="fas fa-store me-1"></i>Tất cả
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white fw-semibold px-2 px-lg-3" href="/products?category=1" title="Búp bê xinh đẹp">
+                        👸 Búp bê
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white fw-semibold px-2 px-lg-3" href="/products?category=2" title="Phương tiện vũ trụ">
+                        🚀 Xe
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white fw-semibold px-2 px-lg-3" href="/products?category=3" title="Đồ chơi sáng tạo">
+                        🧩 Xếp hình
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white fw-semibold px-2 px-lg-3" href="/products?category=4" title="Học tập vui vẻ">
+                        🔬 Khoa học
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white fw-semibold px-2 px-lg-3" href="/products?category=5" title="Vận động ngoài trời">
+                        ⚽ Ngoài trời
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white fw-semibold px-2 px-lg-3" href="/products?category=6" title="Phát triển nghệ thuật">
+                        🎨 Nghệ thuật
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white fw-semibold px-2 px-lg-3" href="/products?category=7" title="Công nghệ hiện đại">
+                        🤖 Điện tử
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white fw-semibold px-2 px-lg-3" href="/products?category=8" title="Trò chơi trí tuệ">
+                        🎲 Board Game
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+</header>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Header Search functionality only
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchBtn = document.getElementById('searchBtn');
+        const searchInput = document.getElementById('searchInput');
+
+        if (searchBtn && searchInput) {
+            searchBtn.addEventListener('click', performSearch);
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    performSearch();
+                }
+            });
+        }
+
+        function performSearch() {
+            const keyword = searchInput.value.trim();
+            if (keyword) {
+                window.location.href = `/products?search=${encodeURIComponent(keyword)}`;
+            }
+        }
+    });
+</script>
+</html>

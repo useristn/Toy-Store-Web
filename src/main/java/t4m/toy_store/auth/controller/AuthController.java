@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,8 @@ import t4m.toy_store.auth.dto.LoginRequest;
 import t4m.toy_store.auth.dto.RegisterRequest;
 import t4m.toy_store.auth.dto.OtpRequest;
 import t4m.toy_store.auth.dto.ResetPasswordRequest;
+import t4m.toy_store.auth.dto.UpdateProfileRequest;
+import t4m.toy_store.auth.dto.UserProfileResponse;
 import t4m.toy_store.auth.service.UserService;
 import t4m.toy_store.auth.dto.ErrorResponse;
 import t4m.toy_store.auth.exception.*;
@@ -30,6 +33,9 @@ public class AuthController {
         this.userService = userService;
     }
 
+    /**
+     * Register a new user and send OTP for activation.
+     */
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest dto) {
         try {
@@ -41,6 +47,9 @@ public class AuthController {
         }
     }
 
+    /**
+     * Send OTP for account activation.
+     */
     @PostMapping("/active-account")
     public ResponseEntity<AuthResponse> activeAccount(@RequestBody Map<String, String> request) {
         try {
@@ -52,11 +61,14 @@ public class AuthController {
             return ResponseEntity.ok(new AuthResponse(email, null, "OTP sent to your email for activation"));
         } catch (UserNotFoundException | AccountNotActivatedException | IllegalArgumentException e) {
             logger.warn("Activation OTP error: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new AuthResponse(null, null, null, e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new AuthResponse(null, null, e.getMessage()));
         }
     }
 
-    @PostMapping("/verify-otp")
+    /**
+     * Verify OTP and activate account.
+     */
+    @PostMapping("/verify-account")
     public ResponseEntity<AuthResponse> verifyOtp(@Valid @RequestBody OtpRequest dto) {
         try {
             userService.verifyOtpAndActivate(dto.getEmail(), dto.getOtp());
@@ -67,6 +79,9 @@ public class AuthController {
         }
     }
 
+    /**
+     * Login user and return JWT.
+     */
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest dto) {
         try {
@@ -79,6 +94,9 @@ public class AuthController {
         }
     }
 
+    /**
+     * Send OTP for password reset.
+     */
     @PostMapping("/forgot-password")
     public ResponseEntity<AuthResponse> forgotPassword(@RequestBody Map<String, String> request) {
         try {
@@ -90,10 +108,13 @@ public class AuthController {
             return ResponseEntity.ok(new AuthResponse(email, null, "OTP sent to your email"));
         } catch (UserNotFoundException | IllegalArgumentException e) {
             logger.warn("Forgot password error: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new AuthResponse(null, null, null, e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new AuthResponse(null, null, e.getMessage()));
         }
     }
 
+    /**
+     * Reset password with OTP.
+     */
     @PostMapping("/reset-password")
     public ResponseEntity<AuthResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest dto) {
         try {
@@ -102,6 +123,36 @@ public class AuthController {
         } catch (UserNotFoundException | OtpInvalidException | OtpExpiredException e) {
             logger.warn("Reset password error: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new AuthResponse(dto.getEmail(), null, e.getMessage()));
+        }
+    }
+
+    /**
+     * Get user profile information.
+     */
+    @GetMapping("/user")
+//    @PreAuthorize("#email == authentication.name")
+    public ResponseEntity<UserProfileResponse> getUserProfile(@RequestParam String email) {
+        try {
+            UserProfileResponse profile = userService.getUserProfile(email);
+            return ResponseEntity.ok(profile);
+        } catch (UserNotFoundException e) {
+            logger.warn("Profile fetch error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
+    /**
+     * Update user profile information.
+     */
+    @PutMapping("/update-profile")
+//    @PreAuthorize("#email == authentication.name")
+    public ResponseEntity<AuthResponse> updateProfile(@RequestParam String email, @Valid @RequestBody UpdateProfileRequest dto) {
+        try {
+            userService.updateUserProfile(email, dto);
+            return ResponseEntity.ok(new AuthResponse(email, null, "Profile updated successfully"));
+        } catch (UserNotFoundException e) {
+            logger.warn("Profile update error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new AuthResponse(email, null, e.getMessage()));
         }
     }
 

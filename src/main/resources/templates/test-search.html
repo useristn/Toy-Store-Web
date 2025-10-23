@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Search Function</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0"><i class="fas fa-search me-2"></i>Test Search & Filter</h3>
+            </div>
+            <div class="card-body">
+                <!-- Search Test -->
+                <div class="mb-4">
+                    <h5>1. Test Search Input</h5>
+                    <div class="input-group mb-2">
+                        <input type="text" id="testSearch" class="form-control" placeholder="Nhập từ khóa...">
+                        <button class="btn btn-primary" onclick="testSearchFunction()">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                    <small class="text-muted">Thử nhập: robot, búp bê, lego</small>
+                </div>
+
+                <!-- Direct API Test -->
+                <div class="mb-4">
+                    <h5>2. Test Direct API Call</h5>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-primary" onclick="testAPI('all')">All Products</button>
+                        <button class="btn btn-outline-primary" onclick="testAPI('robot')">Search "robot"</button>
+                        <button class="btn btn-outline-primary" onclick="testAPI('búp bê')">Search "búp bê"</button>
+                        <button class="btn btn-outline-primary" onclick="testAPI('price')">Price Filter</button>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div class="mb-4">
+                    <h5>3. Results <span id="resultCount" class="badge bg-success">0</span></h5>
+                    <div id="results" class="border rounded p-3 bg-white" style="max-height: 400px; overflow-y: auto;">
+                        <p class="text-muted">Nhấn các nút test để xem kết quả...</p>
+                    </div>
+                </div>
+
+                <!-- Console Log -->
+                <div>
+                    <h5>4. Console Log</h5>
+                    <div id="consoleLog" class="border rounded p-3 bg-dark text-white" style="max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.85em;">
+                        <div>Đợi test...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const consoleLog = document.getElementById('consoleLog');
+            const time = new Date().toLocaleTimeString();
+            const color = type === 'error' ? 'text-danger' : type === 'success' ? 'text-success' : 'text-info';
+            consoleLog.innerHTML += `<div class="${color}">[${time}] ${message}</div>`;
+            consoleLog.scrollTop = consoleLog.scrollHeight;
+            console.log(message);
+        }
+
+        function displayResults(data) {
+            const results = document.getElementById('results');
+            const resultCount = document.getElementById('resultCount');
+            
+            if (!data || !data.content || data.content.length === 0) {
+                results.innerHTML = '<p class="text-warning">Không tìm thấy sản phẩm nào!</p>';
+                resultCount.textContent = '0';
+                return;
+            }
+
+            resultCount.textContent = data.totalElements || data.content.length;
+            
+            results.innerHTML = `
+                <div class="alert alert-info">
+                    Tìm thấy <strong>${data.totalElements}</strong> sản phẩm 
+                    (Trang ${data.number + 1}/${data.totalPages})
+                </div>
+                <div class="row">
+                    ${data.content.map(p => `
+                        <div class="col-md-6 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">${p.name}</h6>
+                                    <p class="card-text mb-1">
+                                        <strong>Giá:</strong> ${formatPrice(p.discountPrice || p.price)}
+                                        ${p.discountPrice ? `<span class="text-muted text-decoration-line-through ms-2">${formatPrice(p.price)}</span>` : ''}
+                                    </p>
+                                    ${p.category ? `<small class="text-muted">Danh mục: ${p.category.name}</small>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function formatPrice(price) {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+        }
+
+        async function testSearchFunction() {
+            const keyword = document.getElementById('testSearch').value.trim();
+            if (!keyword) {
+                alert('Vui lòng nhập từ khóa!');
+                return;
+            }
+            
+            log(`Đang tìm kiếm: "${keyword}"...`);
+            await testAPI(keyword);
+        }
+
+        async function testAPI(type) {
+            let url = '/api/products/filter?page=0&size=12';
+            
+            switch(type) {
+                case 'all':
+                    log('Test: Lấy tất cả sản phẩm');
+                    break;
+                case 'robot':
+                    url += '&keyword=robot';
+                    log('Test: Tìm kiếm "robot"');
+                    break;
+                case 'búp bê':
+                    url += '&keyword=' + encodeURIComponent('búp bê');
+                    log('Test: Tìm kiếm "búp bê"');
+                    break;
+                case 'price':
+                    url += '&minPrice=200000&maxPrice=500000';
+                    log('Test: Filter giá 200k-500k');
+                    break;
+                default:
+                    url += '&keyword=' + encodeURIComponent(type);
+                    log(`Test: Tìm kiếm "${type}"`);
+            }
+
+            log(`URL: ${url}`, 'info');
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                log(`✓ Thành công! Tìm thấy ${data.totalElements} sản phẩm`, 'success');
+                displayResults(data);
+            } catch (error) {
+                log(`✗ Lỗi: ${error.message}`, 'error');
+                document.getElementById('results').innerHTML = 
+                    `<div class="alert alert-danger">Lỗi: ${error.message}</div>`;
+            }
+        }
+
+        // Auto test on load
+        window.addEventListener('load', function() {
+            log('Trang test đã load!', 'success');
+            log('Sẵn sàng kiểm tra chức năng search & filter');
+        });
+    </script>
+</body>
+</html>
