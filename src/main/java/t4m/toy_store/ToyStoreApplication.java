@@ -4,6 +4,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import t4m.toy_store.auth.entity.Role;
 import t4m.toy_store.auth.entity.User;
@@ -27,6 +28,7 @@ public class ToyStoreApplication {
     }
 
     @Bean
+    @Order(1)
     public ApplicationRunner initRoles(RoleRepository roleRepository) {
         return args -> {
             List<String> roleNames = Arrays.asList("ROLE_USER", "ROLE_VENDOR", "ROLE_SHIPPER", "ROLE_ADMIN");
@@ -45,6 +47,7 @@ public class ToyStoreApplication {
     }
 
     @Bean
+    @Order(2)
     public ApplicationRunner initAdminUser(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         return args -> {
             String adminEmail = "admin@toystore.com";
@@ -81,6 +84,7 @@ public class ToyStoreApplication {
     }
 
     @Bean
+    @Order(3)
     public ApplicationRunner initCategories(CategoryRepository categoryRepository, ProductRepository productRepository) {
         return args -> {
             if (categoryRepository.count() == 0) {

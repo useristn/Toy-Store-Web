@@ -17,13 +17,36 @@ async function loadOrderDetails() {
             throw new Error('Order number not found');
         }
 
-        const response = await fetch(`/api/orders/${orderNumber}`);
+        // Get authentication token
+        const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+        const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
+
+        if (!token || !userEmail) {
+            // Redirect to login if not authenticated
+            window.location.href = '/login';
+            return;
+        }
+
+        const response = await fetch(`/api/orders/${orderNumber}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'X-User-Email': userEmail
+            }
+        });
+
+        if (response.status === 401) {
+            window.location.href = '/login';
+            return;
+        }
 
         if (!response.ok) {
-            throw new Error('Order not found');
+            const error = await response.json().catch(() => ({}));
+            throw new Error(error.message || 'Order not found');
         }
 
         const order = await response.json();
+        console.log('Order loaded successfully:', order);
 
         // Display order details
         displayOrderDetails(order);
@@ -36,8 +59,28 @@ async function loadOrderDetails() {
 
     } catch (error) {
         console.error('Error loading order:', error);
+        console.error('Order number:', pathParts[pathParts.length - 1]);
         loadingState.style.display = 'none';
         errorState.style.display = 'block';
+        
+        // Show more detailed error message
+        const errorMessage = document.querySelector('#errorState .card-body');
+        if (errorMessage) {
+            errorMessage.innerHTML = `
+                <h3 class="text-danger mb-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Không tìm thấy đơn hàng
+                </h3>
+                <p class="text-muted mb-4">Đơn hàng không tồn tại hoặc đã bị xóa.</p>
+                <p class="text-danger mb-4">Chi tiết lỗi: ${error.message}</p>
+                <a href="/orders" class="btn btn-primary me-2">
+                    <i class="fas fa-list me-2"></i>Xem danh sách đơn hàng
+                </a>
+                <a href="/products" class="btn btn-outline-primary">
+                    <i class="fas fa-shopping-bag me-2"></i>Tiếp tục mua sắm
+                </a>
+            `;
+        }
     }
 }
 

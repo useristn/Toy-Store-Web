@@ -188,21 +188,25 @@ function handleLogin(event) {
 
         if (response.ok && data.token) {
             // 1. Handle successful login
+            console.log('Login successful, data:', data);
             localStorage.setItem('authToken', data.token);
             localStorage.setItem('authEmail', data.email || email);
             
             // Store user role if provided
             if (data.role) {
                 localStorage.setItem('userRole', data.role);
+                console.log('User role saved:', data.role);
             }
             
             // Check if user is admin and redirect accordingly
             if (data.role && data.role.includes('ADMIN')) {
+                console.log('Redirecting to admin dashboard...');
                 displayMessage('loginMessage', 'Đăng nhập Admin thành công! Đang chuyển đến trang quản trị...');
                 setTimeout(() => {
                     window.location.href = '/admin';
                 }, 1500);
             } else {
+                console.log('Redirecting to profile...');
                 displayMessage('loginMessage', data.message || 'Đăng nhập thành công! Đang chuyển đến trang cá nhân...');
                 setTimeout(() => {
                     window.location.href = '/profile';
@@ -632,6 +636,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', handleLogin);
+        
+        // Check for error messages from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        const loginMessage = document.getElementById('loginMessage');
+        
+        if (error && loginMessage) {
+            let message = '';
+            if (error === 'access_denied') {
+                message = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Bạn không có quyền truy cập. Vui lòng đăng nhập với tài khoản Admin.</div>';
+            } else if (error === 'unauthorized') {
+                message = '<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>Vui lòng đăng nhập để tiếp tục.</div>';
+            }
+            
+            if (message) {
+                loginMessage.innerHTML = message;
+                loginMessage.classList.remove('d-none');
+            }
+        }
     }
 
     // Forgot password page

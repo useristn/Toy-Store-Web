@@ -4,7 +4,9 @@ let currentSearch = '';
 const pageSize = 20;
 
 document.addEventListener('DOMContentLoaded', function() {
-    checkAdminAuth();
+    if (!checkAdminAuth()) {
+        return; // Stop execution if not authenticated
+    }
     loadOrderStats();
     loadOrders();
 });
@@ -17,19 +19,21 @@ function checkAdminAuth() {
     if (!token || !userEmail) {
         showToast('Vui lòng đăng nhập để truy cập!', 'warning');
         setTimeout(() => {
-            window.location.href = '/login';
+            window.location.href = '/login?error=unauthorized';
         }, 1500);
-        return;
+        return false;
     }
     
     // Check admin role
     if (!userRole || !userRole.includes('ADMIN')) {
         showToast('Bạn không có quyền truy cập trang này!', 'danger');
         setTimeout(() => {
-            window.location.href = '/';
+            window.location.href = '/login?error=access_denied';
         }, 1500);
-        return;
+        return false;
     }
+    
+    return true;
 }
 
 async function loadOrderStats() {

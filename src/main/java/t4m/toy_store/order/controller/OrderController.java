@@ -70,9 +70,33 @@ public class OrderController {
     }
 
     @GetMapping("/{orderNumber}")
-    public ResponseEntity<?> getOrderByNumber(@PathVariable String orderNumber) {
+    public ResponseEntity<?> getOrderByNumber(
+            @PathVariable String orderNumber,
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestHeader(value = "X-User-Email", required = false) String userEmail) {
         try {
+            // Get email from UserDetails or fallback to header
+            String email = userDetails != null ? userDetails.getUsername() : userEmail;
+            
+            if (email == null || email.isEmpty()) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "User not authenticated");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+            }
+            
             OrderResponse order = orderService.getOrderByNumber(orderNumber);
+            
+            // Check if user owns this order or is admin
+            boolean isOwner = order.getCustomerEmail().equalsIgnoreCase(email);
+            boolean isAdmin = userDetails != null && userDetails.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            
+            if (!isOwner && !isAdmin) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Bạn không có quyền xem đơn hàng này");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+            }
+            
             return ResponseEntity.ok(order);
         } catch (RuntimeException e) {
             Map<String, String> error = new HashMap<>();

@@ -210,11 +210,18 @@ function setupCheckoutButton() {
             }
 
             const order = await response.json();
+            console.log('Order created successfully:', order);
+            console.log('Order number:', order.orderNumber);
+            
+            if (!order.orderNumber) {
+                throw new Error('Order number not returned from server');
+            }
             
             // Show success and redirect
             showNotification('Đặt hàng thành công! Đang chuyển hướng...', 'success');
             
             setTimeout(() => {
+                console.log('Redirecting to:', `/order-confirmation/${order.orderNumber}`);
                 window.location.href = `/order-confirmation/${order.orderNumber}`;
             }, 1500);
 

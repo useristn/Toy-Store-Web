@@ -1,22 +1,33 @@
 document.addEventListener('DOMContentLoaded', function() {
-    checkAdminAuth();
+    if (!checkAdminAuth()) {
+        return; // Stop execution if not authenticated
+    }
     loadDashboardStats();
 });
 
 function checkAdminAuth() {
     const token = localStorage.getItem('authToken') || localStorage.getItem('token');
     const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
+    const userRole = localStorage.getItem('userRole');
     
     if (!token || !userEmail) {
         showToast('Vui lòng đăng nhập để truy cập trang quản trị!', 'warning');
         setTimeout(() => {
-            window.location.href = '/login';
+            window.location.href = '/login?error=unauthorized';
         }, 1500);
-        return;
+        return false;
     }
     
-    // TODO: Check if user has ADMIN role
-    // For now, allow access if logged in
+    // Check if user has ADMIN role
+    if (!userRole || !userRole.includes('ADMIN')) {
+        showToast('Bạn không có quyền truy cập trang này!', 'danger');
+        setTimeout(() => {
+            window.location.href = '/login?error=access_denied';
+        }, 1500);
+        return false;
+    }
+    
+    return true;
 }
 
 async function loadDashboardStats() {
@@ -40,6 +51,10 @@ async function loadDashboardStats() {
             document.getElementById('inStockProducts').textContent = productStats.inStockProducts || 0;
             document.getElementById('lowStockProducts').textContent = productStats.lowStockProducts || 0;
             document.getElementById('outOfStockProducts').textContent = productStats.outOfStockProducts || 0;
+        } else if (productStatsResponse.status === 401 || productStatsResponse.status === 403) {
+            showToast('Phiên đăng nhập hết hạn hoặc không có quyền truy cập!', 'danger');
+            setTimeout(() => window.location.href = '/login?error=unauthorized', 1500);
+            return;
         }
 
         // Load order stats
