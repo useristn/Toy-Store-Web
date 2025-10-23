@@ -185,4 +185,16 @@ public class ProductService {
         
         return new PageImpl<>(pageContent, pageable, lowStock.size());
     }
+
+    public Page<Product> getInStockProducts(int threshold, Pageable pageable) {
+        List<Product> inStock = productRepository.findAll().stream()
+            .filter(p -> p.getStock() != null && p.getStock() > threshold)
+            .toList();
+        
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), inStock.size());
+        List<Product> pageContent = inStock.subList(start, end);
+        
+        return new PageImpl<>(pageContent, pageable, inStock.size());
+    }
 }

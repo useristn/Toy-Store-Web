@@ -47,6 +47,93 @@
     </div>
 </div>
 
+<!-- Cancel Order Modal -->
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="cancelOrderModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Xác nhận hủy đơn hàng
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <i class="fas fa-times-circle text-danger" style="font-size: 4rem;"></i>
+                </div>
+                <h6 class="text-center mb-3">Bạn có chắc chắn muốn hủy đơn hàng này?</h6>
+                <div class="alert alert-warning">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Lưu ý:</strong> Chỉ có thể hủy đơn hàng COD đang chờ xử lý. Hành động này không thể hoàn tác.
+                </div>
+                <div class="bg-light p-3 rounded">
+                    <p class="mb-1"><strong>Mã đơn hàng:</strong> <span id="cancelOrderNumber" class="text-primary"></span></p>
+                    <p class="mb-0"><strong>Lý do:</strong> Chỉ được hủy đơn COD</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-arrow-left me-2"></i>Quay lại
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmCancelBtn">
+                    <i class="fas fa-times me-2"></i>Xác nhận hủy
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="successModalLabel">
+                    <i class="fas fa-check-circle me-2"></i>Thành công
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
+                <h4 class="mt-3 mb-2">Đã hủy đơn hàng!</h4>
+                <p class="text-muted mb-0">Đơn hàng của bạn đã được hủy thành công.</p>
+                <p class="text-muted mt-2">
+                    <small>Tự động tải lại sau <strong><span id="countdownTimer">5</span></strong> giây...</small>
+                </p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-primary" onclick="window.location.href='/'">
+                    <i class="fas fa-home me-2"></i>Về trang chủ
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="errorModalLabel">
+                    <i class="fas fa-exclamation-circle me-2"></i>Lỗi
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="fas fa-exclamation-circle text-danger" style="font-size: 4rem;"></i>
+                <h5 class="mt-3 mb-2">Không thể hủy đơn hàng</h5>
+                <p class="text-muted mb-0" id="errorMessage">Đã xảy ra lỗi. Vui lòng thử lại sau!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div th:replace="~{fragments/footer :: footer}"></div>
 
 <!-- JavaScript -->
@@ -156,15 +243,27 @@ function displayOrders(orders) {
                     <div class="col-md-4 text-md-end">
                         <p class="text-muted mb-1">Tổng tiền:</p>
                         <h4 class="text-danger mb-3">${formatPrice(order.totalAmount)}</h4>
-                        <a href="/order-confirmation/${order.orderNumber}" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-eye me-1"></i>Chi tiết
-                        </a>
+                        <div class="d-flex gap-2 justify-content-md-end">
+                            <a href="/order-confirmation/${order.orderNumber}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye me-1"></i>Chi tiết
+                            </a>
+                            ${canCancelOrder(order) ? `
+                                <button onclick="cancelOrder(${order.id}, '${order.orderNumber}')" class="btn btn-outline-danger btn-sm">
+                                    <i class="fas fa-times me-1"></i>Hủy đơn
+                                </button>
+                            ` : ''}
+                        </div>
                     </div>
                 </div>
             </div>
         `;
         container.appendChild(orderCard);
     });
+}
+
+function canCancelOrder(order) {
+    // Only allow cancellation for PENDING orders with COD payment
+    return order.status === 'PENDING' && order.paymentMethod === 'COD';
 }
 
 function getStatusBadgeClass(status) {
@@ -209,6 +308,119 @@ function formatDate(dateString) {
         hour: '2-digit',
         minute: '2-digit'
     });
+}
+
+let currentCancelOrderId = null;
+let currentCancelOrderNumber = null;
+
+function cancelOrder(orderId, orderNumber) {
+    // Store order info
+    currentCancelOrderId = orderId;
+    currentCancelOrderNumber = orderNumber;
+    
+    // Update modal content
+    document.getElementById('cancelOrderNumber').textContent = orderNumber;
+    
+    // Show cancel confirmation modal
+    const cancelModal = new bootstrap.Modal(document.getElementById('cancelOrderModal'));
+    cancelModal.show();
+}
+
+// Confirm cancel button click handler
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+    if (confirmCancelBtn) {
+        confirmCancelBtn.addEventListener('click', async function() {
+            // Hide cancel modal
+            const cancelModal = bootstrap.Modal.getInstance(document.getElementById('cancelOrderModal'));
+            cancelModal.hide();
+            
+            // Show loading state
+            confirmCancelBtn.disabled = true;
+            confirmCancelBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...';
+            
+            await performCancelOrder();
+            
+            // Reset button
+            confirmCancelBtn.disabled = false;
+            confirmCancelBtn.innerHTML = '<i class="fas fa-times me-2"></i>Xác nhận hủy';
+        });
+    }
+});
+
+async function performCancelOrder() {
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+        const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
+        
+        if (!token || !userEmail) {
+            showErrorModal('Vui lòng đăng nhập để hủy đơn hàng!');
+            setTimeout(() => window.location.href = '/login', 2000);
+            return;
+        }
+
+        const response = await fetch(`/api/orders/${currentCancelOrderId}/cancel`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'X-User-Email': userEmail
+            }
+        });
+
+        if (response.status === 401) {
+            showErrorModal('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!');
+            setTimeout(() => window.location.href = '/login', 2000);
+            return;
+        }
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            showErrorModal(data.error || 'Không thể hủy đơn hàng. Vui lòng thử lại!');
+            return;
+        }
+
+        // Show success modal
+        const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+        successModal.show();
+        
+        // Start countdown timer
+        startCountdown(5);
+
+    } catch (error) {
+        console.error('Error cancelling order:', error);
+        showErrorModal('Đã xảy ra lỗi khi hủy đơn hàng. Vui lòng thử lại sau!');
+    }
+}
+
+function startCountdown(seconds) {
+    let timeLeft = seconds;
+    const timerElement = document.getElementById('countdownTimer');
+    
+    const countdown = setInterval(() => {
+        timeLeft--;
+        if (timerElement) {
+            timerElement.textContent = timeLeft;
+        }
+        
+        if (timeLeft <= 0) {
+            clearInterval(countdown);
+            reloadOrdersNow();
+        }
+    }, 1000);
+}
+
+function reloadOrdersNow() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('successModal'));
+    if (modal) modal.hide();
+    loadOrders();
+}
+
+function showErrorModal(message) {
+    document.getElementById('errorMessage').textContent = message;
+    const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+    errorModal.show();
 }
 </script>
 </body>

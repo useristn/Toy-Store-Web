@@ -67,12 +67,17 @@
                             <li><a class="dropdown-item" th:href="@{/cart}"><i class="fas fa-shopping-cart me-2"></i>Giỏ hàng vũ trụ</a>
                             </li>
                             <li><a class="dropdown-item" th:href="@{/favorites}"><i class="fas fa-heart me-2 text-danger"></i>Yêu thích</a></li>
-                            <li id="adminMenuLink" class="d-none">
+                            <li id="dashboardMenuDivider" class="d-none">
                                 <hr class="dropdown-divider">
                             </li>
                             <li id="adminDashboardLink" class="d-none">
                                 <a class="dropdown-item text-primary fw-bold" th:href="@{/admin}">
                                     <i class="fas fa-shield-alt me-2"></i>Admin Dashboard
+                                </a>
+                            </li>
+                            <li id="shipperDashboardLink" class="d-none">
+                                <a class="dropdown-item text-success fw-bold" th:href="@{/shipper}">
+                                    <i class="fas fa-truck me-2"></i>Shipper Dashboard
                                 </a>
                             </li>
                             <li>

@@ -121,4 +121,15 @@ public class AdminProductController {
         Page<ProductResponse> response = products.map(ProductResponse::fromEntity);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/in-stock")
+    public ResponseEntity<Page<ProductResponse>> getInStockProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "10") int threshold) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Product> products = productService.getInStockProducts(threshold, pageable);
+        Page<ProductResponse> response = products.map(ProductResponse::fromEntity);
+        return ResponseEntity.ok(response);
+    }
 }

@@ -31,19 +31,9 @@
             <!-- Quick Links -->
             <div class="col-lg-3 col-md-6 mb-4">
                 <h6 class="text-warning mb-3">Danh mục vui</h6>
-                <ul class="list-unstyled">
-                    <li class="mb-2"><a href="#" class="text-light text-decoration-none hover-danger">Búp bê Công
-                        chúa</a></li>
-                    <li class="mb-2"><a href="#" class="text-light text-decoration-none hover-danger">Phi thuyền &
-                        Xe</a></li>
-                    <li class="mb-2"><a href="#" class="text-light text-decoration-none hover-danger">Ghép hình Vũ
-                        trụ</a></li>
-                    <li class="mb-2"><a href="#" class="text-light text-decoration-none hover-danger">Khoa học Vui</a>
-                    </li>
-                    <li class="mb-2"><a href="#" class="text-light text-decoration-none hover-danger">Khám phá Ngoài
-                        trời</a></li>
-                    <li class="mb-2"><a href="#" class="text-light text-decoration-none hover-danger">Đồ chơi Vũ trụ</a>
-                    </li>
+                <ul class="list-unstyled" id="footerCategories">
+                    <li class="mb-2"><a href="/products" class="text-light text-decoration-none hover-danger">Tất cả sản phẩm</a></li>
+                    <!-- Categories will be loaded dynamically -->
                 </ul>
             </div>
 
@@ -136,5 +126,42 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Load Categories for Footer -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFooterCategories();
+        });
+
+        async function loadFooterCategories() {
+            try {
+                const response = await fetch('/api/products/categories');
+                if (!response.ok) return;
+                
+                const categories = await response.json();
+                const container = document.getElementById('footerCategories');
+                
+                if (!container) return;
+                
+                // Keep the "All Products" link
+                let html = '<li class="mb-2"><a href="/products" class="text-light text-decoration-none hover-danger">Tất cả sản phẩm</a></li>';
+                
+                // Add first 6 categories
+                categories.slice(0, 6).forEach(category => {
+                    html += `
+                        <li class="mb-2">
+                            <a href="/products?category=${category.id}" class="text-light text-decoration-none hover-danger">
+                                ${category.name}
+                            </a>
+                        </li>
+                    `;
+                });
+                
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading footer categories:', error);
+            }
+        }
+    </script>
 </footer>
 </html>

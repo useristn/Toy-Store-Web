@@ -1,4 +1,6 @@
 // Order confirmation functionality
+let currentOrder = null;
+
 document.addEventListener('DOMContentLoaded', function() {
     loadOrderDetails();
 });
@@ -48,11 +50,17 @@ async function loadOrderDetails() {
         const order = await response.json();
         console.log('Order loaded successfully:', order);
 
+        // Save current order
+        currentOrder = order;
+
         // Display order details
         displayOrderDetails(order);
 
         loadingState.style.display = 'none';
         orderDetails.style.display = 'block';
+
+        // Add cancel button if applicable
+        addCancelButton(order);
 
         // Trigger confetti animation
         celebrateOrder();
@@ -153,6 +161,141 @@ function formatPrice(price) {
         style: 'currency', 
         currency: 'VND' 
     }).format(price);
+}
+
+function addCancelButton(order) {
+    // Only show cancel button for PENDING orders with COD payment
+    if (order.status === 'PENDING' && order.paymentMethod === 'COD') {
+        const actionButtons = document.getElementById('actionButtons');
+        
+        // Add cancel button
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'btn btn-outline-danger btn-lg mt-2 mt-md-0';
+        cancelBtn.innerHTML = '<i class="fas fa-times me-2"></i>Hủy đơn hàng';
+        cancelBtn.onclick = () => cancelOrder(order.id, order.orderNumber);
+        
+        actionButtons.insertBefore(cancelBtn, actionButtons.firstChild);
+        
+        // Add info alert
+        const infoAlert = document.createElement('div');
+        infoAlert.className = 'alert alert-warning mt-3';
+        infoAlert.innerHTML = '<i class="fas fa-info-circle me-2"></i>Bạn có thể hủy đơn hàng COD trong khi đơn đang chờ xử lý.';
+        actionButtons.parentElement.insertBefore(infoAlert, actionButtons);
+    }
+}
+
+let currentCancelOrderId = null;
+let currentCancelOrderNumber = null;
+
+function cancelOrder(orderId, orderNumber) {
+    // Store order info
+    currentCancelOrderId = orderId;
+    currentCancelOrderNumber = orderNumber;
+    
+    // Update modal content
+    document.getElementById('cancelOrderNumber').textContent = orderNumber;
+    
+    // Show cancel confirmation modal
+    const cancelModal = new bootstrap.Modal(document.getElementById('cancelOrderModal'));
+    cancelModal.show();
+    
+    // Setup confirm button handler
+    setupCancelConfirmHandler();
+}
+
+function setupCancelConfirmHandler() {
+    const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+    if (!confirmCancelBtn) return;
+    
+    // Remove old listeners
+    const newBtn = confirmCancelBtn.cloneNode(true);
+    confirmCancelBtn.parentNode.replaceChild(newBtn, confirmCancelBtn);
+    
+    // Add new listener
+    newBtn.addEventListener('click', async function() {
+        // Hide cancel modal
+        const cancelModal = bootstrap.Modal.getInstance(document.getElementById('cancelOrderModal'));
+        cancelModal.hide();
+        
+        // Show loading state
+        newBtn.disabled = true;
+        newBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...';
+        
+        await performCancelOrder();
+        
+        // Reset button
+        newBtn.disabled = false;
+        newBtn.innerHTML = '<i class="fas fa-times me-2"></i>Xác nhận hủy';
+    });
+}
+
+async function performCancelOrder() {
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+        const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
+        
+        if (!token || !userEmail) {
+            showErrorModal('Vui lòng đăng nhập để hủy đơn hàng!');
+            setTimeout(() => window.location.href = '/login', 2000);
+            return;
+        }
+
+        const response = await fetch(`/api/orders/${currentCancelOrderId}/cancel`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'X-User-Email': userEmail
+            }
+        });
+
+        if (response.status === 401) {
+            showErrorModal('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!');
+            setTimeout(() => window.location.href = '/login', 2000);
+            return;
+        }
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            showErrorModal(data.error || 'Không thể hủy đơn hàng. Vui lòng thử lại!');
+            return;
+        }
+
+        // Show success modal
+        const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+        successModal.show();
+        
+        // Start countdown timer
+        startCountdown(5);
+
+    } catch (error) {
+        console.error('Error cancelling order:', error);
+        showErrorModal('Đã xảy ra lỗi khi hủy đơn hàng. Vui lòng thử lại sau!');
+    }
+}
+
+function startCountdown(seconds) {
+    let timeLeft = seconds;
+    const timerElement = document.getElementById('countdownTimer');
+    
+    const countdown = setInterval(() => {
+        timeLeft--;
+        if (timerElement) {
+            timerElement.textContent = timeLeft;
+        }
+        
+        if (timeLeft <= 0) {
+            clearInterval(countdown);
+            window.location.href = '/orders';
+        }
+    }, 1000);
+}
+
+function showErrorModal(message) {
+    document.getElementById('errorMessage').textContent = message;
+    const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+    errorModal.show();
 }
 
 // Add CSS animation

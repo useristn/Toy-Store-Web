@@ -16,8 +16,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Find and highlight the corresponding status card
         const statusCards = document.querySelectorAll('.status-card');
         statusCards.forEach(card => {
+            card.classList.remove('border-primary', 'border-3', 'active');
             if (card.dataset.status === statusParam) {
-                card.classList.add('border-primary', 'border-3');
+                card.classList.add('border-primary', 'border-3', 'active');
             }
         });
     }
@@ -70,6 +71,7 @@ async function loadOrderStats() {
             document.getElementById('processingOrders').textContent = stats.processing || 0;
             document.getElementById('shippedOrders').textContent = stats.shipped || 0;
             document.getElementById('deliveredOrders').textContent = stats.delivered || 0;
+            document.getElementById('failedOrders').textContent = stats.failed || 0;
             document.getElementById('cancelledOrders').textContent = stats.cancelled || 0;
         }
     } catch (error) {
@@ -180,11 +182,12 @@ function displayOrders(data) {
                 <td>
                     <select class="status-select ${getStatusClass(order.status)}" 
                             onchange="updateOrderStatus(${order.id}, this.value)"
-                            ${order.status === 'DELIVERED' || order.status === 'CANCELLED' ? 'disabled' : ''}>
+                            ${order.status === 'DELIVERED' || order.status === 'FAILED' || order.status === 'CANCELLED' ? 'disabled' : ''}>
                         <option value="PENDING" ${order.status === 'PENDING' ? 'selected' : ''}>Chờ xử lý</option>
                         <option value="PROCESSING" ${order.status === 'PROCESSING' ? 'selected' : ''}>Đang xử lý</option>
                         <option value="SHIPPING" ${order.status === 'SHIPPING' ? 'selected' : ''}>Đang giao</option>
-                        <option value="DELIVERED" ${order.status === 'DELIVERED' ? 'selected' : ''}>Đã giao</option>
+                        <option value="DELIVERED" ${order.status === 'DELIVERED' ? 'selected' : ''}>Giao thành công</option>
+                        <option value="FAILED" ${order.status === 'FAILED' ? 'selected' : ''}>Giao thất bại</option>
                         <option value="CANCELLED" ${order.status === 'CANCELLED' ? 'selected' : ''}>Đã hủy</option>
                     </select>
                 </td>
@@ -206,7 +209,8 @@ function getStatusBadge(status) {
         'PENDING': '<span class="badge bg-warning">Chờ xử lý</span>',
         'PROCESSING': '<span class="badge bg-info">Đang xử lý</span>',
         'SHIPPING': '<span class="badge bg-primary">Đang giao</span>',
-        'DELIVERED': '<span class="badge bg-success">Đã giao</span>',
+        'DELIVERED': '<span class="badge bg-success">Giao thành công</span>',
+        'FAILED': '<span class="badge bg-warning text-dark">Giao thất bại</span>',
         'CANCELLED': '<span class="badge bg-danger">Đã hủy</span>'
     };
     return badges[status] || '<span class="badge bg-secondary">N/A</span>';
@@ -218,6 +222,7 @@ function getStatusClass(status) {
         'PROCESSING': 'bg-info',
         'SHIPPING': 'bg-primary',
         'DELIVERED': 'bg-success',
+        'FAILED': 'bg-warning',
         'CANCELLED': 'bg-danger'
     };
     return classes[status] || '';
@@ -227,14 +232,14 @@ function filterByStatus(status, element) {
     currentStatus = status;
     currentPage = 0;
     
-    // Update active stat card - remove all active states first
+    // Remove active states from all cards
     document.querySelectorAll('.stat-card').forEach(card => {
-        card.classList.remove('border-primary', 'border-3');
+        card.classList.remove('border-primary', 'border-3', 'active');
     });
     
     // Add active state to clicked card
     if (element) {
-        element.classList.add('border-primary', 'border-3');
+        element.classList.add('border-primary', 'border-3', 'active');
     }
     
     loadOrders();
@@ -247,13 +252,13 @@ function clearFilters() {
     
     // Reset all stat cards
     document.querySelectorAll('.stat-card').forEach(card => {
-        card.classList.remove('border-primary', 'border-3');
+        card.classList.remove('border-primary', 'border-3', 'active');
     });
     
     // Set "Tất cả" as active
     const allCard = document.getElementById('stat-all');
     if (allCard) {
-        allCard.classList.add('border-primary', 'border-3');
+        allCard.classList.add('border-primary', 'border-3', 'active');
     }
     
     loadOrders();
@@ -452,7 +457,8 @@ function getStatusText(status) {
         'PENDING': 'Chờ xử lý',
         'PROCESSING': 'Đang xử lý',
         'SHIPPING': 'Đang giao',
-        'DELIVERED': 'Đã giao',
+        'DELIVERED': 'Giao thành công',
+        'FAILED': 'Giao thất bại',
         'CANCELLED': 'Đã hủy'
     };
     return texts[status] || status;
