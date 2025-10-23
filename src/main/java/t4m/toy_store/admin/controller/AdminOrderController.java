@@ -77,6 +77,7 @@ public class AdminOrderController {
         stats.put("processing", orderService.getOrderCountByStatus(OrderStatus.PROCESSING));
         stats.put("shipped", orderService.getOrderCountByStatus(OrderStatus.SHIPPING)); // SHIPPING enum
         stats.put("delivered", orderService.getOrderCountByStatus(OrderStatus.DELIVERED));
+        stats.put("failed", orderService.getOrderCountByStatus(OrderStatus.FAILED));
         stats.put("cancelled", orderService.getOrderCountByStatus(OrderStatus.CANCELLED));
         
         return ResponseEntity.ok(stats);

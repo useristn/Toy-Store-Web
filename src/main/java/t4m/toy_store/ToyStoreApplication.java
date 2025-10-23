@@ -85,6 +85,68 @@ public class ToyStoreApplication {
 
     @Bean
     @Order(3)
+    public ApplicationRunner initShipperUsers(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+        return args -> {
+            // Get SHIPPER role
+            Role shipperRole = roleRepository.findByRname("ROLE_SHIPPER")
+                .orElseThrow(() -> new RuntimeException("ROLE_SHIPPER not found. Please ensure initRoles runs first."));
+            
+            // Shipper 1
+            String shipper1Email = "shipper@t4m.com";
+            if (userRepository.findByEmail(shipper1Email).isEmpty()) {
+                User shipper1 = new User();
+                shipper1.setEmail(shipper1Email);
+                shipper1.setPasswd(passwordEncoder.encode("shipper123")); // Password: shipper123
+                shipper1.setName("John Shipper");
+                shipper1.setPhone("0901234567");
+                shipper1.setAddress("123 Shipper Street, District 1, Ho Chi Minh City");
+                shipper1.setActivated(true);
+                shipper1.setCreated(LocalDateTime.now());
+                shipper1.setUpdated(LocalDateTime.now());
+                shipper1.getRoles().add(shipperRole);
+                
+                userRepository.save(shipper1);
+                
+                System.out.println("==================================================");
+                System.out.println("✅ Shipper user 1 created successfully!");
+                System.out.println("📧 Email: " + shipper1Email);
+                System.out.println("🔑 Password: shipper123");
+                System.out.println("🚚 Role: SHIPPER");
+                System.out.println("==================================================");
+            } else {
+                System.out.println("Shipper user 1 already exists: " + shipper1Email);
+            }
+            
+            // Shipper 2
+            String shipper2Email = "shipper2@t4m.com";
+            if (userRepository.findByEmail(shipper2Email).isEmpty()) {
+                User shipper2 = new User();
+                shipper2.setEmail(shipper2Email);
+                shipper2.setPasswd(passwordEncoder.encode("shipper123")); // Password: shipper123
+                shipper2.setName("Jane Delivery");
+                shipper2.setPhone("0912345678");
+                shipper2.setAddress("456 Delivery Avenue, District 3, Ho Chi Minh City");
+                shipper2.setActivated(true);
+                shipper2.setCreated(LocalDateTime.now());
+                shipper2.setUpdated(LocalDateTime.now());
+                shipper2.getRoles().add(shipperRole);
+                
+                userRepository.save(shipper2);
+                
+                System.out.println("==================================================");
+                System.out.println("✅ Shipper user 2 created successfully!");
+                System.out.println("📧 Email: " + shipper2Email);
+                System.out.println("🔑 Password: shipper123");
+                System.out.println("🚚 Role: SHIPPER");
+                System.out.println("==================================================");
+            } else {
+                System.out.println("Shipper user 2 already exists: " + shipper2Email);
+            }
+        };
+    }
+
+    @Bean
+    @Order(4)
     public ApplicationRunner initCategories(CategoryRepository categoryRepository, ProductRepository productRepository) {
         return args -> {
             if (categoryRepository.count() == 0) {

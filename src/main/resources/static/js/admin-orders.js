@@ -70,6 +70,7 @@ async function loadOrderStats() {
             document.getElementById('processingOrders').textContent = stats.processing || 0;
             document.getElementById('shippedOrders').textContent = stats.shipped || 0;
             document.getElementById('deliveredOrders').textContent = stats.delivered || 0;
+            document.getElementById('failedOrders').textContent = stats.failed || 0;
             document.getElementById('cancelledOrders').textContent = stats.cancelled || 0;
         }
     } catch (error) {
@@ -180,11 +181,12 @@ function displayOrders(data) {
                 <td>
                     <select class="status-select ${getStatusClass(order.status)}" 
                             onchange="updateOrderStatus(${order.id}, this.value)"
-                            ${order.status === 'DELIVERED' || order.status === 'CANCELLED' ? 'disabled' : ''}>
+                            ${order.status === 'DELIVERED' || order.status === 'FAILED' || order.status === 'CANCELLED' ? 'disabled' : ''}>
                         <option value="PENDING" ${order.status === 'PENDING' ? 'selected' : ''}>Chờ xử lý</option>
                         <option value="PROCESSING" ${order.status === 'PROCESSING' ? 'selected' : ''}>Đang xử lý</option>
                         <option value="SHIPPING" ${order.status === 'SHIPPING' ? 'selected' : ''}>Đang giao</option>
                         <option value="DELIVERED" ${order.status === 'DELIVERED' ? 'selected' : ''}>Đã giao</option>
+                        <option value="FAILED" ${order.status === 'FAILED' ? 'selected' : ''}>Giao thất bại</option>
                         <option value="CANCELLED" ${order.status === 'CANCELLED' ? 'selected' : ''}>Đã hủy</option>
                     </select>
                 </td>
@@ -207,6 +209,7 @@ function getStatusBadge(status) {
         'PROCESSING': '<span class="badge bg-info">Đang xử lý</span>',
         'SHIPPING': '<span class="badge bg-primary">Đang giao</span>',
         'DELIVERED': '<span class="badge bg-success">Đã giao</span>',
+        'FAILED': '<span class="badge bg-warning text-dark">Giao thất bại</span>',
         'CANCELLED': '<span class="badge bg-danger">Đã hủy</span>'
     };
     return badges[status] || '<span class="badge bg-secondary">N/A</span>';
@@ -218,6 +221,7 @@ function getStatusClass(status) {
         'PROCESSING': 'bg-info',
         'SHIPPING': 'bg-primary',
         'DELIVERED': 'bg-success',
+        'FAILED': 'bg-warning',
         'CANCELLED': 'bg-danger'
     };
     return classes[status] || '';
