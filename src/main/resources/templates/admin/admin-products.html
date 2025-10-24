@@ -196,8 +196,37 @@
                         </div>
 
                         <div class="col-md-12 mb-3">
-                            <label class="form-label">URL hình ảnh</label>
-                            <input type="text" class="form-control" id="productImageUrl" placeholder="https://...">
+                            <label class="form-label">Hình ảnh sản phẩm <span class="text-danger">*</span></label>
+                            
+                            <!-- Image Preview -->
+                            <div id="imagePreviewContainer" class="mb-3" style="display: none;">
+                                <div class="position-relative d-inline-block">
+                                    <img id="imagePreview" src="" alt="Preview" class="img-thumbnail" style="max-height: 200px; max-width: 100%;">
+                                    <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2" onclick="removeImage()" title="Xóa ảnh">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <p class="text-muted small mt-2">
+                                    <i class="fas fa-info-circle"></i> 
+                                    <span id="imageFileName"></span> (<span id="imageFileSize"></span>)
+                                </p>
+                            </div>
+
+                            <!-- File Input -->
+                            <div class="input-group">
+                                <input type="file" class="form-control" id="productImageFile" accept="image/jpeg,image/png,image/webp,image/jpg" onchange="previewImage(event)">
+                                <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('productImageFile').click()">
+                                    <i class="fas fa-upload me-2"></i>Chọn ảnh
+                                </button>
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle"></i> 
+                                Định dạng: JPG, PNG, WebP. Kích thước tối đa: 10MB. Ảnh sẽ tự động resize về 800x800px.
+                            </div>
+                            
+                            <!-- Hidden field for existing image URL (used in edit mode) -->
+                            <input type="hidden" id="existingImageUrl">
+                            <input type="hidden" id="cloudinaryPublicId">
                         </div>
 
                         <div class="col-md-12 mb-3">
@@ -336,8 +365,8 @@
 }
 
 .table img {
-    max-width: 60px;
-    max-height: 60px;
+    width: 60px;
+    height: 60px;
     object-fit: cover;
     border-radius: 4px;
 }

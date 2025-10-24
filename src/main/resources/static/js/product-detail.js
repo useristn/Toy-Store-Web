@@ -11,6 +11,8 @@ function loadProductDetail(id) {
         })
         .then(product => {
             displayProductDetail(product);
+            // Display rating from product data directly
+            displayRatingFromProduct(product);
             loadRelatedProducts(product.category?.id);
             document.getElementById('breadcrumbProduct').textContent = product.name;
         })
@@ -40,6 +42,10 @@ function displayProductDetail(product) {
                     <div class="card-body">
                         ${product.discountPrice ? '<span class="badge bg-danger mb-3">ĐANG GIẢM GIÁ</span>' : ''}
                         <h2 class="fw-bold space-text mb-3">${product.name}</h2>
+                        
+                        <div id="ratingDisplay" class="mb-3">
+                            <span class="text-muted">Đang tải đánh giá...</span>
+                        </div>
                         
                         <div class="mb-4">
                             ${product.discountPrice ? 
@@ -133,9 +139,10 @@ function loadRelatedProducts(categoryId) {
                     <div class="card featured-card h-100">
                         <img src="${product.imageUrl || 'https://via.placeholder.com/300x200/6c5ce7/FFFFFF?text=' + product.name}" 
                              class="card-img-top" alt="${product.name}">
-                        <div class="card-body">
+                        <div class="card-body d-flex flex-column">
                             <h5 class="card-title">${product.name}</h5>
-                            <div class="d-flex justify-content-between align-items-center">
+                            ${generateRatingStars(product.averageRating, product.ratingCount)}
+                            <div class="mt-auto d-flex justify-content-between align-items-center">
                                 <span class="h5 text-danger mb-0">${formatPrice(product.discountPrice || product.price)}</span>
                                 <button class="btn btn-outline-primary btn-sm" onclick="viewProduct(${product.id})">
                                     <i class="fas fa-eye"></i>
@@ -429,4 +436,144 @@ async function loadFavoriteState(productId) {
     } catch (error) {
         console.error('Error loading favorite state:', error);
     }
+}
+
+// ===== RATING FUNCTIONS =====
+
+function displayRatingFromProduct(product) {
+    const container = document.getElementById('ratingDisplay');
+    
+    if (!container) return;
+    
+    const avgRating = product.averageRating || 0;
+    const ratingCount = product.ratingCount || 0;
+    
+    if (ratingCount === 0) {
+        container.innerHTML = `
+            <div class="d-flex align-items-center">
+                <span class="text-muted me-2">Chưa có đánh giá</span>
+            </div>
+        `;
+        return;
+    }
+    
+    const fullStars = Math.floor(avgRating);
+    const hasHalfStar = avgRating % 1 >= 0.5;
+    
+    let starsHtml = '';
+    for (let i = 0; i < 5; i++) {
+        if (i < fullStars) {
+            starsHtml += '<i class="fas fa-star text-warning"></i>';
+        } else if (i === fullStars && hasHalfStar) {
+            starsHtml += '<i class="fas fa-star-half-alt text-warning"></i>';
+        } else {
+            starsHtml += '<i class="far fa-star text-warning"></i>';
+        }
+    }
+    
+    container.innerHTML = `
+        <div class="d-flex align-items-center">
+            <span class="me-2">${starsHtml}</span>
+            <span class="fw-bold me-2">${avgRating.toFixed(1)}</span>
+            <span class="text-muted">(${ratingCount} đánh giá)</span>
+        </div>
+    `;
+}
+
+async function loadProductRating(productId) {
+    try {
+        const response = await fetch(`/api/ratings/product/${productId}/summary`);
+        
+        if (!response.ok) {
+            document.getElementById('ratingDisplay').innerHTML = '';
+            return;
+        }
+        
+        const rating = await response.json();
+        displayRating(rating);
+    } catch (error) {
+        console.error('Error loading rating:', error);
+        document.getElementById('ratingDisplay').innerHTML = '';
+    }
+}
+
+function displayRating(rating) {
+    const container = document.getElementById('ratingDisplay');
+    
+    if (rating.ratingCount === 0) {
+        container.innerHTML = `
+            <div class="d-flex align-items-center">
+                <span class="text-muted me-2">Chưa có đánh giá</span>
+            </div>
+        `;
+        return;
+    }
+    
+    const avgRating = rating.averageRating || 0;
+    const fullStars = Math.floor(avgRating);
+    const hasHalfStar = avgRating % 1 >= 0.5;
+    
+    let starsHtml = '';
+    for (let i = 0; i < 5; i++) {
+        if (i < fullStars) {
+            starsHtml += '<i class="fas fa-star text-warning"></i>';
+        } else if (i === fullStars && hasHalfStar) {
+            starsHtml += '<i class="fas fa-star-half-alt text-warning"></i>';
+        } else {
+            starsHtml += '<i class="far fa-star text-warning"></i>';
+        }
+    }
+    
+    container.innerHTML = `
+        <div class="d-flex align-items-center">
+            <span class="me-2">${starsHtml}</span>
+            <span class="fw-bold me-2">${avgRating.toFixed(1)}</span>
+            <span class="text-muted">(${rating.ratingCount} đánh giá)</span>
+        </div>
+    `;
+}
+
+// ===== RATING STARS GENERATOR FOR PRODUCT LISTS =====
+function generateRatingStars(averageRating, ratingCount) {
+    const avgRating = averageRating || 0;
+    const count = ratingCount || 0;
+    
+    if (count === 0) {
+        return `
+            <div class="mb-2">
+                <small class="text-muted">
+                    <i class="far fa-star text-warning"></i>
+                    <i class="far fa-star text-warning"></i>
+                    <i class="far fa-star text-warning"></i>
+                    <i class="far fa-star text-warning"></i>
+                    <i class="far fa-star text-warning"></i>
+                    <span class="ms-1">Chưa có đánh giá</span>
+                </small>
+            </div>
+        `;
+    }
+    
+    const fullStars = Math.floor(avgRating);
+    const hasHalfStar = avgRating % 1 >= 0.5;
+    
+    let starsHtml = '';
+    for (let i = 0; i < 5; i++) {
+        if (i < fullStars) {
+            starsHtml += '<i class="fas fa-star text-warning"></i>';
+        } else if (i === fullStars && hasHalfStar) {
+            starsHtml += '<i class="fas fa-star-half-alt text-warning"></i>';
+        } else {
+            starsHtml += '<i class="far fa-star text-warning"></i>';
+        }
+    }
+    
+    return `
+        <div class="mb-2">
+            <small>
+                ${starsHtml}
+                <span class="ms-1 fw-bold">${avgRating.toFixed(1)}</span>
+                <span class="text-muted">(${count})</span>
+            </small>
+        </div>
+    `;
 }

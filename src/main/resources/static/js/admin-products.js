@@ -215,6 +215,7 @@ function displayProducts(data) {
                 <td>
                     <img src="${product.imageUrl || 'https://via.placeholder.com/60'}" 
                          alt="${product.name}" 
+                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;"
                          onerror="this.src='https://via.placeholder.com/60'">
                 </td>
                 <td>
@@ -363,6 +364,9 @@ function openAddModal() {
     document.getElementById('productForm').reset();
     document.getElementById('productId').value = '';
     
+    // Clear image preview
+    removeImage();
+    
     const modal = new bootstrap.Modal(document.getElementById('productModal'));
     modal.show();
 }
@@ -392,8 +396,21 @@ async function editProduct(id) {
         document.getElementById('productDiscountPrice').value = product.discountPrice || '';
         document.getElementById('productStock').value = product.stock || 0;
         document.getElementById('productCategory').value = product.category ? product.category.id : '';
-        document.getElementById('productImageUrl').value = product.imageUrl || '';
         document.getElementById('productFeatured').checked = product.featured || false;
+        
+        // Show existing image preview
+        if (product.imageUrl) {
+            const preview = document.getElementById('imagePreview');
+            const container = document.getElementById('imagePreviewContainer');
+            preview.src = product.imageUrl;
+            container.style.display = 'block';
+            document.getElementById('existingImageUrl').value = product.imageUrl;
+            document.getElementById('imageFileName').textContent = 'Ảnh hiện tại';
+            document.getElementById('imageFileSize').textContent = '';
+        }
+        
+        // Clear file input
+        document.getElementById('productImageFile').value = '';
         
         const modal = new bootstrap.Modal(document.getElementById('productModal'));
         modal.show();
@@ -409,36 +426,83 @@ async function saveProduct() {
     const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
     
     const id = document.getElementById('productId').value;
-    const data = {
-        name: document.getElementById('productName').value.trim(),
-        description: document.getElementById('productDescription').value.trim(),
-        price: parseFloat(document.getElementById('productPrice').value),
-        discountPrice: document.getElementById('productDiscountPrice').value ? parseFloat(document.getElementById('productDiscountPrice').value) : null,
-        stock: parseInt(document.getElementById('productStock').value),
-        categoryId: document.getElementById('productCategory').value ? parseInt(document.getElementById('productCategory').value) : null,
-        imageUrl: document.getElementById('productImageUrl').value.trim(),
-        featured: document.getElementById('productFeatured').checked
-    };
+    const name = document.getElementById('productName').value.trim();
+    const description = document.getElementById('productDescription').value.trim();
+    const price = document.getElementById('productPrice').value;
+    const discountPrice = document.getElementById('productDiscountPrice').value;
+    const stock = document.getElementById('productStock').value;
+    const categoryId = document.getElementById('productCategory').value;
+    const featured = document.getElementById('productFeatured').checked;
+    const imageFile = document.getElementById('productImageFile').files[0];
+    const existingImageUrl = document.getElementById('existingImageUrl').value;
     
     // Validation
-    if (!data.name || !data.price || data.stock < 0) {
+    if (!name || !price || !stock || stock < 0) {
         showToast('Vui lòng điền đầy đủ thông tin bắt buộc!', 'warning');
+        return;
+    }
+
+    // Check if image is provided (required for new product)
+    if (!id && !imageFile) {
+        showToast('Vui lòng chọn ảnh sản phẩm!', 'warning');
         return;
     }
     
     try {
-        const url = id ? `/api/admin/products/${id}` : '/api/admin/products';
-        const method = id ? 'PUT' : 'POST';
-        
-        const response = await fetch(url, {
-            method: method,
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'X-User-Email': userEmail,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
+        // Show loading
+        const saveBtn = document.querySelector('#productModal .btn-primary');
+        const originalBtnText = saveBtn.innerHTML;
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang lưu...';
+
+        let response;
+
+        // Use FormData if image is provided
+        if (imageFile) {
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('description', description);
+            formData.append('price', price);
+            if (discountPrice) formData.append('discountPrice', discountPrice);
+            formData.append('stock', stock);
+            if (categoryId) formData.append('categoryId', categoryId);
+            formData.append('featured', featured);
+            formData.append('image', imageFile);
+
+            const url = id ? `/api/admin/products/${id}/with-image` : '/api/admin/products/with-image';
+            const method = id ? 'PUT' : 'POST';
+
+            response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'X-User-Email': userEmail
+                },
+                body: formData
+            });
+        } else {
+            // No new image, use JSON for update (existing image URL is kept)
+            const data = {
+                name: name,
+                description: description,
+                price: parseFloat(price),
+                discountPrice: discountPrice ? parseFloat(discountPrice) : null,
+                stock: parseInt(stock),
+                categoryId: categoryId ? parseInt(categoryId) : null,
+                imageUrl: existingImageUrl,
+                featured: featured
+            };
+
+            response = await fetch(`/api/admin/products/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'X-User-Email': userEmail,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+        }
         
         if (!response.ok) {
             const error = await response.json();
@@ -451,11 +515,20 @@ async function saveProduct() {
         const modal = bootstrap.Modal.getInstance(document.getElementById('productModal'));
         modal.hide();
         
+        // Reset button
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalBtnText;
+        
         loadProducts();
         
     } catch (error) {
         console.error('Error saving product:', error);
         showToast(error.message || 'Không thể lưu sản phẩm!', 'danger');
+        
+        // Reset button on error
+        const saveBtn = document.querySelector('#productModal .btn-primary');
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>Lưu';
     }
 }
 
@@ -534,3 +607,108 @@ document.addEventListener('DOMContentLoaded', function() {
         if (adminNameEl) adminNameEl.textContent = userEmail.split('@')[0];
     }
 });
+
+// ==================== IMAGE UPLOAD FUNCTIONS ====================
+
+/**
+ * Preview image before upload
+ */
+function previewImage(event) {
+    const file = event.target.files[0];
+    
+    if (!file) {
+        removeImage();
+        return;
+    }
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+        showToast('Vui lòng chọn file ảnh hợp lệ (JPG, PNG, WebP)', 'danger');
+        event.target.value = '';
+        return;
+    }
+
+    // Validate file size (max 10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+        showToast('Kích thước file không được vượt quá 10MB', 'danger');
+        event.target.value = '';
+        return;
+    }
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const preview = document.getElementById('imagePreview');
+        const container = document.getElementById('imagePreviewContainer');
+        const fileName = document.getElementById('imageFileName');
+        const fileSize = document.getElementById('imageFileSize');
+
+        preview.src = e.target.result;
+        container.style.display = 'block';
+        fileName.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+    };
+    reader.readAsDataURL(file);
+}
+
+/**
+ * Remove selected image
+ */
+function removeImage() {
+    const fileInput = document.getElementById('productImageFile');
+    const preview = document.getElementById('imagePreview');
+    const container = document.getElementById('imagePreviewContainer');
+    
+    fileInput.value = '';
+    preview.src = '';
+    container.style.display = 'none';
+    
+    // Clear hidden fields
+    document.getElementById('existingImageUrl').value = '';
+}
+
+/**
+ * Format file size for display
+ */
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+/**
+ * Upload image to Cloudinary via backend
+ */
+async function uploadImage(file) {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+        const response = await fetch('/api/admin/products/upload-image', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'X-User-Email': userEmail
+            },
+            body: formData
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Upload failed');
+        }
+
+        return await response.json(); // Returns { url, publicId }
+
+    } catch (error) {
+        console.error('Error uploading image:', error);
+        throw error;
+    }
+}
