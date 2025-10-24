@@ -16,7 +16,9 @@ import t4m.toy_store.product.repository.ProductRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -43,27 +45,33 @@ public class ProductService {
     public Page<Product> searchProducts(String keyword, Pageable pageable) {
         return productRepository.findByNameContainingIgnoreCase(keyword, pageable);
     }
-    
-    public Page<Product> filterProducts(String keyword, Long categoryId, BigDecimal minPrice, BigDecimal maxPrice, String sortType, Pageable pageable) {
+
+    public Page<Product> filterProducts(String keyword, Long categoryId, BigDecimal minPrice, BigDecimal maxPrice,
+            String sortType, Pageable pageable) {
         // Create pageable without sort (sort is handled in query)
         Pageable pageableWithoutSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
-        
+
         // Call appropriate repository method based on sort type
         if (sortType != null) {
             switch (sortType) {
                 case "price-asc":
-                    return productRepository.findByFiltersPriceAsc(keyword, categoryId, minPrice, maxPrice, pageableWithoutSort);
+                    return productRepository.findByFiltersPriceAsc(keyword, categoryId, minPrice, maxPrice,
+                            pageableWithoutSort);
                 case "price-desc":
-                    return productRepository.findByFiltersPriceDesc(keyword, categoryId, minPrice, maxPrice, pageableWithoutSort);
+                    return productRepository.findByFiltersPriceDesc(keyword, categoryId, minPrice, maxPrice,
+                            pageableWithoutSort);
                 case "name":
-                    return productRepository.findByFiltersNameAsc(keyword, categoryId, minPrice, maxPrice, pageableWithoutSort);
+                    return productRepository.findByFiltersNameAsc(keyword, categoryId, minPrice, maxPrice,
+                            pageableWithoutSort);
                 case "newest":
-                    return productRepository.findByFiltersNewest(keyword, categoryId, minPrice, maxPrice, pageableWithoutSort);
+                    return productRepository.findByFiltersNewest(keyword, categoryId, minPrice, maxPrice,
+                            pageableWithoutSort);
                 default:
-                    return productRepository.findByFiltersNewest(keyword, categoryId, minPrice, maxPrice, pageableWithoutSort);
+                    return productRepository.findByFiltersNewest(keyword, categoryId, minPrice, maxPrice,
+                            pageableWithoutSort);
             }
         }
-        
+
         // Default: newest
         return productRepository.findByFiltersNewest(keyword, categoryId, minPrice, maxPrice, pageableWithoutSort);
     }
@@ -81,19 +89,19 @@ public class ProductService {
         Category category = null;
         if (request.getCategoryId() != null) {
             category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                    .orElseThrow(() -> new RuntimeException("Category not found"));
         }
 
         Product product = Product.builder()
-            .name(request.getName())
-            .description(request.getDescription())
-            .price(request.getPrice())
-            .discountPrice(request.getDiscountPrice())
-            .imageUrl(request.getImageUrl())
-            .stock(request.getStock() != null ? request.getStock() : 0)
-            .category(category)
-            .featured(request.getFeatured() != null ? request.getFeatured() : false)
-            .build();
+                .name(request.getName())
+                .description(request.getDescription())
+                .price(request.getPrice())
+                .discountPrice(request.getDiscountPrice())
+                .imageUrl(request.getImageUrl())
+                .stock(request.getStock() != null ? request.getStock() : 0)
+                .category(category)
+                .featured(request.getFeatured() != null ? request.getFeatured() : false)
+                .build();
 
         return productRepository.save(product);
     }
@@ -124,7 +132,7 @@ public class ProductService {
         }
         if (request.getCategoryId() != null) {
             Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                    .orElseThrow(() -> new RuntimeException("Category not found"));
             product.setCategory(category);
         }
         if (request.getFeatured() != null) {
@@ -143,59 +151,90 @@ public class ProductService {
 
     public ProductStockStats getStockStats() {
         List<Product> allProducts = productRepository.findAll();
-        
+
         long total = allProducts.size();
         long inStock = allProducts.stream().filter(p -> p.getStock() != null && p.getStock() > 0).count();
         long outOfStock = allProducts.stream().filter(p -> p.getStock() == null || p.getStock() == 0).count();
-        long lowStock = allProducts.stream().filter(p -> p.getStock() != null && p.getStock() > 0 && p.getStock() <= 10).count();
+        long lowStock = allProducts.stream().filter(p -> p.getStock() != null && p.getStock() > 0 && p.getStock() <= 10)
+                .count();
         long totalQuantity = allProducts.stream()
-            .filter(p -> p.getStock() != null)
-            .mapToLong(Product::getStock)
-            .sum();
+                .filter(p -> p.getStock() != null)
+                .mapToLong(Product::getStock)
+                .sum();
 
         return ProductStockStats.builder()
-            .totalProducts(total)
-            .inStockProducts(inStock)
-            .outOfStockProducts(outOfStock)
-            .lowStockProducts(lowStock)
-            .totalStockQuantity(totalQuantity)
-            .build();
+                .totalProducts(total)
+                .inStockProducts(inStock)
+                .outOfStockProducts(outOfStock)
+                .lowStockProducts(lowStock)
+                .totalStockQuantity(totalQuantity)
+                .build();
     }
 
     public Page<Product> getOutOfStockProducts(Pageable pageable) {
         List<Product> outOfStock = productRepository.findAll().stream()
-            .filter(p -> p.getStock() == null || p.getStock() == 0)
-            .toList();
-        
+                .filter(p -> p.getStock() == null || p.getStock() == 0)
+                .toList();
+
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), outOfStock.size());
         List<Product> pageContent = outOfStock.subList(start, end);
-        
+
         return new PageImpl<>(pageContent, pageable, outOfStock.size());
     }
 
     public Page<Product> getLowStockProducts(int threshold, Pageable pageable) {
         List<Product> lowStock = productRepository.findAll().stream()
-            .filter(p -> p.getStock() != null && p.getStock() > 0 && p.getStock() <= threshold)
-            .toList();
-        
+                .filter(p -> p.getStock() != null && p.getStock() > 0 && p.getStock() <= threshold)
+                .toList();
+
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), lowStock.size());
         List<Product> pageContent = lowStock.subList(start, end);
-        
+
         return new PageImpl<>(pageContent, pageable, lowStock.size());
     }
 
     public Page<Product> getInStockProducts(int threshold, Pageable pageable) {
         List<Product> inStock = productRepository.findAll().stream()
-            .filter(p -> p.getStock() != null && p.getStock() > threshold)
-            .toList();
-        
+                .filter(p -> p.getStock() != null && p.getStock() > threshold)
+                .toList();
+
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), inStock.size());
         List<Product> pageContent = inStock.subList(start, end);
-        
+
         return new PageImpl<>(pageContent, pageable, inStock.size());
+    }
+
+    public Page<Product> getLowRatingProducts(Double maxRating, Long categoryId, Pageable pageable) {
+        return productRepository.findLowRatingProducts(maxRating, categoryId, pageable);
+    }
+
+    public Map<String, Object> getRatingStats() {
+        Map<String, Object> stats = new HashMap<>();
+
+        // Count products by rating ranges
+        Long excellent = productRepository.countByRatingRange(4.5, 5.1); // 4.5-5.0
+        Long good = productRepository.countByRatingRange(3.5, 4.5); // 3.5-4.4
+        Long average = productRepository.countByRatingRange(2.5, 3.5); // 2.5-3.4
+        Long poor = productRepository.countByRatingRange(1.5, 2.5); // 1.5-2.4
+        Long veryPoor = productRepository.countByRatingRange(0.0, 1.5); // 0.0-1.4
+
+        Long totalWithRating = productRepository.countProductsWithRating();
+        Long totalProducts = productRepository.count();
+        Long noRating = totalProducts - totalWithRating;
+
+        stats.put("excellent", excellent); // 4.5-5.0 ⭐⭐⭐⭐⭐
+        stats.put("good", good); // 3.5-4.4 ⭐⭐⭐⭐
+        stats.put("average", average); // 2.5-3.4 ⭐⭐⭐
+        stats.put("poor", poor); // 1.5-2.4 ⭐⭐
+        stats.put("veryPoor", veryPoor); // 0.0-1.4 ⭐
+        stats.put("noRating", noRating); // Chưa có đánh giá
+        stats.put("totalProducts", totalProducts);
+        stats.put("totalWithRating", totalWithRating);
+
+        return stats;
     }
 
     public Product saveProduct(Product product) {

@@ -36,14 +36,14 @@ public class AdminProductController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String search) {
-        
+
         Page<Product> products;
         if (search != null && !search.trim().isEmpty()) {
             products = productService.searchProducts(search, PageRequest.of(page, size, Sort.by("id").descending()));
         } else {
             products = productService.getAllProducts(PageRequest.of(page, size, Sort.by("id").descending()));
         }
-        
+
         Page<ProductResponse> response = products.map(ProductResponse::fromEntity);
         return ResponseEntity.ok(response);
     }
@@ -122,7 +122,7 @@ public class AdminProductController {
 
             // Create product
             Product product = productService.createProduct(request);
-            
+
             // Set cloudinary public id and save
             product.setCloudinaryPublicId(uploadResult.get("publicId"));
             product = productService.saveProduct(product);
@@ -186,8 +186,9 @@ public class AdminProductController {
                     .name(name)
                     .description(description)
                     .price(new java.math.BigDecimal(price))
-                    .discountPrice(discountPrice != null && !discountPrice.isEmpty() 
-                        ? new java.math.BigDecimal(discountPrice) : null)
+                    .discountPrice(discountPrice != null && !discountPrice.isEmpty()
+                            ? new java.math.BigDecimal(discountPrice)
+                            : null)
                     .imageUrl(imageUrl)
                     .stock(stock)
                     .categoryId(categoryId)
@@ -254,5 +255,23 @@ public class AdminProductController {
         Page<Product> products = productService.getInStockProducts(threshold, pageable);
         Page<ProductResponse> response = products.map(ProductResponse::fromEntity);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/low-rating")
+    public ResponseEntity<Page<ProductResponse>> getLowRatingProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(defaultValue = "3.0") Double maxRating) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("averageRating").ascending());
+        Page<Product> products = productService.getLowRatingProducts(maxRating, categoryId, pageable);
+        Page<ProductResponse> response = products.map(ProductResponse::fromEntity);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/stats/rating")
+    public ResponseEntity<Map<String, Object>> getRatingStats() {
+        Map<String, Object> stats = productService.getRatingStats();
+        return ResponseEntity.ok(stats);
     }
 }

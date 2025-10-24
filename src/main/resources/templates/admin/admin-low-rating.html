@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cảnh báo Rating Thấp – Admin T4M</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      body {
+        background-color: #f8f9fa;
+      }
+
+      .sidebar {
+        background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .sidebar .nav-link {
+        color: rgba(255, 255, 255, 0.8);
+        padding: 12px 20px;
+        margin: 5px 0;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+      }
+
+      .sidebar .nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+        transform: translateX(5px);
+      }
+
+      .sidebar .nav-link.active {
+        background-color: #3498db;
+        color: white;
+      }
+
+      .rating-badge {
+        padding: 8px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .rating-excellent {
+        background: #d4edda;
+        color: #155724;
+      }
+      .rating-good {
+        background: #d1ecf1;
+        color: #0c5460;
+      }
+      .rating-average {
+        background: #fff3cd;
+        color: #856404;
+      }
+      .rating-poor {
+        background: #f8d7da;
+        color: #721c24;
+      }
+      .rating-very-poor {
+        background: #dc3545;
+        color: white;
+      }
+      .rating-none {
+        background: #e9ecef;
+        color: #6c757d;
+      }
+
+      .stats-card {
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+      }
+
+      .stats-card:hover {
+        transform: translateY(-5px);
+      }
+
+      .stats-card.excellent {
+        background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+      }
+      .stats-card.good {
+        background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+      }
+      .stats-card.average {
+        background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+      }
+      .stats-card.poor {
+        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+      }
+      .stats-card.very-poor {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+      }
+
+      .product-card {
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        border: 1px solid #dee2e6;
+      }
+
+      .product-card:hover {
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        transform: translateY(-3px);
+      }
+
+      .product-img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 8px;
+      }
+
+      .filter-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+      }
+
+      .alert-warning-custom {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        border: none;
+        border-left: 4px solid #ffc107;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="row">
+        <!-- Sidebar -->
+        <nav
+          class="col-md-3 col-lg-2 d-md-block sidebar"
+          style="min-height: 100vh"
+        >
+          <div class="position-sticky pt-3">
+            <div class="text-center mb-4 px-3">
+              <div class="profile-avatar mb-2">
+                <i class="fas fa-user-shield fa-3x text-white"></i>
+              </div>
+              <h6 class="text-white mb-0" id="adminName">Admin</h6>
+              <small class="text-white-50" id="adminEmail"></small>
+            </div>
+
+            <h6
+              class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1"
+            >
+              <span class="text-white-50">📊 QUẢN TRỊ</span>
+            </h6>
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <a class="nav-link" href="/admin">
+                  <i class="fas fa-home me-2"></i>Dashboard
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/admin/products">
+                  <i class="fas fa-box me-2"></i>Quản lý sản phẩm
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/admin/orders">
+                  <i class="fas fa-shopping-cart me-2"></i>Quản lý đơn hàng
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="/admin/low-rating">
+                  <i class="fas fa-star-half-alt me-2"></i>Cảnh báo Rating
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/admin/support">
+                  <i class="fas fa-headset me-2"></i>Hỗ trợ khách hàng
+                </a>
+              </li>
+            </ul>
+
+            <h6
+              class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1"
+            >
+              <span class="text-white-50">⚙️ HỆ THỐNG</span>
+            </h6>
+            <ul class="nav flex-column mb-2">
+              <li class="nav-item">
+                <a class="nav-link" href="/" target="_blank">
+                  <i class="fas fa-store me-2"></i>Xem website
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#" id="logoutLink">
+                  <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                </a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+          <!-- Header -->
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h2>
+                <i class="fas fa-star-half-alt text-warning me-2"></i>Cảnh báo
+                Sản phẩm Rating Thấp
+              </h2>
+              <p class="text-muted mb-0">
+                Theo dõi và cải thiện sản phẩm có đánh giá thấp từ khách hàng
+              </p>
+            </div>
+            <button
+              class="btn btn-primary"
+              onclick="window.location.href='/admin'"
+            >
+              <i class="fas fa-arrow-left me-2"></i>Về Dashboard
+            </button>
+          </div>
+
+          <!-- Stats Overview -->
+          <div id="statsContainer" class="row mb-4">
+            <div class="col-md-12">
+              <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Đang tải...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filters -->
+          <div class="filter-card">
+            <div class="row g-3 align-items-end">
+              <div class="col-md-3">
+                <label class="form-label fw-bold">
+                  <i class="fas fa-layer-group me-1"></i>Danh mục
+                </label>
+                <select class="form-select" id="categoryFilter">
+                  <option value="">Tất cả danh mục</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label fw-bold">
+                  <i class="fas fa-star me-1"></i>Rating tối đa
+                </label>
+                <select class="form-select" id="maxRatingFilter">
+                  <option value="1.5">⭐ ≤ 1.5 (Rất tệ)</option>
+                  <option value="2.0">⭐⭐ ≤ 2.0 (Tệ)</option>
+                  <option value="2.5">⭐⭐ ≤ 2.5 (Kém)</option>
+                  <option value="3.0" selected>
+                    ⭐⭐⭐ ≤ 3.0 (Trung bình)
+                  </option>
+                  <option value="3.5">⭐⭐⭐ ≤ 3.5 (Khá)</option>
+                  <option value="4.0">⭐⭐⭐⭐ ≤ 4.0 (Tốt)</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label fw-bold">
+                  <i class="fas fa-list me-1"></i>Số sản phẩm/trang
+                </label>
+                <select class="form-select" id="pageSizeFilter">
+                  <option value="10">10 sản phẩm</option>
+                  <option value="20" selected>20 sản phẩm</option>
+                  <option value="50">50 sản phẩm</option>
+                  <option value="100">100 sản phẩm</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <button
+                  class="btn btn-primary w-100"
+                  onclick="loadLowRatingProducts()"
+                >
+                  <i class="fas fa-filter me-2"></i>Lọc
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Products List -->
+          <div class="card">
+            <div class="card-header bg-white">
+              <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                  <i class="fas fa-list me-2"></i>Danh sách sản phẩm
+                  <span class="badge bg-danger ms-2" id="totalProducts">0</span>
+                </h5>
+                <button
+                  class="btn btn-sm btn-outline-primary"
+                  onclick="exportToCSV()"
+                >
+                  <i class="fas fa-download me-1"></i>Xuất Excel
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="productsContainer">
+                <div class="text-center py-5">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Đang tải...</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <nav class="mt-4">
+            <ul
+              class="pagination justify-content-center"
+              id="paginationContainer"
+            ></ul>
+          </nav>
+        </main>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/admin-low-rating.js"></script>
+    <script src="/js/auth.js"></script>
+  </body>
+</html>

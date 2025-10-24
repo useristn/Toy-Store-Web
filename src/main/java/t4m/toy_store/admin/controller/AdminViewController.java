@@ -35,4 +35,9 @@ public class AdminViewController {
     public String support() {
         return "admin/admin-support";
     }
+
+    @GetMapping("/low-rating")
+    public String lowRating() {
+        return "admin/admin-low-rating";
+    }
 }
