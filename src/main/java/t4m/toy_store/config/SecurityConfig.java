@@ -104,10 +104,10 @@ public class SecurityConfig {
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
 
-    public SecurityConfig(CustomUserDetailsService userDetailsService, 
-                         JwtRequestFilter jwtRequestFilter,
-                         CustomAccessDeniedHandler accessDeniedHandler,
-                         CustomAuthenticationEntryPoint authenticationEntryPoint) {
+    public SecurityConfig(CustomUserDetailsService userDetailsService,
+            JwtRequestFilter jwtRequestFilter,
+            CustomAccessDeniedHandler accessDeniedHandler,
+            CustomAuthenticationEntryPoint authenticationEntryPoint) {
         this.userDetailsService = userDetailsService;
         this.jwtRequestFilter = jwtRequestFilter;
         this.accessDeniedHandler = accessDeniedHandler;
@@ -131,41 +131,48 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Public HTML pages (no authentication required for viewing)
-                        .requestMatchers("/", "/index", "/login", "/register", "/forgot-password", "/reset-password", "/verify-otp").permitAll()
+                        .requestMatchers("/", "/index", "/login", "/register", "/forgot-password", "/reset-password",
+                                "/verify-otp")
+                        .permitAll()
                         .requestMatchers("/products", "/products/**", "/product/**").permitAll()
                         .requestMatchers("/cart", "/checkout", "/orders", "/favorites", "/profile").permitAll()
-                        .requestMatchers("/test-search").permitAll()
-                        
+                        .requestMatchers("/test-search", "/test-support.html", "/debug-admin.html").permitAll()
+
                         // Admin HTML pages - allow access, JS will check role
                         .requestMatchers("/admin", "/admin/**").permitAll()
-                        
+
                         // Shipper HTML pages - allow access, JS will check role
                         .requestMatchers("/shipper", "/shipper/**").permitAll()
-                        
+
                         // Static resources
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
-                        
+
                         // Public API endpoints
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/products/**").permitAll()
                         .requestMatchers("/api/chatbot/**").permitAll()
-                        
+
+                        // WebSocket endpoint
+                        .requestMatchers("/ws-support/**").permitAll()
+
+                        // Admin API - require ADMIN role (MUST BE BEFORE general /api/support/**)
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/support/admin/**").hasRole("ADMIN")
+
                         // Protected API endpoints - require authentication
                         .requestMatchers("/api/cart/**").authenticated()
                         .requestMatchers("/api/checkout/**").authenticated()
                         .requestMatchers("/api/orders/**").authenticated()
                         .requestMatchers("/api/favorites/**").authenticated()
                         .requestMatchers("/api/user/**").authenticated()
-                        
-                        // Admin API - require ADMIN role (this is the real protection)
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        
+                        .requestMatchers("/api/support/**").authenticated()
+
                         // Vendor API endpoints
                         .requestMatchers("/api/vendor/**").hasRole("VENDOR")
-                        
+
                         // Shipper API endpoints
                         .requestMatchers("/api/shipper/**").hasRole("SHIPPER")
-                        
+
                         // All other requests
                         .anyRequest().permitAll())
                 .exceptionHandling(exception -> exception

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🎯 Hỗ trợ khách hàng – T4M Admin</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      .support-container {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+
+      .support-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        height: 85vh;
+        display: flex;
+      }
+
+      .sessions-sidebar {
+        width: 350px;
+        border-right: 2px solid #e0e0e0;
+        display: flex;
+        flex-direction: column;
+        background: #f8f9fa;
+      }
+
+      .sidebar-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        font-weight: bold;
+        font-size: 1.2rem;
+      }
+
+      .sessions-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+      }
+
+      .session-item {
+        background: white;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: 2px solid transparent;
+      }
+
+      .session-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .session-item.active {
+        border-color: #667eea;
+        background: #f0f4ff;
+      }
+
+      .session-item .user-name {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 0.25rem;
+      }
+
+      .session-item .user-email {
+        font-size: 0.85rem;
+        color: #666;
+        margin-bottom: 0.5rem;
+      }
+
+      .session-item .last-message {
+        font-size: 0.9rem;
+        color: #888;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .session-item .badge {
+        float: right;
+      }
+
+      .chat-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: white;
+      }
+
+      .chat-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 2rem;
+        background: #f8f9fa;
+      }
+
+      .message {
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: flex-start;
+      }
+
+      .message.user {
+        justify-content: flex-start;
+      }
+
+      .message.admin {
+        justify-content: flex-end;
+      }
+
+      .message-bubble {
+        max-width: 60%;
+        padding: 1rem 1.25rem;
+        border-radius: 15px;
+        position: relative;
+      }
+
+      .message.user .message-bubble {
+        background: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border-bottom-left-radius: 5px;
+      }
+
+      .message.admin .message-bubble {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-bottom-right-radius: 5px;
+      }
+
+      .message-sender {
+        font-weight: bold;
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .message-text {
+        margin-bottom: 0.5rem;
+        word-wrap: break-word;
+      }
+
+      .message-time {
+        font-size: 0.75rem;
+        opacity: 0.7;
+      }
+
+      .chat-input-container {
+        padding: 1.5rem;
+        background: white;
+        border-top: 2px solid #e0e0e0;
+      }
+
+      .chat-input-form {
+        display: flex;
+        gap: 1rem;
+      }
+
+      .chat-input {
+        flex: 1;
+        border: 2px solid #e0e0e0;
+        border-radius: 25px;
+        padding: 0.75rem 1.5rem;
+        font-size: 0.95rem;
+      }
+
+      .chat-input:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      .btn-send {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+      }
+
+      .btn-send:hover {
+        transform: scale(1.1);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+      }
+
+      .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #999;
+      }
+
+      .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+      }
+
+      .typing-indicator {
+        display: none;
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+        color: #666;
+        font-style: italic;
+      }
+
+      .typing-indicator.active {
+        display: block;
+      }
+
+      .back-btn {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 2px solid white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 25px;
+        text-decoration: none;
+        transition: all 0.3s;
+      }
+
+      .back-btn:hover {
+        background: white;
+        color: #667eea;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="support-container">
+      <div class="support-card">
+        <!-- Sessions Sidebar -->
+        <div class="sessions-sidebar">
+          <div class="sidebar-header">
+            <i class="fas fa-comments me-2"></i>Khách hàng cần hỗ trợ
+          </div>
+          <div class="sessions-list" id="sessionsList">
+            <div class="text-center py-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Đang tải...</span>
+              </div>
+              <p class="mt-2 text-muted">Đang tải danh sách...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="chat-container">
+          <div class="chat-header">
+            <div>
+              <h5 class="mb-0" id="chatUserName">Chọn khách hàng để bắt đầu</h5>
+              <small id="chatUserEmail"></small>
+            </div>
+            <a href="/admin" class="back-btn">
+              <i class="fas fa-arrow-left me-2"></i>Quay lại
+            </a>
+          </div>
+
+          <div class="chat-messages" id="chatMessages">
+            <div class="empty-state">
+              <i class="fas fa-comments"></i>
+              <h4>Chọn một cuộc trò chuyện</h4>
+              <p>Chọn khách hàng từ danh sách bên trái để bắt đầu hỗ trợ</p>
+            </div>
+          </div>
+
+          <div class="typing-indicator" id="typingIndicator">
+            <i class="fas fa-circle-notch fa-spin"></i> Khách hàng đang nhập...
+          </div>
+
+          <div
+            class="chat-input-container"
+            id="chatInputContainer"
+            style="display: none"
+          >
+            <form class="chat-input-form" id="chatForm">
+              <input
+                type="text"
+                class="chat-input"
+                id="messageInput"
+                placeholder="Nhập tin nhắn..."
+                autocomplete="off"
+              />
+              <button type="submit" class="btn-send">
+                <i class="fas fa-paper-plane"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <script th:src="@{/js/admin-support.js}"></script>
+  </body>
+</html>
