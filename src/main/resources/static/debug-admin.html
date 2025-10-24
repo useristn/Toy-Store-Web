@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Admin Support Access</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .test-result { 
+            font-family: monospace; 
+            white-space: pre-wrap; 
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-top: 1rem;
+        }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+<div class="container mt-5">
+    <h1>🔍 Debug Admin Support Access</h1>
+    <p class="text-muted">Công cụ kiểm tra quyền truy cập Admin Support</p>
+    
+    <div class="card mt-4">
+        <div class="card-header bg-primary text-white">
+            <h5>Step 1: Check Token</h5>
+        </div>
+        <div class="card-body">
+            <button class="btn btn-primary" onclick="checkToken()">Check Token</button>
+            <div id="tokenResult" class="test-result"></div>
+        </div>
+    </div>
+    
+    <div class="card mt-4">
+        <div class="card-header bg-info text-white">
+            <h5>Step 2: Check User Profile & Role</h5>
+        </div>
+        <div class="card-body">
+            <button class="btn btn-info" onclick="checkUserProfile()">Check Profile</button>
+            <div id="profileResult" class="test-result"></div>
+        </div>
+    </div>
+    
+    <div class="card mt-4">
+        <div class="card-header bg-warning text-white">
+            <h5>Step 3: Test Admin API Access</h5>
+        </div>
+        <div class="card-body">
+            <button class="btn btn-warning" onclick="testAdminAPI()">Test Admin API</button>
+            <div id="apiResult" class="test-result"></div>
+        </div>
+    </div>
+    
+    <div class="card mt-4">
+        <div class="card-header bg-success text-white">
+            <h5>Step 4: Test Page Access</h5>
+        </div>
+        <div class="card-body">
+            <button class="btn btn-success" onclick="testPageAccess()">Test /admin/support Access</button>
+            <div id="pageResult" class="test-result"></div>
+        </div>
+    </div>
+    
+    <div class="alert alert-info mt-4">
+        <h5>💡 Hướng dẫn:</h5>
+        <ol>
+            <li>Đăng nhập trước khi chạy test</li>
+            <li>Chạy từng bước theo thứ tự</li>
+            <li>Xem kết quả và lỗi (nếu có)</li>
+            <li>Nếu Step 2 không có role ADMIN → Cần cấp quyền trong database</li>
+            <li>Nếu Step 3 trả về 403 → Vấn đề về authorization</li>
+        </ol>
+    </div>
+</div>
+
+<script>
+function checkToken() {
+    const result = document.getElementById('tokenResult');
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+        result.innerHTML = '<span class="error">❌ Không tìm thấy token\nVui lòng đăng nhập</span>';
+        return;
+    }
+    
+    // Decode JWT (just the payload, not verifying signature)
+    try {
+        const parts = token.split('.');
+        const payload = JSON.parse(atob(parts[1]));
+        
+        const now = Math.floor(Date.now() / 1000);
+        const expired = payload.exp && payload.exp < now;
+        
+        result.innerHTML = `<span class="success">✅ Token tồn tại</span>
+
+Token (first 50 chars): ${token.substring(0, 50)}...
+
+Decoded Payload:
+${JSON.stringify(payload, null, 2)}
+
+Expiry: ${payload.exp ? new Date(payload.exp * 1000).toLocaleString() : 'N/A'}
+Status: ${expired ? '<span class="error">EXPIRED ⚠️</span>' : '<span class="success">VALID ✅</span>'}
+`;
+    } catch (e) {
+        result.innerHTML = `<span class="error">❌ Token không hợp lệ\n${e.message}</span>`;
+    }
+}
+
+function checkUserProfile() {
+    const result = document.getElementById('profileResult');
+    result.innerHTML = '⏳ Đang lấy thông tin user...';
+    
+    const token = localStorage.getItem('token');
+    if (!token) {
+        result.innerHTML = '<span class="error">❌ Không có token. Vui lòng đăng nhập.</span>';
+        return;
+    }
+    
+    fetch('/api/user/profile', {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        const hasAdminRole = data.roles && data.roles.some(r => r.name === 'ROLE_ADMIN' || r.name === 'ADMIN');
+        
+        result.innerHTML = `<span class="success">✅ Profile loaded</span>
+
+User Info:
+${JSON.stringify(data, null, 2)}
+
+Has ADMIN role: ${hasAdminRole ? '<span class="success">YES ✅</span>' : '<span class="error">NO ❌</span>'}
+${!hasAdminRole ? '\n⚠️ KHÔNG CÓ ROLE ADMIN! Cần cấp quyền trong database.' : ''}
+`;
+    })
+    .catch(error => {
+        result.innerHTML = `<span class="error">❌ Lỗi khi lấy profile:\n${error.message}</span>`;
+    });
+}
+
+function testAdminAPI() {
+    const result = document.getElementById('apiResult');
+    result.innerHTML = '⏳ Đang test API /api/support/admin/sessions...';
+    
+    const token = localStorage.getItem('token');
+    if (!token) {
+        result.innerHTML = '<span class="error">❌ Không có token. Vui lòng đăng nhập.</span>';
+        return;
+    }
+    
+    fetch('/api/support/admin/sessions', {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        const status = response.status;
+        const statusText = response.statusText;
+        
+        if (status === 200) {
+            return response.json().then(data => ({
+                status, statusText, data, success: true
+            }));
+        } else {
+            return response.text().then(text => ({
+                status, statusText, error: text, success: false
+            }));
+        }
+    })
+    .then(res => {
+        if (res.success) {
+            result.innerHTML = `<span class="success">✅ API Success</span>
+
+Status: ${res.status} ${res.statusText}
+
+Response:
+${JSON.stringify(res.data, null, 2)}
+`;
+        } else {
+            let diagnosis = '';
+            if (res.status === 401) {
+                diagnosis = '\n⚠️ UNAUTHORIZED: Token không hợp lệ hoặc đã hết hạn';
+            } else if (res.status === 403) {
+                diagnosis = '\n⚠️ FORBIDDEN: Không có quyền ADMIN';
+            }
+            
+            result.innerHTML = `<span class="error">❌ API Failed</span>
+
+Status: ${res.status} ${res.statusText}${diagnosis}
+
+Response:
+${res.error}
+`;
+        }
+    })
+    .catch(error => {
+        result.innerHTML = `<span class="error">❌ Network Error:\n${error.message}</span>`;
+    });
+}
+
+function testPageAccess() {
+    const result = document.getElementById('pageResult');
+    result.innerHTML = '⏳ Đang test truy cập /admin/support...';
+    
+    fetch('/admin/support', {
+        method: 'GET',
+        redirect: 'manual'
+    })
+    .then(response => {
+        if (response.type === 'opaqueredirect') {
+            result.innerHTML = `<span class="error">❌ Bị redirect (có thể về /login)</span>
+
+Status: Redirect
+⚠️ Trang admin/support đang redirect. Kiểm tra:
+1. SecurityConfig có permit /admin/** không?
+2. Có middleware nào chặn không?
+`;
+        } else if (response.ok) {
+            result.innerHTML = `<span class="success">✅ Truy cập thành công</span>
+
+Status: ${response.status} ${response.statusText}
+Trang admin/support có thể truy cập
+`;
+        } else {
+            result.innerHTML = `<span class="error">❌ Lỗi truy cập</span>
+
+Status: ${response.status} ${response.statusText}
+`;
+        }
+    })
+    .catch(error => {
+        result.innerHTML = `<span class="error">❌ Error:\n${error.message}</span>`;
+    });
+}
+
+// Auto check token on load
+window.addEventListener('load', () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert('⚠️ Chưa đăng nhập! Vui lòng đăng nhập trước khi test.');
+    }
+});
+</script>
+</body>
+</html>
