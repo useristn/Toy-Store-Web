@@ -72,6 +72,9 @@ function displayFeaturedProducts(products) {
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title" style="cursor: pointer;" onclick="viewProduct(${product.id})">${product.name}</h5>
                     <p class="card-text text-muted flex-grow-1">${product.description ? (product.description.length > 50 ? product.description.substring(0, 50) + '...' : product.description) : 'Sản phẩm tuyệt vời!'}</p>
+                    
+                    ${generateRatingStars(product.averageRating, product.ratingCount)}
+                    
                     <div class="mb-2">
                         ${product.discountPrice ? 
                             `<div class="h5 text-danger mb-0">${formatPrice(product.discountPrice)}</div>
@@ -231,4 +234,49 @@ function formatPrice(price) {
         style: 'currency', 
         currency: 'VND' 
     }).format(price);
+}
+
+// ===== RATING DISPLAY HELPER =====
+function generateRatingStars(averageRating, ratingCount) {
+    const avgRating = averageRating || 0;
+    const count = ratingCount || 0;
+    
+    if (count === 0) {
+        return `
+            <div class="mb-2">
+                <small class="text-muted">
+                    <i class="far fa-star text-warning"></i>
+                    <i class="far fa-star text-warning"></i>
+                    <i class="far fa-star text-warning"></i>
+                    <i class="far fa-star text-warning"></i>
+                    <i class="far fa-star text-warning"></i>
+                    <span class="ms-1">Chưa có đánh giá</span>
+                </small>
+            </div>
+        `;
+    }
+    
+    const fullStars = Math.floor(avgRating);
+    const hasHalfStar = avgRating % 1 >= 0.5;
+    
+    let starsHtml = '';
+    for (let i = 0; i < 5; i++) {
+        if (i < fullStars) {
+            starsHtml += '<i class="fas fa-star text-warning"></i>';
+        } else if (i === fullStars && hasHalfStar) {
+            starsHtml += '<i class="fas fa-star-half-alt text-warning"></i>';
+        } else {
+            starsHtml += '<i class="far fa-star text-warning"></i>';
+        }
+    }
+    
+    return `
+        <div class="mb-2">
+            <small>
+                ${starsHtml}
+                <span class="ms-1 fw-bold">${avgRating.toFixed(1)}</span>
+                <span class="text-muted">(${count})</span>
+            </small>
+        </div>
+    `;
 }
