@@ -21,6 +21,8 @@ public class ProductResponse {
     private Integer stock;
     private Boolean featured;
     private CategoryInfo category;
+    private Double averageRating;
+    private Integer ratingCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -59,6 +61,8 @@ public class ProductResponse {
             .stock(product.getStock())
             .featured(product.getFeatured())
             .category(categoryInfo)
+            .averageRating(product.getAverageRating() != null ? product.getAverageRating() : 0.0)
+            .ratingCount(product.getRatingCount() != null ? product.getRatingCount() : 0)
             .createdAt(product.getCreatedAt())
             .updatedAt(product.getUpdatedAt())
             .build();

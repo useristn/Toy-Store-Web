@@ -44,6 +44,14 @@ public class Product {
 
     private Boolean featured;
 
+    @Column(name = "average_rating")
+    @Builder.Default
+    private Double averageRating = 0.0;
+
+    @Column(name = "rating_count")
+    @Builder.Default
+    private Integer ratingCount = 0;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
@@ -52,6 +60,12 @@ public class Product {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        if (averageRating == null) {
+            averageRating = 0.0;
+        }
+        if (ratingCount == null) {
+            ratingCount = 0;
+        }
     }
 
     @PreUpdate

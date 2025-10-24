@@ -134,6 +134,58 @@
     </div>
 </div>
 
+<!-- Rating Modal -->
+<div class="modal fade" id="ratingModal" tabindex="-1" aria-labelledby="ratingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="ratingModalLabel">
+                    <i class="fas fa-star me-2"></i>Đánh giá sản phẩm
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <h6 id="ratingProductName" class="fw-bold"></h6>
+                </div>
+                <div class="text-center mb-4">
+                    <p class="mb-2">Chọn số sao:</p>
+                    <div class="star-rating" id="starRating">
+                        <i class="far fa-star star" data-rating="1"></i>
+                        <i class="far fa-star star" data-rating="2"></i>
+                        <i class="far fa-star star" data-rating="3"></i>
+                        <i class="far fa-star star" data-rating="4"></i>
+                        <i class="far fa-star star" data-rating="5"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Hủy
+                </button>
+                <button type="button" class="btn btn-warning" id="submitRatingBtn" disabled>
+                    <i class="fas fa-paper-plane me-2"></i>Gửi đánh giá
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.star-rating {
+    font-size: 2.5rem;
+    cursor: pointer;
+}
+.star-rating .star {
+    color: #ddd;
+    transition: color 0.2s;
+}
+.star-rating .star.active,
+.star-rating .star:hover {
+    color: #ffc107;
+}
+</style>
+
 <div th:replace="~{fragments/footer :: footer}"></div>
 
 <!-- JavaScript -->
@@ -228,15 +280,24 @@ function displayOrders(orders) {
                     <div class="col-md-8">
                         <h6 class="mb-3"><i class="fas fa-box me-2"></i>Sản phẩm:</h6>
                         ${order.items.map(item => `
-                            <div class="d-flex align-items-center mb-2">
-                                <img src="${item.productImageUrl || 'https://via.placeholder.com/50'}" 
-                                     alt="${item.productName}" 
-                                     class="rounded me-3" 
-                                     style="width: 50px; height: 50px; object-fit: cover;">
-                                <div>
-                                    <p class="mb-0">${item.productName}</p>
-                                    <small class="text-muted">SL: ${item.quantity} × ${formatPrice(item.price)}</small>
+                            <div class="d-flex align-items-center mb-2 justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <img src="${item.productImageUrl || 'https://via.placeholder.com/50'}" 
+                                         alt="${item.productName}" 
+                                         class="rounded me-3" 
+                                         style="width: 50px; height: 50px; object-fit: cover;">
+                                    <div>
+                                        <p class="mb-0">${item.productName}</p>
+                                        <small class="text-muted">SL: ${item.quantity} × ${formatPrice(item.price)}</small>
+                                    </div>
                                 </div>
+                                ${order.status === 'DELIVERED' ? `
+                                    <div id="rating-${order.id}-${item.productId}" class="rating-container">
+                                        <button class="btn btn-sm btn-outline-warning" onclick="openRatingModal(${order.id}, ${item.productId}, '${item.productName}')">
+                                            <i class="far fa-star me-1"></i>Đánh giá
+                                        </button>
+                                    </div>
+                                ` : ''}
                             </div>
                         `).join('')}
                     </div>
@@ -259,6 +320,9 @@ function displayOrders(orders) {
         `;
         container.appendChild(orderCard);
     });
+    
+    // Check rating status for delivered orders
+    setTimeout(() => checkRatingStatus(), 500);
 }
 
 function canCancelOrder(order) {
@@ -421,6 +485,192 @@ function showErrorModal(message) {
     document.getElementById('errorMessage').textContent = message;
     const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
     errorModal.show();
+}
+
+// ===== RATING FUNCTIONS =====
+
+let currentRatingOrderId = null;
+let currentRatingProductId = null;
+let selectedStars = 0;
+
+function openRatingModal(orderId, productId, productName) {
+    currentRatingOrderId = orderId;
+    currentRatingProductId = productId;
+    selectedStars = 0;
+    
+    document.getElementById('ratingProductName').textContent = productName;
+    document.getElementById('submitRatingBtn').disabled = true;
+    
+    // Reset stars
+    const stars = document.querySelectorAll('.star-rating .star');
+    stars.forEach(star => {
+        star.classList.remove('active', 'fas');
+        star.classList.add('far');
+    });
+    
+    // Show modal
+    const ratingModal = new bootstrap.Modal(document.getElementById('ratingModal'));
+    ratingModal.show();
+    
+    // Add star click handlers
+    setupStarRating();
+}
+
+function setupStarRating() {
+    const stars = document.querySelectorAll('.star-rating .star');
+    
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            selectedStars = parseInt(this.getAttribute('data-rating'));
+            updateStarDisplay(selectedStars);
+            document.getElementById('submitRatingBtn').disabled = false;
+        });
+        
+        star.addEventListener('mouseenter', function() {
+            const rating = parseInt(this.getAttribute('data-rating'));
+            updateStarDisplay(rating);
+        });
+    });
+    
+    document.getElementById('starRating').addEventListener('mouseleave', function() {
+        updateStarDisplay(selectedStars);
+    });
+}
+
+function updateStarDisplay(rating) {
+    const stars = document.querySelectorAll('.star-rating .star');
+    stars.forEach((star, index) => {
+        if (index < rating) {
+            star.classList.remove('far');
+            star.classList.add('fas', 'active');
+        } else {
+            star.classList.remove('fas', 'active');
+            star.classList.add('far');
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const submitRatingBtn = document.getElementById('submitRatingBtn');
+    if (submitRatingBtn) {
+        submitRatingBtn.addEventListener('click', submitRating);
+    }
+});
+
+async function submitRating() {
+    if (selectedStars === 0) {
+        showErrorModal('Vui lòng chọn số sao đánh giá!');
+        return;
+    }
+    
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
+    
+    if (!token || !userEmail) {
+        showErrorModal('Vui lòng đăng nhập để đánh giá!');
+        setTimeout(() => window.location.href = '/login', 2000);
+        return;
+    }
+    
+    const submitBtn = document.getElementById('submitRatingBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang gửi...';
+    
+    try {
+        const response = await fetch('/api/ratings', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'X-User-Email': userEmail
+            },
+            body: JSON.stringify({
+                orderId: currentRatingOrderId,
+                productId: currentRatingProductId,
+                stars: selectedStars
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Không thể gửi đánh giá');
+        }
+        
+        // Close modal
+        const ratingModal = bootstrap.Modal.getInstance(document.getElementById('ratingModal'));
+        ratingModal.hide();
+        
+        // Update rating button
+        const ratingContainer = document.getElementById(`rating-${currentRatingOrderId}-${currentRatingProductId}`);
+        if (ratingContainer) {
+            ratingContainer.innerHTML = `
+                <span class="badge bg-success">
+                    <i class="fas fa-star me-1"></i>Đã đánh giá ${selectedStars} sao
+                </span>
+            `;
+        }
+        
+        // Show success notification
+        showSuccessNotification('Cảm ơn bạn đã đánh giá! ⭐');
+        
+    } catch (error) {
+        console.error('Error submitting rating:', error);
+        showErrorModal(error.message || 'Không thể gửi đánh giá. Vui lòng thử lại!');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Gửi đánh giá';
+    }
+}
+
+function showSuccessNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'alert alert-success alert-dismissible fade show position-fixed';
+    notification.style.cssText = 'top: 80px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        <i class="fas fa-check-circle me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => notification.remove(), 3000);
+}
+
+async function checkRatingStatus() {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
+    
+    if (!token || !userEmail) return;
+    
+    const ratingContainers = document.querySelectorAll('.rating-container');
+    
+    for (const container of ratingContainers) {
+        const orderId = container.id.split('-')[1];
+        const productId = container.id.split('-')[2];
+        
+        try {
+            const response = await fetch(`/api/ratings/has-rated?orderId=${orderId}&productId=${productId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'X-User-Email': userEmail
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.hasRated) {
+                    container.innerHTML = `
+                        <span class="badge bg-success">
+                            <i class="fas fa-star me-1"></i>Đã đánh giá
+                        </span>
+                    `;
+                }
+            }
+        } catch (error) {
+            console.error('Error checking rating status:', error);
+        }
+    }
 }
 </script>
 </body>
