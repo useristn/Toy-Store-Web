@@ -15,7 +15,11 @@ import t4m.toy_store.product.entity.Category;
 import t4m.toy_store.product.entity.Product;
 import t4m.toy_store.product.repository.CategoryRepository;
 import t4m.toy_store.product.service.ProductService;
+import t4m.toy_store.chatbot.service.NLUService;
+import t4m.toy_store.chatbot.service.NLUService.Intent;
+import t4m.toy_store.chatbot.service.NLUService.NLUResult;
 
+import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -35,44 +39,76 @@ public class ChatbotService {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final ProductService productService;
     private final CategoryRepository categoryRepository;
+    private final NLUService nluService; // NLU Service for intelligent intent detection
     
     // Store conversation history (conversationId -> list of messages)
     // In production, use Redis or database for scalability
     private final Map<String, List<Map<String, String>>> conversationHistory = new HashMap<>();
     
-    // Base system prompt for children's toy store (COMPACT VERSION - LINE BREAK)
+    // Base system prompt for children's toy store (CONTEXT-AWARE, NON-SEQUENTIAL)
     private static final String BASE_SYSTEM_PROMPT = 
         "Bạn là AI tư vấn đồ chơi T4M cho trẻ em. Phong cách: thân thiện, vui vẻ, ngắn gọn.\n\n" +
-        "QUY TRÌNH:\n" +
-        "1. Hỏi tư vấn quà → CHỈ HỎI: 'Bé là con trai hay con gái ạ?'\n" +
-        "2. Sau biết giới tính → CHỈ HỎI: 'Bé thích loại đồ chơi nào ạ?' (đưa gợi ý ngắn)\n" +
-        "3. Sau biết sở thích:\n" +
-        "   - NẾU có sản phẩm phù hợp TRONG DANH SÁCH → GỢI Ý 3-4 sản phẩm\n" +
-        "   - NẾU KHÔNG có sản phẩm phù hợp TRONG DANH SÁCH → BẮT BUỘC trả lời:\n\n" +
-        "     'Hiện tại cửa hàng T4M chưa có về loại sản phẩm này ạ. Tôi sẽ gợi ý cho bạn một vài mẫu sản phẩm đang hot bên tôi.'\n\n" +
-        "     (sau đó gợi ý 3-4 sản phẩm từ danh sách SẢN PHẨM HOT)\n\n" +
-        "4. KHI KHÁCH CHỌN SẢN PHẨM (nói tên sản phẩm hoặc 'tôi chọn...'):\n" +
-        "   → BẮT BUỘC trả lời CHÍNH XÁC:\n\n" +
+        
+        "NGUYÊN TẮC HOẠT ĐỘNG:\n" +
+        "1. PHÂN TÍCH NGỮ CẢNH: Đọc kỹ câu hỏi của user, xác định họ cần gì\n" +
+        "2. TRẢ LỜI TRỰC TIẾP: Nếu đủ thông tin trong câu hỏi → Trả lời ngay, KHÔNG hỏi lại\n" +
+        "3. CHỈ HỎI KHI THIẾU: Chỉ hỏi thêm khi thực sự thiếu thông tin quan trọng\n\n" +
+        
+        "CÁC TÌNH HUỐNG:\n\n" +
+        
+        "A. HỎI VỀ SẢN PHẨM CỤ THỂ (Giá, Tìm kiếm, Thông tin):\n" +
+        "   → TRẢ LỜI NGAY với thông tin từ DANH SÁCH SẢN PHẨM\n" +
+        "   - Nếu CÓ sản phẩm: Liệt kê 3-5 sản phẩm phù hợp nhất\n" +
+        "   - Nếu KHÔNG CÓ: 'Xin lỗi, hiện tại T4M chưa có sản phẩm này. Tôi gợi ý những sản phẩm HOT:' → Gợi ý 3-4 sản phẩm hot từ danh sách\n" +
+        "   VD: 'Giá xe tăng?' → Trả lời giá các xe tăng có trong danh sách\n" +
+        "   VD: 'Có búp bê Elsa không?' → Liệt kê Elsa nếu có, nếu không thì gợi ý búp bê khác\n\n" +
+        
+        "B. TƯ VẤN QUÀ CÓ ĐỦ THÔNG TIN (tuổi/giới tính/sở thích rõ ràng):\n" +
+        "   → TRẢ LỜI NGAY với gợi ý phù hợp\n" +
+        "   - Phân tích: tuổi, giới tính, sở thích từ câu hỏi\n" +
+        "   - Gợi ý 3-4 sản phẩm CÓ TRONG DANH SÁCH phù hợp nhất\n" +
+        "   - Nếu KHÔNG có sản phẩm phù hợp: 'Xin lỗi, T4M chưa có sản phẩm này. Gợi ý sản phẩm HOT:' → Liệt kê 3-4 sản phẩm hot\n" +
+        "   VD: 'Quà cho bé gái 5 tuổi thích công chúa' → Gợi ý búp bê công chúa ngay\n" +
+        "   VD: 'Đồ chơi cho bé trai 8 tuổi thích robot' → Gợi ý robot/transformer ngay\n\n" +
+        
+        "C. TƯ VẤN QUÀ THIẾU THÔNG TIN QUAN TRỌNG:\n" +
+        "   → CHỈ HỎI những thông tin thiếu, KHÔNG hỏi lại thông tin đã có\n" +
+        "   - Nếu thiếu tuổi: 'Bé bao nhiêu tuổi ạ?'\n" +
+        "   - Nếu thiếu giới tính: 'Bé là con trai hay con gái ạ?'\n" +
+        "   - Nếu thiếu sở thích: 'Bé thích loại đồ chơi nào ạ? (VD: búp bê, xe, lego, khoa học...)'\n" +
+        "   VD: 'Tư vấn quà cho bé' → Hỏi: 'Bé bao nhiêu tuổi và là con trai hay con gái ạ?'\n\n" +
+        
+        "D. CHÍNH SÁCH/HỖ TRỢ:\n" +
+        "   → TRẢ LỜI NGAY thông tin chính sách\n" +
+        "   - Đổi trả: 7 ngày, sản phẩm nguyên tem\n" +
+        "   - Giao hàng: 1-3 ngày, miễn phí từ 300K\n" +
+        "   - Hotline: 1800-363-363\n\n" +
+        
+        "E. KHÁCH CHỌN SẢN PHẨM (nói tên hoặc 'tôi chọn...'):\n" +
+        "   → BẮT BUỘC trả lời:\n" +
         "   'Cảm ơn bạn đã chọn <TÊN SẢN PHẨM>! 🎁\n\n" +
-        "   Bạn hãy tìm kiếm \"<TÊN SẢN PHẨM>\" trên web T4M của chúng tôi để có thông tin chi tiết về sản phẩm này.\n\n" +
-        "   Chúc bạn có một trải nghiệm mua sắm tuyệt vời trên cửa hàng T4M! 😊'\n\n" +
-        "   ⚠️ FORMAT BẮT BUỘC:\n" +
+        "   Bạn hãy tìm kiếm \"<TÊN SẢN PHẨM>\" trên web T4M để xem chi tiết và đặt hàng.\n\n" +
+        "   Chúc bạn mua sắm vui vẻ! 😊'\n\n" +
+        
+        "⚠️ FORMAT SẢN PHẨM (BẮT BUỘC):\n" +
         "   - MỖI SẢN PHẨM MỘT DÒNG (xuống dòng sau mỗi sản phẩm)\n" +
-        "   - Format từng dòng: • Tên | Trạng thái | Mô tả\n" +
-        "   - KHÔNG ghi giá tiền, KHÔNG gộp nhiều sản phẩm trên 1 dòng\n\n" +
-        "   VÍ DỤ ĐÚNG:\n" +
-        "   Tuyệt vời! T4M có gợi ý:\n" +
-        "   • Búp bê Elsa | Còn hàng, SALE | Công chúa Elsa xinh đẹp!\n" +
-        "   • Búp bê Barbie | Còn hàng | Ngôi nhà mơ ước của Barbie!\n" +
-        "   • Búp bê Jasmine | Còn hàng, SALE | Công chúa Jasmine quyến rũ!\n" +
-        "   Bạn chọn món nào ạ?\n\n" +
-        "   VÍ DỤ SAI (TUYỆT ĐỐI TRÁNH):\n" +
-        "   • Búp bê Elsa | Còn hàng | Xinh đẹp! • Búp bê Barbie | Còn hàng | Ngôi nhà!\n\n" +
-        "LƯU Ý: MỖI LẦN CHỈ HỎI 1 CÂU | Trả lời NGẮN GỌN | ÍT EMOJI | CHỈ gợi ý sản phẩm CÓ TRONG DANH SÁCH\n\n" +
-        "CHÍNH SÁCH: Đổi trả 7 ngày | Giao 1-3 ngày | Miễn phí từ 300K | Hotline: 1800-363-363\n\n";
+        "   - Format: • Tên | Trạng thái | Mô tả ngắn\n" +
+        "   - KHÔNG ghi giá, KHÔNG gộp nhiều sản phẩm 1 dòng\n" +
+        "   VD ĐÚNG:\n" +
+        "   • Búp bê Elsa | Còn hàng, SALE | Công chúa băng giá xinh đẹp\n" +
+        "   • Búp bê Barbie | Còn hàng | Ngôi nhà mơ ước\n" +
+        "   • Búp bê Jasmine | Hết hàng | Công chúa Jasmine quyến rũ\n\n" +
+        
+        "LƯU Ý:\n" +
+        "- LUÔN ưu tiên trả lời trực tiếp nếu có đủ thông tin\n" +
+        "- CHỈ gợi ý sản phẩm CÓ TRONG DANH SÁCH\n" +
+        "- Nếu KHÔNG có sản phẩm phù hợp → Xin lỗi + gợi ý sản phẩm HOT\n" +
+        "- Trả lời NGẮN GỌN, ÍT EMOJI\n" +
+        "- KHÔNG hỏi lại thông tin user đã cung cấp\n\n";
+
     
     public String generateResponse(String userMessage, String conversationId) {
-        logger.info("=== ChatbotService.generateResponse CALLED ===");
+        logger.info("=== ChatbotService.generateResponse CALLED (HYBRID MODE) ===");
         logger.info("User message: {}, Conversation ID: {}", userMessage, conversationId);
         logger.info("Gemini API key configured: {}", geminiApiKey != null && !geminiApiKey.isEmpty());
         
@@ -82,13 +118,101 @@ public class ChatbotService {
         }
         
         try {
+            // 🧠 NLU ANALYSIS: Detect intent, extract entities, analyze semantics
+            NLUResult nluResult = nluService.analyze(userMessage);
+            logger.info("🧠 NLU Result: {}", nluResult);
+            logger.info("   → Intent: {} (confidence: {:.2f}%)", 
+                       nluResult.getIntent(), nluResult.getConfidence() * 100);
+            logger.info("   → Language: {}", nluResult.getLanguage());
+            logger.info("   → Keywords: {}", nluResult.getExtractedKeywords());
+            logger.info("   → Entities: {}", nluResult.getEntities());
+            logger.info("   → Use Rule-Based: {}", nluResult.shouldUseRuleBased());
+            
+            // STEP 2: Handle with rule-based if NLU recommends (FAST PATH ⚡)
+            if (nluResult.shouldUseRuleBased()) {
+                Intent intent = nluResult.getIntent();
+                
+                switch (intent) {
+                    case GREETING:
+                        logger.info("⚡ Using rule-based handler for GREETING");
+                        return handleGreeting();
+                        
+                    case PRICE_QUERY:
+                        logger.info("⚡ Using rule-based handler for PRICE_QUERY");
+                        return handlePriceQueryAdvanced(userMessage, nluResult);
+                        
+                    case PRODUCT_SEARCH:
+                        logger.info("⚡ Using rule-based handler for PRODUCT_SEARCH");
+                        return handleProductSearchAdvanced(userMessage, nluResult);
+                        
+                    case POLICY_QUERY:
+                        logger.info("⚡ Using rule-based handler for POLICY_QUERY");
+                        return handlePolicyQuery(userMessage);
+                        
+                    case COMPARISON:
+                        logger.info("⚡ Using rule-based handler for COMPARISON");
+                        return handleComparison(nluResult);
+                        
+                    case RECOMMENDATION:
+                        logger.info("⚡ Using rule-based handler for RECOMMENDATION");
+                        return handleRecommendation(nluResult);
+                        
+                    case GIFT_CONSULTATION:
+                    case UNKNOWN:
+                        // Fall through to AI (SMART PATH 🤖)
+                        logger.info("🤖 Low confidence or complex query - forwarding to AI");
+                        break;
+                }
+            } else {
+                logger.info("🤖 NLU recommends AI path (confidence too low or complex query)");
+            }
+            
+            // STEP 3: Handle with AI for complex queries (ORIGINAL LOGIC)
             // Get or create conversation history
             List<Map<String, String>> history = conversationHistory.computeIfAbsent(conversationId, k -> new ArrayList<>());
             
-            // SMART CONTEXT LOADING: Load products based on conversation stage
+            // 🔍 ENRICH WITH DATABASE CONTEXT: Always check if products exist
             String productContext = "";
+            List<Product> matchedProducts = new ArrayList<>();
             
-            if (history.isEmpty()) {
+            // Try to find products based on NLU keywords
+            if (!nluResult.getExtractedKeywords().isEmpty()) {
+                logger.info("🔍 Searching products with NLU keywords: {}", nluResult.getExtractedKeywords());
+                for (String keyword : nluResult.getExtractedKeywords()) {
+                    List<Product> found = productService.searchProducts(keyword, PageRequest.of(0, 10)).getContent();
+                    if (!found.isEmpty()) {
+                        matchedProducts.addAll(found);
+                        logger.info("   ✅ Found {} products for keyword '{}'", found.size(), keyword);
+                    }
+                }
+            }
+            
+            // Build context based on whether products exist
+            if (!matchedProducts.isEmpty()) {
+                // Products found: provide details to AI
+                logger.info("✅ Found {} relevant products - enriching AI with product details", matchedProducts.size());
+                StringBuilder sb = new StringBuilder("\n\nSẢN PHẨM LIÊN QUAN:\n");
+                matchedProducts.stream()
+                    .distinct()
+                    .limit(10)
+                    .forEach(p -> {
+                        sb.append(String.format("- %s | Giá: %s | Còn: %d | %s\n",
+                            p.getName(),
+                            formatCurrency(p.getPrice()),
+                            p.getStock(),
+                            p.getStock() > 0 ? "✅ Còn hàng" : "❌ Hết hàng"));
+                    });
+                productContext = sb.toString();
+            } else {
+                // No products: tell AI explicitly
+                logger.info("❌ No products found for keywords: {}", nluResult.getExtractedKeywords());
+                productContext = "\n\n⚠️ KHÔNG TÌM THẤY SẢN PHẨM PHÙ HỢP với từ khóa: " + 
+                               String.join(", ", nluResult.getExtractedKeywords()) + 
+                               "\n→ Hãy xin lỗi và GỢI Ý 3-4 SẢN PHẨM HOT khác (robot, lego, búp bê, xe điều khiển)\n";
+            }
+            
+            // SMART CONTEXT LOADING: Load general categories if needed (for first message)
+            if (history.isEmpty() && matchedProducts.isEmpty()) {
                 // First message: only show category overview (lightweight)
                 logger.info("First message - loading category overview...");
                 productContext = buildProductContext(); // Returns category overview
@@ -259,6 +383,382 @@ public class ChatbotService {
     public String generateConversationId() {
         return UUID.randomUUID().toString();
     }
+    
+    // ==================== RULE-BASED HANDLERS ====================
+    
+    /**
+     * Handle greeting intent
+     */
+    private String handleGreeting() {
+        return "Chào bạn! Mình là T4M AI Trợ lý 🤖\n\n" +
+               "Mình có thể giúp bạn:\n" +
+               "• Tư vấn quà cho bé\n" +
+               "• Tìm kiếm sản phẩm\n" +
+               "• Hỏi về giá cả\n" +
+               "• Chính sách đổi trả, giao hàng\n\n" +
+               "Bạn cần giúp gì ạ? 😊";
+    }
+    
+    // ==================== ADVANCED NLU-POWERED HANDLERS ====================
+    
+    /**
+     * Advanced price query handler with NLU entities
+     */
+    private String handlePriceQueryAdvanced(String message, NLUResult nluResult) {
+        // Extract keywords from NLU
+        List<String> keywords = nluResult.getExtractedKeywords();
+        String keyword = keywords.isEmpty() ? extractKeyword(message) : keywords.get(0);
+        
+        if (keyword.isEmpty()) {
+            return "Bạn muốn hỏi giá sản phẩm nào ạ? 💰\n" +
+                   "Ví dụ: 'Giá búp bê Elsa', 'Xe ô tô bao nhiêu tiền'";
+        }
+        
+        logger.info("🔍 Searching products with keyword: {}", keyword);
+        List<Product> products = productService.searchProducts(keyword, PageRequest.of(0, 5)).getContent();
+        
+        if (products.isEmpty()) {
+            return "Xin lỗi bạn, mình không tìm thấy sản phẩm nào có từ khóa '" + keyword + "' 😢\n\n" +
+                   "Bạn có thể thử:\n" +
+                   "• Tìm theo danh mục: 'Búp bê', 'Xe', 'Lego', 'Robot'\n" +
+                   "• Gọi hotline 1800-363-363 để được tư vấn trực tiếp";
+        }
+        
+        StringBuilder response = new StringBuilder();
+        response.append("💰 Giá sản phẩm liên quan đến \"").append(keyword).append("\":\n\n");
+        
+        NumberFormat vndFormat = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("vi-VN"));
+        
+        for (Product p : products) {
+            response.append("• ").append(p.getName()).append("\n");
+            
+            if (p.getDiscountPrice() != null && p.getDiscountPrice().compareTo(p.getPrice()) < 0) {
+                response.append("  Giá gốc: ").append(vndFormat.format(p.getPrice())).append("\n");
+                response.append("  Giá SALE: ").append(vndFormat.format(p.getDiscountPrice())).append(" 🔥\n");
+            } else {
+                response.append("  Giá: ").append(vndFormat.format(p.getPrice())).append("\n");
+            }
+            
+            if (p.getStock() != null && p.getStock() > 0) {
+                response.append("  ✅ Còn hàng\n");
+            } else {
+                response.append("  ❌ Hết hàng\n");
+            }
+            response.append("\n");
+        }
+        
+        response.append("Tìm kiếm \"").append(keyword).append("\" trên website T4M để xem chi tiết! 🎁");
+        return response.toString();
+    }
+    
+    /**
+     * Advanced product search handler with NLU entities
+     */
+    private String handleProductSearchAdvanced(String message, NLUResult nluResult) {
+        // Extract keywords from NLU
+        List<String> keywords = nluResult.getExtractedKeywords();
+        String keyword = keywords.isEmpty() ? extractKeyword(message) : keywords.get(0);
+        
+        if (keyword.isEmpty()) {
+            return "Bạn đang tìm sản phẩm gì ạ? 🔍\n" +
+                   "Ví dụ: 'Tìm búp bê Elsa', 'Có xe nào đẹp không'";
+        }
+        
+        logger.info("🔍 Searching products with keyword: {}", keyword);
+        List<Product> products = productService.searchProducts(keyword, PageRequest.of(0, 8)).getContent();
+        
+        if (products.isEmpty()) {
+            return "Xin lỗi bạn, không tìm thấy sản phẩm nào phù hợp 😢\n\n" +
+                   "🏷️ Danh mục có sẵn:\n" +
+                   "👸 Búp bê | 🚀 Xe | 🧩 Lego | 🔬 Khoa học\n" +
+                   "⚽ Thể thao | 🎨 Nghệ thuật | 🤖 Robot | 🎲 Board Game";
+        }
+        
+        StringBuilder response = new StringBuilder();
+        response.append("🔍 Tìm thấy ").append(products.size()).append(" sản phẩm liên quan \"")
+               .append(keyword).append("\":\n\n");
+        
+        NumberFormat vndFormat = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("vi-VN"));
+        
+        for (Product p : products) {
+            response.append("• ").append(p.getName());
+            
+            if (p.getDiscountPrice() != null && p.getDiscountPrice().compareTo(p.getPrice()) < 0) {
+                response.append(" | ").append(vndFormat.format(p.getDiscountPrice())).append(" 🔥");
+            } else {
+                response.append(" | ").append(vndFormat.format(p.getPrice()));
+            }
+            
+            if (p.getStock() != null && p.getStock() > 0) {
+                response.append(" | ✅");
+            } else {
+                response.append(" | ❌");
+            }
+            response.append("\n");
+        }
+        
+        response.append("\nTìm kiếm \"").append(keyword).append("\" trên web T4M để xem chi tiết! 🛒");
+        return response.toString();
+    }
+    
+    /**
+     * Handle product comparison
+     */
+    private String handleComparison(NLUResult nluResult) {
+        List<String> keywords = nluResult.getExtractedKeywords();
+        
+        if (keywords.size() < 2) {
+            return "Để so sánh, bạn hãy cho mình biết 2 sản phẩm cần so sánh nhé! 🔄\n" +
+                   "Ví dụ: 'So sánh Lego Classic với Lego Technic'";
+        }
+        
+        // Get products for comparison
+        String keyword1 = keywords.get(0);
+        String keyword2 = keywords.get(1);
+        
+        List<Product> products1 = productService.searchProducts(keyword1, PageRequest.of(0, 1)).getContent();
+        List<Product> products2 = productService.searchProducts(keyword2, PageRequest.of(0, 1)).getContent();
+        
+        if (products1.isEmpty() || products2.isEmpty()) {
+            return "Xin lỗi, mình không tìm thấy đủ thông tin để so sánh 😢\n" +
+                   "Bạn thử hỏi AI nhé: 'Tư vấn giúp tôi chọn giữa " + keyword1 + " và " + keyword2 + "'";
+        }
+        
+        Product p1 = products1.get(0);
+        Product p2 = products2.get(0);
+        
+        NumberFormat vndFormat = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("vi-VN"));
+        
+        return String.format(
+            "🔄 So sánh 2 sản phẩm:\n\n" +
+            "📦 %s\n" +
+            "   Giá: %s\n" +
+            "   Danh mục: %s\n" +
+            "   Trạng thái: %s\n\n" +
+            "📦 %s\n" +
+            "   Giá: %s\n" +
+            "   Danh mục: %s\n" +
+            "   Trạng thái: %s\n\n" +
+            "Bạn muốn biết thêm chi tiết gì về 2 sản phẩm này không? 😊",
+            p1.getName(),
+            vndFormat.format(p1.getDiscountPrice() != null ? p1.getDiscountPrice() : p1.getPrice()),
+            p1.getCategory().getName(),
+            (p1.getStock() != null && p1.getStock() > 0) ? "Còn hàng ✅" : "Hết hàng ❌",
+            p2.getName(),
+            vndFormat.format(p2.getDiscountPrice() != null ? p2.getDiscountPrice() : p2.getPrice()),
+            p2.getCategory().getName(),
+            (p2.getStock() != null && p2.getStock() > 0) ? "Còn hàng ✅" : "Hết hàng ❌"
+        );
+    }
+    
+    /**
+     * Handle product recommendation based on NLU entities
+     */
+    private String handleRecommendation(NLUResult nluResult) {
+        Map<String, Object> entities = nluResult.getEntities();
+        
+        // Check if we have age or gender info
+        Integer age = (Integer) entities.get("age");
+        String gender = (String) entities.get("gender");
+        
+        StringBuilder response = new StringBuilder();
+        response.append("💡 Gợi ý sản phẩm từ T4M:\n\n");
+        
+        // Recommend based on age
+        String ageRange = "";
+        if (age != null) {
+            if (age <= 3) ageRange = "0-3 tuổi";
+            else if (age <= 6) ageRange = "3-6 tuổi";
+            else if (age <= 12) ageRange = "6-12 tuổi";
+            else ageRange = "12+ tuổi";
+            
+            response.append("Độ tuổi: ").append(age).append(" tuổi (").append(ageRange).append(")\n");
+        }
+        
+        if (gender != null) {
+            response.append("Giới tính: ").append(gender.equals("male") ? "Bé trai" : "Bé gái").append("\n");
+        }
+        
+        response.append("\nĐể tư vấn chính xác nhất, mình sẽ hỏi thêm vài câu nữa nhé! 😊\n");
+        response.append("Bạn có thể hỏi AI: 'Tư vấn quà cho bé");
+        if (age != null) response.append(" ").append(age).append(" tuổi");
+        if (gender != null) response.append(gender.equals("male") ? " trai" : " gái");
+        response.append("'");
+        
+        return response.toString();
+    }
+    
+    // ==================== LEGACY HANDLERS (for backward compatibility) ====================
+    
+    /**
+     * Handle price query - search products and show prices
+     * @deprecated Use handlePriceQueryAdvanced instead
+     */
+    @Deprecated
+    private String handlePriceQuery(String message) {
+        String keyword = extractKeyword(message);
+        
+        if (keyword.isEmpty()) {
+            return "Bạn muốn hỏi giá sản phẩm nào ạ? 💰\n" +
+                   "Ví dụ: 'Giá búp bê Elsa', 'Xe ô tô bao nhiêu tiền'";
+        }
+        
+        List<Product> products = productService.searchProducts(keyword, PageRequest.of(0, 5)).getContent();
+        
+        if (products.isEmpty()) {
+            return "Xin lỗi bạn, mình không tìm thấy sản phẩm nào có từ khóa '" + keyword + "' 😢\n\n" +
+                   "Bạn có thể thử:\n" +
+                   "• Tìm theo danh mục: 'Búp bê', 'Xe', 'Lego', 'Robot'\n" +
+                   "• Gọi hotline 1800-363-363 để được tư vấn trực tiếp";
+        }
+        
+        StringBuilder response = new StringBuilder();
+        response.append("💰 Giá sản phẩm liên quan đến \"").append(keyword).append("\":\n\n");
+        
+        NumberFormat vndFormat = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("vi-VN"));
+        
+        for (Product p : products) {
+            response.append("• ").append(p.getName()).append("\n");
+            
+            if (p.getDiscountPrice() != null && p.getDiscountPrice().compareTo(p.getPrice()) < 0) {
+                response.append("  Giá gốc: ").append(vndFormat.format(p.getPrice())).append("\n");
+                response.append("  Giá SALE: ").append(vndFormat.format(p.getDiscountPrice())).append(" 🔥\n");
+            } else {
+                response.append("  Giá: ").append(vndFormat.format(p.getPrice())).append("\n");
+            }
+            
+            if (p.getStock() != null && p.getStock() > 0) {
+                response.append("  ✅ Còn hàng\n");
+            } else {
+                response.append("  ❌ Hết hàng\n");
+            }
+            response.append("\n");
+        }
+        
+        response.append("Tìm kiếm \"").append(keyword).append("\" trên website T4M để xem chi tiết! 🎁");
+        return response.toString();
+    }
+    
+    /**
+     * Handle product search - find and list products
+     * @deprecated Use handleProductSearchAdvanced instead
+     */
+    @Deprecated
+    private String handleProductSearch(String message) {
+        String keyword = extractKeyword(message);
+        
+        if (keyword.isEmpty()) {
+            return "Bạn đang tìm sản phẩm gì ạ? 🔍\n" +
+                   "Ví dụ: 'Tìm búp bê Elsa', 'Có xe nào đẹp không'";
+        }
+        
+        List<Product> products = productService.searchProducts(keyword, PageRequest.of(0, 8)).getContent();
+        
+        if (products.isEmpty()) {
+            return "Xin lỗi bạn, không tìm thấy sản phẩm nào phù hợp 😢\n\n" +
+                   "🏷️ Danh mục có sẵn:\n" +
+                   "👸 Búp bê | 🚀 Xe | 🧩 Lego | 🔬 Khoa học\n" +
+                   "⚽ Thể thao | 🎨 Nghệ thuật | 🤖 Robot | 🎲 Board Game";
+        }
+        
+        StringBuilder response = new StringBuilder();
+        response.append("🔍 Tìm thấy ").append(products.size()).append(" sản phẩm liên quan \"")
+               .append(keyword).append("\":\n\n");
+        
+        NumberFormat vndFormat = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("vi-VN"));
+        
+        for (Product p : products) {
+            response.append("• ").append(p.getName());
+            
+            if (p.getDiscountPrice() != null && p.getDiscountPrice().compareTo(p.getPrice()) < 0) {
+                response.append(" | ").append(vndFormat.format(p.getDiscountPrice())).append(" 🔥");
+            } else {
+                response.append(" | ").append(vndFormat.format(p.getPrice()));
+            }
+            
+            if (p.getStock() != null && p.getStock() > 0) {
+                response.append(" | ✅");
+            } else {
+                response.append(" | ❌");
+            }
+            response.append("\n");
+        }
+        
+        response.append("\nTìm kiếm \"").append(keyword).append("\" trên web T4M để xem chi tiết! 🛒");
+        return response.toString();
+    }
+    
+    /**
+     * Handle policy query
+     */
+    private String handlePolicyQuery(String message) {
+        String msg = message.toLowerCase();
+        
+        StringBuilder response = new StringBuilder();
+        response.append("📋 Chính sách T4M:\n\n");
+        
+        if (msg.contains("đổi") || msg.contains("trả") || msg.contains("hoàn")) {
+            response.append("🔄 Đổi trả:\n");
+            response.append("• Đổi trả trong 7 ngày\n");
+            response.append("• Sản phẩm còn nguyên tem, chưa qua sử dụng\n");
+            response.append("• Hoàn tiền 100% nếu lỗi từ nhà sản xuất\n\n");
+        }
+        
+        if (msg.contains("giao") || msg.contains("vận chuyển") || msg.contains("ship")) {
+            response.append("🚚 Giao hàng:\n");
+            response.append("• Giao hàng toàn quốc 1-3 ngày\n");
+            response.append("• Miễn phí ship đơn từ 300.000₫\n");
+            response.append("• Đơn dưới 300K phí ship 30.000₫\n\n");
+        }
+        
+        if (msg.contains("thanh toán")) {
+            response.append("💳 Thanh toán:\n");
+            response.append("• COD (Tiền mặt khi nhận hàng)\n");
+            response.append("• Chuyển khoản ngân hàng\n");
+            response.append("• Ví điện tử (Momo, ZaloPay)\n\n");
+        }
+        
+        if (msg.contains("bảo hành")) {
+            response.append("🛡️ Bảo hành:\n");
+            response.append("• Bảo hành 6-12 tháng tùy sản phẩm\n");
+            response.append("• Hỗ trợ đổi mới nếu lỗi kỹ thuật\n\n");
+        }
+        
+        // If no specific policy found, show all
+        if (!msg.contains("đổi") && !msg.contains("trả") && 
+            !msg.contains("giao") && !msg.contains("thanh toán") && 
+            !msg.contains("bảo hành")) {
+            response.append("🔄 Đổi trả: 7 ngày, hoàn tiền 100%\n");
+            response.append("🚚 Giao hàng: 1-3 ngày, miễn phí từ 300K\n");
+            response.append("💳 Thanh toán: COD, Chuyển khoản, Ví điện tử\n");
+            response.append("🛡️ Bảo hành: 6-12 tháng\n\n");
+        }
+        
+        response.append("📞 Hotline: 1800-363-363 (8h-22h hàng ngày)");
+        return response.toString();
+    }
+    
+    /**
+     * Extract keyword from message (remove common words)
+     */
+    private String extractKeyword(String message) {
+        String cleaned = message.toLowerCase()
+            .replaceAll("\\b(giá|bao nhiêu|tiền|tìm|có|bán|xem|search|sản phẩm|đồ chơi|về|cho|gì|không|ạ|tim|san pham|do choi)\\b", "")
+            .trim()
+            .replaceAll("\\s+", " ");
+        
+        return cleaned.isEmpty() ? "" : cleaned;
+    }
+    
+    /**
+     * Format currency in Vietnamese format
+     */
+    private String formatCurrency(BigDecimal price) {
+        NumberFormat vndFormat = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("vi-VN"));
+        return vndFormat.format(price);
+    }
+    
+    // ==================== END RULE-BASED HANDLERS ====================
     
     /**
      * Build product context from database for AI to have real-time information
