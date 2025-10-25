@@ -53,7 +53,7 @@ public class ToyStoreApplication {
     public ApplicationRunner initAdminUser(UserRepository userRepository, RoleRepository roleRepository,
             PasswordEncoder passwordEncoder) {
         return args -> {
-            String adminEmail = "admin@toystore.com";
+            String adminEmail = "admin@t4m.com";
 
             // Check if admin user already exists
             if (userRepository.findByEmail(adminEmail).isEmpty()) {
@@ -75,12 +75,6 @@ public class ToyStoreApplication {
                 adminUser.getRoles().add(adminRole);
 
                 userRepository.save(adminUser);
-
-                System.out.println("==================================================");
-                System.out.println("✅ Admin user created successfully!");
-                System.out.println("📧 Email: " + adminEmail);
-                System.out.println("🔑 Password: admin123");
-                System.out.println("==================================================");
             } else {
                 System.out.println("Admin user already exists: " + adminEmail);
             }
@@ -110,41 +104,8 @@ public class ToyStoreApplication {
                 shipper1.getRoles().add(shipperRole);
                 
                 userRepository.save(shipper1);
-                
-                System.out.println("==================================================");
-                System.out.println("✅ Shipper user 1 created successfully!");
-                System.out.println("📧 Email: " + shipper1Email);
-                System.out.println("🔑 Password: shipper123");
-                System.out.println("🚚 Role: SHIPPER");
-                System.out.println("==================================================");
             } else {
                 System.out.println("Shipper user 1 already exists: " + shipper1Email);
-            }
-            
-            // Shipper 2
-            String shipper2Email = "shipper2@t4m.com";
-            if (userRepository.findByEmail(shipper2Email).isEmpty()) {
-                User shipper2 = new User();
-                shipper2.setEmail(shipper2Email);
-                shipper2.setPasswd(passwordEncoder.encode("shipper123")); // Password: shipper123
-                shipper2.setName("Jane Delivery");
-                shipper2.setPhone("0912345678");
-                shipper2.setAddress("456 Delivery Avenue, District 3, Ho Chi Minh City");
-                shipper2.setActivated(true);
-                shipper2.setCreated(LocalDateTime.now());
-                shipper2.setUpdated(LocalDateTime.now());
-                shipper2.getRoles().add(shipperRole);
-                
-                userRepository.save(shipper2);
-                
-                System.out.println("==================================================");
-                System.out.println("✅ Shipper user 2 created successfully!");
-                System.out.println("📧 Email: " + shipper2Email);
-                System.out.println("🔑 Password: shipper123");
-                System.out.println("🚚 Role: SHIPPER");
-                System.out.println("==================================================");
-            } else {
-                System.out.println("Shipper user 2 already exists: " + shipper2Email);
             }
         };
     }

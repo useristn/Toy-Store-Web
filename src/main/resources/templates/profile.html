@@ -98,37 +98,53 @@
       <!-- Quick Actions -->
       <div class="row mt-4">
         <div class="col-12">
-          <div class="card">
+          <div class="card shadow-sm">
             <div class="card-body">
-              <h5 class="card-title">
+              <h5 class="card-title mb-4">
                 <i class="fas fa-bolt me-2 text-warning"></i>Thao tác nhanh
               </h5>
-              <div class="row">
-                <div class="col-md-3 col-6 mb-3">
-                  <a href="#" class="btn btn-outline-primary w-100">
-                    <i class="fas fa-shopping-bag d-block mb-2"></i>
-                    Đơn hàng
+              <div class="row g-4 justify-content-center">
+                <div class="col-lg-2 col-md-4 col-6">
+                  <a href="/orders" class="btn btn-outline-primary w-100 h-100 d-flex flex-column justify-content-center align-items-center p-3 quick-action-btn" style="text-decoration: none;">
+                    <i class="fas fa-box fa-2x mb-2"></i>
+                    <span>Đơn hàng</span>
+                    <small class="text-muted mt-1">Xem lịch sử</small>
                   </a>
                 </div>
-                <div class="col-md-3 col-6 mb-3">
-                  <a href="#" class="btn btn-outline-success w-100">
-                    <i class="fas fa-heart d-block mb-2"></i>
-                    Yêu thích
+                <div class="col-lg-2 col-md-4 col-6">
+                  <a href="/favorites" class="btn btn-outline-success w-100 h-100 d-flex flex-column justify-content-center align-items-center p-3 quick-action-btn" style="text-decoration: none;">
+                    <i class="fas fa-heart fa-2x mb-2"></i>
+                    <span>Yêu thích</span>
+                    <small class="text-muted mt-1">Sản phẩm đã lưu</small>
                   </a>
                 </div>
-                <div class="col-md-3 col-6 mb-3">
-                  <a href="#" class="btn btn-outline-info w-100">
-                    <i class="fas fa-credit-card d-block mb-2"></i>
-                    Thanh toán
+                <div class="col-lg-2 col-md-4 col-6">
+                  <a href="/cart" class="btn btn-outline-info w-100 h-100 d-flex flex-column justify-content-center align-items-center p-3 quick-action-btn" style="text-decoration: none;">
+                    <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                    <span>Giỏ hàng</span>
+                    <small class="text-muted mt-1">Thanh toán ngay</small>
                   </a>
                 </div>
-                <div class="col-md-3 col-6 mb-3">
+                <div class="col-lg-2 col-md-4 col-6">
                   <button
-                    class="btn btn-outline-warning w-100"
+                    class="btn btn-outline-warning w-100 h-100 d-flex flex-column justify-content-center align-items-center p-3 quick-action-btn"
                     id="openSupportChat"
+                    type="button"
                   >
-                    <i class="fas fa-headset d-block mb-2"></i>
-                    Hỗ trợ
+                    <i class="fas fa-headset fa-2x mb-2"></i>
+                    <span>Hỗ trợ</span>
+                    <small class="text-muted mt-1">Chat ngay</small>
+                  </button>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6">
+                  <button 
+                    class="btn btn-outline-danger w-100 h-100 d-flex flex-column justify-content-center align-items-center p-3 quick-action-btn"
+                    onclick="changePassword()"
+                    type="button"
+                  >
+                    <i class="fas fa-key fa-2x mb-2"></i>
+                    <span class="fw-bold">Đổi mật khẩu</span>
+                    <small class="text-muted mt-1 fw-bold">Bảo mật tài khoản</small>
                   </button>
                 </div>
               </div>
@@ -225,7 +241,95 @@
       </div>
     </div>
 
+    <!-- Change Password Modal -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title" id="changePasswordModalLabel">
+              <i class="fas fa-key me-2"></i>Đổi mật khẩu
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="changePasswordForm">
+              <div class="mb-3">
+                <label for="currentPassword" class="form-label">
+                  <i class="fas fa-lock me-2"></i>Mật khẩu hiện tại
+                </label>
+                <div class="input-group">
+                  <input type="password" class="form-control" id="currentPassword" required>
+                  <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('currentPassword')">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <label for="newPassword" class="form-label">
+                  <i class="fas fa-key me-2"></i>Mật khẩu mới
+                </label>
+                <div class="input-group">
+                  <input type="password" class="form-control" id="newPassword" required minlength="6">
+                  <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('newPassword')">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </div>
+                <small class="text-muted">Tối thiểu 6 ký tự</small>
+              </div>
+              
+              <div class="mb-3">
+                <label for="confirmPassword" class="form-label">
+                  <i class="fas fa-check me-2"></i>Xác nhận mật khẩu mới
+                </label>
+                <div class="input-group">
+                  <input type="password" class="form-control" id="confirmPassword" required minlength="6">
+                  <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('confirmPassword')">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div id="passwordMessage" class="alert" style="display: none;"></div>
+
+              <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-danger">
+                  <i class="fas fa-save me-2"></i>Đổi mật khẩu
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                  <i class="fas fa-times me-2"></i>Hủy
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <style>
+      /* Quick Actions Hover Effects */
+      .quick-action-btn {
+        border-width: 2.5px !important;
+        border-style: solid !important;
+        border-radius: 12px !important;
+        transition: all 0.3s ease;
+      }
+      
+      .quick-action-btn:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+      
+      /* Ensure buttons and links look the same */
+      a.quick-action-btn {
+        text-decoration: none !important;
+      }
+      
+      button.quick-action-btn {
+        cursor: pointer;
+      }
+      
+      /* Message styles */
       .message-customer {
         margin-bottom: 1rem;
         display: flex;
@@ -279,6 +383,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
     <script th:src="@{/js/auth.js}" defer></script>
+    <script th:src="@{/js/profile.js}" defer></script>
     <script th:src="@{/js/support-chat.js}" defer></script>
   </body>
 </html>

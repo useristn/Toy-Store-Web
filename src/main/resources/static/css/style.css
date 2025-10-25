@@ -333,6 +333,94 @@ body {
     z-index: 1;
 }
 
+/* Footer Categories Styles */
+.footer-categories li {
+    transition: all 0.3s ease;
+}
+
+.footer-categories li:hover {
+    transform: translateX(5px);
+}
+
+.footer-categories a {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.footer-categories a::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: 2px;
+    background: var(--star-yellow);
+    transition: width 0.3s ease;
+}
+
+.footer-categories a:hover {
+    color: var(--star-yellow) !important;
+    padding-left: 0.5rem;
+}
+
+.footer-categories a:hover::before {
+    width: 100%;
+}
+
+.footer-categories a span {
+    font-size: 1.1em;
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.footer-categories a:hover span {
+    transform: scale(1.2) rotate(10deg);
+}
+
+/* Footer Policies Styles */
+.footer-policies li {
+    transition: all 0.3s ease;
+}
+
+.footer-policies li:hover {
+    transform: translateX(5px);
+}
+
+.footer-policies a {
+    display: inline-block;
+    padding: 0.25rem 0;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.footer-policies a::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: 2px;
+    background: var(--star-yellow);
+    transition: width 0.3s ease;
+}
+
+.footer-policies a:hover {
+    color: var(--star-yellow) !important;
+    padding-left: 0.5rem;
+}
+
+.footer-policies a:hover::before {
+    width: 100%;
+}
+
+.hover-danger:hover {
+    color: var(--star-yellow) !important;
+}
+
+
 /* Home Page Styles - Space Theme */
 .hero-section {
     background: linear-gradient(135deg, var(--space-blue) 0%, var(--cosmic-purple) 50%, var(--galaxy-pink) 100%);

@@ -80,4 +80,30 @@ public class PageController {
     public String favorites() {
         return "favorites";
     }
+    
+    // Policy Pages
+    @GetMapping("/terms")
+    public String terms() {
+        return "policies/terms";
+    }
+    
+    @GetMapping("/privacy")
+    public String privacy() {
+        return "policies/privacy";
+    }
+    
+    @GetMapping("/return-policy")
+    public String returnPolicy() {
+        return "policies/return-policy";
+    }
+    
+    @GetMapping("/shopping-guide")
+    public String shoppingGuide() {
+        return "policies/shopping-guide";
+    }
+    
+    @GetMapping("/payment-security")
+    public String paymentSecurity() {
+        return "policies/payment-security";
+    }
 }

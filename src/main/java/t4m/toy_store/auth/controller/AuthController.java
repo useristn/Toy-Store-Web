@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -129,6 +128,83 @@ public class AuthController {
     /**
      * Get user profile information.
      */
+    @GetMapping("/profile")
+    public ResponseEntity<?> getProfile(@RequestHeader("X-User-Email") String email) {
+        try {
+            UserProfileResponse profile = userService.getUserProfile(email);
+            return ResponseEntity.ok(profile);
+        } catch (UserNotFoundException e) {
+            logger.warn("Profile fetch error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    /**
+     * Update user profile information.
+     */
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(
+            @RequestHeader("X-User-Email") String email, 
+            @Valid @RequestBody UpdateProfileRequest dto) {
+        try {
+            userService.updateUserProfile(email, dto);
+            return ResponseEntity.ok(Map.of(
+                "message", "Profile updated successfully",
+                "email", email
+            ));
+        } catch (UserNotFoundException e) {
+            logger.warn("Profile update error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    /**
+     * Change password for authenticated user.
+     */
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(
+            @RequestHeader("X-User-Email") String email,
+            @RequestBody Map<String, String> request) {
+        try {
+            String currentPassword = request.get("currentPassword");
+            String newPassword = request.get("newPassword");
+            
+            if (currentPassword == null || newPassword == null) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("message", "Current password and new password are required"));
+            }
+            
+            if (newPassword.length() < 6) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("message", "New password must be at least 6 characters"));
+            }
+            
+            userService.changePassword(email, currentPassword, newPassword);
+            
+            return ResponseEntity.ok(Map.of(
+                "message", "Password changed successfully",
+                "email", email
+            ));
+        } catch (InvalidCredentialsException e) {
+            logger.warn("Change password error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Current password is incorrect"));
+        } catch (UserNotFoundException e) {
+            logger.warn("Change password error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Change password error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Failed to change password"));
+        }
+    }
+
+    /**
+     * Get user profile information (legacy endpoint).
+     */
     @GetMapping("/user")
 //    @PreAuthorize("#email == authentication.name")
     public ResponseEntity<UserProfileResponse> getUserProfile(@RequestParam String email) {
@@ -142,11 +218,11 @@ public class AuthController {
     }
 
     /**
-     * Update user profile information.
+     * Update user profile information (legacy endpoint).
      */
     @PutMapping("/update-profile")
 //    @PreAuthorize("#email == authentication.name")
-    public ResponseEntity<AuthResponse> updateProfile(@RequestParam String email, @Valid @RequestBody UpdateProfileRequest dto) {
+    public ResponseEntity<AuthResponse> updateProfileLegacy(@RequestParam String email, @Valid @RequestBody UpdateProfileRequest dto) {
         try {
             userService.updateUserProfile(email, dto);
             return ResponseEntity.ok(new AuthResponse(email, null, "Profile updated successfully"));

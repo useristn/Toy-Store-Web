@@ -255,4 +255,30 @@ public class UserService {
         userRepository.save(user);
         logger.info("Profile updated successfully for user: {}", sanitizedEmail);
     }
+
+    /**
+     * Change user password.
+     * Validates current password before updating to new password.
+     */
+    public void changePassword(String email, String currentPassword, String newPassword) {
+        String sanitizedEmail = email.trim().toLowerCase();
+        logger.info("Attempting to change password for user: {}", sanitizedEmail);
+
+        User user = userRepository.findByEmail(sanitizedEmail)
+                .orElseThrow(() -> {
+                    logger.warn("Password change failed: User not found - {}", sanitizedEmail);
+                    return new UserNotFoundException("User not found");
+                });
+
+        // Verify current password
+        if (!passwordEncoder.matches(currentPassword, user.getPasswd())) {
+            logger.warn("Password change failed: Invalid current password for user - {}", sanitizedEmail);
+            throw new InvalidCredentialsException("Current password is incorrect");
+        }
+
+        // Update to new password
+        user.setPasswd(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        logger.info("Password changed successfully for user: {}", sanitizedEmail);
+    }
 }

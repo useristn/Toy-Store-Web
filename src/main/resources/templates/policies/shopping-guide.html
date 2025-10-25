@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head}">
+    <title>Hướng dẫn mua hàng - T4M Toy Store</title>
+</head>
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <!-- Header -->
+                <div class="text-center mb-5">
+                    <h1 class="display-4 fw-bold mb-3">
+                        <i class="fas fa-shopping-bag text-primary me-3"></i>
+                        Hướng dẫn mua hàng
+                    </h1>
+                    <p class="lead text-muted">Mua sắm dễ dàng tại T4M chỉ với 4 bước đơn giản</p>
+                </div>
+
+                <!-- Steps -->
+                <div class="row g-4 mb-5">
+                    <div class="col-md-6">
+                        <div class="card shadow h-100">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="display-4 text-primary me-3">1</div>
+                                    <h3 class="mb-0">Tìm sản phẩm</h3>
+                                </div>
+                                <ul class="list-unstyled">
+                                    <li class="mb-2"><i class="fas fa-search text-primary me-2"></i>Tìm kiếm bằng từ khóa</li>
+                                    <li class="mb-2"><i class="fas fa-th me-2 text-primary"></i>Duyệt theo danh mục</li>
+                                    <li class="mb-2"><i class="fas fa-filter text-primary me-2"></i>Lọc theo giá, độ tuổi</li>
+                                    <li class="mb-2"><i class="fas fa-star text-primary me-2"></i>Xem sản phẩm nổi bật</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card shadow h-100">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="display-4 text-success me-3">2</div>
+                                    <h3 class="mb-0">Thêm vào giỏ</h3>
+                                </div>
+                                <ul class="list-unstyled">
+                                    <li class="mb-2"><i class="fas fa-eye text-success me-2"></i>Xem chi tiết sản phẩm</li>
+                                    <li class="mb-2"><i class="fas fa-images text-success me-2"></i>Xem hình ảnh, video</li>
+                                    <li class="mb-2"><i class="fas fa-star-half-alt text-success me-2"></i>Đọc đánh giá</li>
+                                    <li class="mb-2"><i class="fas fa-cart-plus text-success me-2"></i>Nhấn "Thêm vào giỏ"</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card shadow h-100">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="display-4 text-warning me-3">3</div>
+                                    <h3 class="mb-0">Thanh toán</h3>
+                                </div>
+                                <ul class="list-unstyled">
+                                    <li class="mb-2"><i class="fas fa-user text-warning me-2"></i>Đăng nhập hoặc đăng ký</li>
+                                    <li class="mb-2"><i class="fas fa-map-marker-alt text-warning me-2"></i>Điền địa chỉ giao hàng</li>
+                                    <li class="mb-2"><i class="fas fa-credit-card text-warning me-2"></i>Chọn phương thức thanh toán</li>
+                                    <li class="mb-2"><i class="fas fa-check-circle text-warning me-2"></i>Xác nhận đơn hàng</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card shadow h-100">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="display-4 text-info me-3">4</div>
+                                    <h3 class="mb-0">Nhận hàng</h3>
+                                </div>
+                                <ul class="list-unstyled">
+                                    <li class="mb-2"><i class="fas fa-envelope text-info me-2"></i>Nhận email xác nhận</li>
+                                    <li class="mb-2"><i class="fas fa-truck text-info me-2"></i>Theo dõi vận chuyển</li>
+                                    <li class="mb-2"><i class="fas fa-box-open text-info me-2"></i>Nhận và kiểm tra hàng</li>
+                                    <li class="mb-2"><i class="fas fa-smile text-info me-2"></i>Tận hưởng đồ chơi!</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional info -->
+                <div class="card shadow-lg border-0 mb-4">
+                    <div class="card-body p-5">
+                        <h3 class="text-primary mb-4">💡 Mẹo mua sắm thông minh</h3>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="alert alert-primary">
+                                    <h5><i class="fas fa-tags me-2"></i>Săn khuyến mãi</h5>
+                                    <p class="mb-0">Theo dõi trang chủ và email để không bỏ lỡ ưu đãi</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="alert alert-success">
+                                    <h5><i class="fas fa-heart me-2"></i>Lưu yêu thích</h5>
+                                    <p class="mb-0">Thêm vào danh sách yêu thích để mua sau</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="alert alert-warning">
+                                    <h5><i class="fas fa-truck me-2"></i>Freeship</h5>
+                                    <p class="mb-0">Đơn hàng từ 500K được miễn phí vận chuyển</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="alert alert-info">
+                                    <h5><i class="fas fa-comments me-2"></i>Hỗ trợ 24/7</h5>
+                                    <p class="mb-0">Liên hệ hotline nếu cần tư vấn</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h3 class="text-primary mb-4">❓ Câu hỏi thường gặp</h3>
+                        
+                        <div class="accordion" id="faqAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                        Tôi có cần tạo tài khoản không?
+                                    </button>
+                                </h2>
+                                <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        Có, bạn cần đăng ký tài khoản để theo dõi đơn hàng, lưu địa chỉ và nhận ưu đãi.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                        Tôi có thể hủy đơn hàng không?
+                                    </button>
+                                </h2>
+                                <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        Có, bạn có thể hủy đơn hàng trước khi nó được giao cho đơn vị vận chuyển.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                        Thời gian giao hàng bao lâu?
+                                    </button>
+                                </h2>
+                                <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        Nội thành: 1-2 ngày. Ngoại thành: 3-5 ngày. Tỉnh xa: 5-7 ngày.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Back button -->
+                <div class="text-center">
+                    <a href="/products" class="btn btn-primary btn-lg me-2">
+                        <i class="fas fa-shopping-cart me-2"></i>Bắt đầu mua sắm
+                    </a>
+                    <a href="/" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-home me-2"></i>Về trang chủ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/auth.js}"></script>
+</body>
+</html>

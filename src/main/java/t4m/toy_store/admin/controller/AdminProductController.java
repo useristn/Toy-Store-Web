@@ -20,7 +20,6 @@ import t4m.toy_store.product.service.CloudinaryService;
 import t4m.toy_store.product.service.ProductService;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -100,7 +99,7 @@ public class AdminProductController {
             @RequestParam("price") String price,
             @RequestParam(value = "discountPrice", required = false) String discountPrice,
             @RequestParam("stock") Integer stock,
-            @RequestParam("categoryId") Long categoryId,
+            @RequestParam(value = "categoryId", required = false) Long categoryId,
             @RequestParam(value = "featured", defaultValue = "false") Boolean featured,
             @RequestParam("image") MultipartFile image) {
         try {
@@ -162,7 +161,7 @@ public class AdminProductController {
             @RequestParam("price") String price,
             @RequestParam(value = "discountPrice", required = false) String discountPrice,
             @RequestParam("stock") Integer stock,
-            @RequestParam("categoryId") Long categoryId,
+            @RequestParam(value = "categoryId", required = false) Long categoryId,
             @RequestParam(value = "featured", defaultValue = "false") Boolean featured,
             @RequestParam(value = "image", required = false) MultipartFile image) {
         try {

@@ -297,13 +297,33 @@
                 </div>
 
                 <div class="col-md-12 mb-3">
-                  <label class="form-label">URL hình ảnh</label>
+                  <label class="form-label"
+                    >Hình ảnh sản phẩm <span class="text-danger">*</span></label
+                  >
+                  <input type="hidden" id="existingImageUrl" />
                   <input
-                    type="text"
+                    type="file"
                     class="form-control"
-                    id="productImageUrl"
-                    placeholder="https://..."
+                    id="productImageFile"
+                    accept="image/*"
+                    onchange="previewImage(event)"
                   />
+                  <small class="text-muted"
+                    >Chấp nhận: JPG, PNG, GIF. Tối đa 5MB</small
+                  >
+                  <div id="imagePreviewContainer" style="display: none" class="mt-3">
+                    <p class="mb-2">
+                      <strong>Xem trước:</strong>
+                      <span id="imageFileName" class="text-muted ms-2"></span>
+                      <span id="imageFileSize" class="text-muted ms-2"></span>
+                    </p>
+                    <img
+                      id="imagePreview"
+                      src=""
+                      alt="Preview"
+                      style="max-width: 100%; max-height: 300px; border-radius: 8px"
+                    />
+                  </div>
                 </div>
 
                 <div class="col-md-12 mb-3">
