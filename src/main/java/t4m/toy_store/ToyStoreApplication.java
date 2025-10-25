@@ -5,6 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import t4m.toy_store.auth.entity.Role;
 import t4m.toy_store.auth.entity.User;
@@ -21,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @SpringBootApplication
+@EnableScheduling // Enable scheduled tasks for chatbot cleanup
 public class ToyStoreApplication {
 
     public static void main(String[] args) {
