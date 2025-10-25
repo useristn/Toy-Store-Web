@@ -35,4 +35,9 @@ public class AdminViewController {
     public String support() {
         return "admin/admin-support";
     }
+
+    @GetMapping("/reviews")
+    public String reviews() {
+        return "admin/admin-reviews";
+    }
 }

@@ -161,14 +161,14 @@ function displaySessions(sessions) {
     
     sessionsList.innerHTML = sessions.map(session => `
         <div class="session-item ${session.sessionId === currentSessionId ? 'active' : ''}" 
-             onclick="selectSession('${session.sessionId}', '${session.userName}', '${session.userEmail}')">
+             onclick="selectSession('${session.sessionId}', '${escapeHtml(session.userName)}', '${escapeHtml(session.userEmail)}')">
             <div class="d-flex justify-content-between align-items-start">
                 <div class="flex-grow-1">
-                    <div class="user-name">
+                    <div class="session-name">
                         <i class="fas fa-user-circle me-2"></i>${session.userName || 'Khách hàng'}
                     </div>
-                    <div class="user-email">${session.userEmail}</div>
-                    <div class="last-message">${session.lastMessage || 'Chưa có tin nhắn'}</div>
+                    <div class="session-email">${session.userEmail}</div>
+                    <div class="session-last-message">${session.lastMessage || 'Chưa có tin nhắn'}</div>
                 </div>
                 ${session.unreadCount > 0 ? `<span class="badge bg-danger">${session.unreadCount}</span>` : ''}
             </div>
@@ -176,21 +176,38 @@ function displaySessions(sessions) {
     `).join('');
 }
 
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 function selectSession(sessionId, userName, userEmail) {
+    console.log('Selecting session:', sessionId, userName, userEmail);
     currentSessionId = sessionId;
     currentUserName = userName;
     currentUserEmail = userEmail;
     
-    // Update UI
-    document.getElementById('chatUserName').textContent = userName || 'Khách hàng';
-    document.getElementById('chatUserEmail').textContent = userEmail;
-    document.getElementById('chatInputContainer').style.display = 'block';
+    // Update UI - Sử dụng ID mới từ HTML
+    const userNameElement = document.getElementById('currentUserName');
+    const userEmailElement = document.getElementById('currentUserEmail');
+    const inputArea = document.getElementById('messageInputArea');
+    
+    if (userNameElement) userNameElement.textContent = userName || 'Khách hàng';
+    if (userEmailElement) userEmailElement.textContent = userEmail || '';
+    if (inputArea) inputArea.style.display = 'block';
     
     // Update active session
     document.querySelectorAll('.session-item').forEach(item => {
         item.classList.remove('active');
     });
-    event.target.closest('.session-item').classList.add('active');
+    
+    // Find and activate the clicked session item
+    const clickedItem = document.querySelector(`.session-item[onclick*="${sessionId}"]`);
+    if (clickedItem) {
+        clickedItem.classList.add('active');
+    }
     
     // Load messages
     loadMessages(sessionId);
@@ -218,8 +235,12 @@ function loadMessages(sessionId) {
     })
     .then(response => response.json())
     .then(messages => {
-        const chatMessages = document.getElementById('chatMessages');
-        chatMessages.innerHTML = '';
+        const messagesArea = document.getElementById('messagesArea');
+        if (!messagesArea) {
+            console.error('messagesArea element not found');
+            return;
+        }
+        messagesArea.innerHTML = '';
         
         messages.forEach(msg => {
             displayMessage({
@@ -238,7 +259,12 @@ function loadMessages(sessionId) {
 }
 
 function displayMessage(chatMessage) {
-    const chatMessages = document.getElementById('chatMessages');
+    const messagesArea = document.getElementById('messagesArea');
+    if (!messagesArea) {
+        console.error('messagesArea element not found');
+        return;
+    }
+    
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${chatMessage.senderType.toLowerCase()}`;
     
@@ -255,7 +281,7 @@ function displayMessage(chatMessage) {
         </div>
     `;
     
-    chatMessages.appendChild(messageDiv);
+    messagesArea.appendChild(messageDiv);
     scrollToBottom();
 }
 
@@ -345,8 +371,10 @@ function markAsRead(sessionId) {
 }
 
 function scrollToBottom() {
-    const chatMessages = document.getElementById('chatMessages');
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    const messagesArea = document.getElementById('messagesArea');
+    if (messagesArea) {
+        messagesArea.scrollTop = messagesArea.scrollHeight;
+    }
 }
 
 function escapeHtml(text) {

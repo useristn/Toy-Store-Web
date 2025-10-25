@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản lý Đánh giá – T4M Admin</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <!-- Mobile Menu Toggle -->
+    <button
+      class="btn btn-dark d-md-none mobile-menu-toggle"
+      type="button"
+      data-bs-toggle="offcanvas"
+      data-bs-target="#adminSidebar"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="container-fluid">
+      <div class="row">
+        <!-- Sidebar -->
+        <nav
+          class="col-md-3 col-lg-2 d-md-block bg-gradient-dark sidebar offcanvas-md offcanvas-start"
+          id="adminSidebar"
+          style="min-height: 100vh"
+        >
+          <div class="offcanvas-header d-md-none">
+            <h5 class="offcanvas-title text-white">Menu Admin</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="offcanvas"
+              data-bs-target="#adminSidebar"
+            ></button>
+          </div>
+          <div class="position-sticky pt-3">
+            <!-- Admin Profile -->
+            <div class="admin-profile text-center mb-4 px-3">
+              <div class="profile-avatar mb-2">
+                <i class="fas fa-user-shield fa-3x text-white"></i>
+              </div>
+              <h6 class="text-white mb-0" id="adminName">Admin</h6>
+              <small class="text-white-50" id="adminEmail">admin@t4m.com</small>
+            </div>
+
+            <h6
+              class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1"
+            >
+              <span class="text-white-50">📊 QUẢN TRỊ</span>
+            </h6>
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <a class="nav-link" href="/admin">
+                  <i class="fas fa-home me-2"></i>Dashboard
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/admin/products">
+                  <i class="fas fa-box me-2"></i>Quản lý sản phẩm
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/admin/orders">
+                  <i class="fas fa-shopping-cart me-2"></i>Quản lý đơn hàng
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="/admin/reviews">
+                  <i class="fas fa-star me-2"></i>Quản lý đánh giá
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/admin/support">
+                  <i class="fas fa-comments me-2"></i>Hỗ trợ khách hàng
+                </a>
+              </li>
+            </ul>
+
+            <h6
+              class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1"
+            >
+              <span class="text-white-50">⚙️ HỆ THỐNG</span>
+            </h6>
+            <ul class="nav flex-column mb-2">
+              <li class="nav-item">
+                <a class="nav-link" href="/">
+                  <i class="fas fa-store me-2"></i>Xem cửa hàng
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#" onclick="logout()">
+                  <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                </a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 bg-light">
+          <div
+            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom bg-white shadow-sm px-3 rounded"
+          >
+            <h1 class="h2 mb-0">⭐ Quản lý Đánh giá</h1>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary"
+              onclick="refreshReviews()"
+            >
+              <i class="fas fa-sync-alt me-1"></i>Làm mới
+            </button>
+          </div>
+
+          <!-- Statistics Cards -->
+          <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-3">
+              <div class="card border-left-primary shadow-sm h-100">
+                <div class="card-body">
+                  <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                      <div
+                        class="text-xs font-weight-bold text-primary text-uppercase mb-1"
+                      >
+                        Tổng đánh giá
+                      </div>
+                      <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalReviews">
+                        0
+                      </div>
+                    </div>
+                    <div class="col-auto">
+                      <i class="fas fa-comments fa-2x text-primary"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-3">
+              <div class="card border-left-warning shadow-sm h-100">
+                <div class="card-body">
+                  <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                      <div
+                        class="text-xs font-weight-bold text-warning text-uppercase mb-1"
+                      >
+                        Đánh giá trung bình
+                      </div>
+                      <div class="h5 mb-0 font-weight-bold text-gray-800" id="averageRating">
+                        0.0
+                      </div>
+                    </div>
+                    <div class="col-auto">
+                      <i class="fas fa-star fa-2x text-warning"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-3">
+              <div class="card border-left-success shadow-sm h-100">
+                <div class="card-body">
+                  <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                      <div
+                        class="text-xs font-weight-bold text-success text-uppercase mb-1"
+                      >
+                        5 sao
+                      </div>
+                      <div class="h5 mb-0 font-weight-bold text-gray-800" id="fiveStars">
+                        0
+                      </div>
+                    </div>
+                    <div class="col-auto">
+                      <i class="fas fa-thumbs-up fa-2x text-success"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-3">
+              <div class="card border-left-danger shadow-sm h-100">
+                <div class="card-body">
+                  <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                      <div
+                        class="text-xs font-weight-bold text-danger text-uppercase mb-1"
+                      >
+                        1-2 sao
+                      </div>
+                      <div class="h5 mb-0 font-weight-bold text-gray-800" id="lowStars">
+                        0
+                      </div>
+                    </div>
+                    <div class="col-auto">
+                      <i class="fas fa-thumbs-down fa-2x text-danger"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filters Section -->
+          <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+              <h6 class="mb-0">
+                <i class="fas fa-filter me-2"></i>Bộ lọc & Tìm kiếm
+              </h6>
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <!-- Search by User Name -->
+                <div class="col-md-3">
+                  <label class="form-label">Tìm theo tên người dùng</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="userNameSearch"
+                    placeholder="Nhập tên..."
+                  />
+                </div>
+
+                <!-- Search by Product Name -->
+                <div class="col-md-3">
+                  <label class="form-label">Tìm theo tên sản phẩm</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="productNameSearch"
+                    placeholder="Nhập tên sản phẩm..."
+                  />
+                </div>
+
+                <!-- Filter by Stars (Min) -->
+                <div class="col-md-2">
+                  <label class="form-label">Từ sao</label>
+                  <select class="form-select" id="minStars">
+                    <option value="">Tất cả</option>
+                    <option value="1">1 ⭐</option>
+                    <option value="2">2 ⭐</option>
+                    <option value="3">3 ⭐</option>
+                    <option value="4">4 ⭐</option>
+                    <option value="5">5 ⭐</option>
+                  </select>
+                </div>
+
+                <!-- Filter by Stars (Max) -->
+                <div class="col-md-2">
+                  <label class="form-label">Đến sao</label>
+                  <select class="form-select" id="maxStars">
+                    <option value="">Tất cả</option>
+                    <option value="1">1 ⭐</option>
+                    <option value="2">2 ⭐</option>
+                    <option value="3">3 ⭐</option>
+                    <option value="4">4 ⭐</option>
+                    <option value="5">5 ⭐</option>
+                  </select>
+                </div>
+
+                <!-- Date Range From -->
+                <div class="col-md-2">
+                  <label class="form-label">Từ ngày</label>
+                  <input type="date" class="form-control" id="startDate" />
+                </div>
+
+                <!-- Date Range To -->
+                <div class="col-md-2">
+                  <label class="form-label">Đến ngày</label>
+                  <input type="date" class="form-control" id="endDate" />
+                </div>
+
+                <!-- Filter Actions -->
+                <div class="col-md-10 d-flex align-items-end gap-2">
+                  <button class="btn btn-primary" onclick="applyFilters()">
+                    <i class="fas fa-search me-1"></i>Áp dụng
+                  </button>
+                  <button class="btn btn-secondary" onclick="clearFilters()">
+                    <i class="fas fa-times me-1"></i>Xóa bộ lọc
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bulk Actions -->
+          <div class="card shadow-sm mb-3" id="bulkActionsCard" style="display: none">
+            <div class="card-body py-2">
+              <div class="d-flex align-items-center justify-content-between">
+                <span id="selectedCount">0 đánh giá được chọn</span>
+                <button class="btn btn-danger btn-sm" onclick="bulkDeleteReviews()">
+                  <i class="fas fa-trash me-1"></i>Xóa đã chọn
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reviews Table -->
+          <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+              <h6 class="mb-0">Danh sách Đánh giá</h6>
+              <div class="d-flex align-items-center gap-2">
+                <label class="mb-0 me-2">Hiển thị:</label>
+                <select class="form-select form-select-sm" id="pageSizeSelect" onchange="changePageSize()">
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+              </div>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th style="width: 50px">
+                        <input
+                          type="checkbox"
+                          class="form-check-input"
+                          id="selectAllCheckbox"
+                          onchange="toggleSelectAll()"
+                        />
+                      </th>
+                      <th style="width: 80px">Sản phẩm</th>
+                      <th>Tên sản phẩm</th>
+                      <th>Người dùng</th>
+                      <th style="width: 120px; cursor: pointer" onclick="changeSorting('stars')">
+                        Đánh giá <i class="fas fa-sort" id="sortStarsIcon"></i>
+                      </th>
+                      <th style="width: 180px; cursor: pointer" onclick="changeSorting('createdAt')">
+                        Ngày tạo <i class="fas fa-sort-down" id="sortCreatedAtIcon"></i>
+                      </th>
+                      <th style="width: 100px" class="text-center">Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody id="reviewsTableBody">
+                    <!-- Reviews will be loaded here dynamically -->
+                    <tr>
+                      <td colspan="7" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                          <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Đang tải dữ liệu...</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="card-footer bg-white">
+              <div class="d-flex justify-content-between align-items-center">
+                <div id="paginationInfo">Hiển thị 0 đến 0 của 0 đánh giá</div>
+                <nav>
+                  <ul class="pagination mb-0" id="paginationControls">
+                    <!-- Pagination will be generated here -->
+                  </ul>
+                </nav>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div
+      class="modal fade"
+      id="deleteModal"
+      tabindex="-1"
+      aria-labelledby="deleteModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title" id="deleteModalLabel">
+              <i class="fas fa-exclamation-triangle me-2"></i>Xác nhận xóa
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p>Bạn có chắc muốn xóa vĩnh viễn đánh giá này không?</p>
+            <p class="text-danger">
+              <strong>⚠️ Hành động này không thể hoàn tác!</strong>
+            </p>
+            <div id="reviewDetailsToDelete" class="mt-3 p-3 bg-light rounded">
+              <!-- Review details will be shown here -->
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              Hủy
+            </button>
+            <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+              Xóa vĩnh viễn
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bulk Delete Confirmation Modal -->
+    <div
+      class="modal fade"
+      id="bulkDeleteModal"
+      tabindex="-1"
+      aria-labelledby="bulkDeleteModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title" id="bulkDeleteModalLabel">
+              <i class="fas fa-exclamation-triangle me-2"></i>Xác nhận xóa hàng loạt
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p>
+              Bạn có chắc muốn xóa vĩnh viễn <strong id="bulkDeleteCount">0</strong> đánh giá
+              đã chọn không?
+            </p>
+            <p class="text-danger">
+              <strong>⚠️ Hành động này không thể hoàn tác!</strong>
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              Hủy
+            </button>
+            <button type="button" class="btn btn-danger" onclick="confirmBulkDelete()">
+              Xóa tất cả
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      /* Sidebar Styles */
+      .sidebar {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
+        background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .sidebar .nav-link {
+        font-weight: 500;
+        color: #ecf0f1;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+        border-left: 3px solid transparent;
+      }
+
+      .sidebar .nav-link:hover {
+        color: #fff;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-left-color: #3498db;
+        transform: translateX(5px);
+      }
+
+      .sidebar .nav-link.active {
+        color: #fff;
+        background-color: rgba(52, 152, 219, 0.3);
+        border-left: 3px solid #3498db;
+        font-weight: 600;
+      }
+
+      .sidebar .nav-link i {
+        width: 20px;
+      }
+
+      .sidebar-heading {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      /* Admin Profile */
+      .admin-profile {
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+      }
+
+      .profile-avatar {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .bg-gradient-dark {
+        background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+      }
+
+      /* Mobile Menu Toggle */
+      .mobile-menu-toggle {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 1040;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      }
+
+      @media (min-width: 768px) {
+        .mobile-menu-toggle {
+          display: none;
+        }
+      }
+
+      @media (max-width: 768px) {
+        main {
+          margin-top: 60px;
+        }
+      }
+
+      /* Scrollbar */
+      .sidebar::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .sidebar::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.1);
+      }
+
+      .sidebar::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 10px;
+      }
+
+      .sidebar::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.5);
+      }
+
+      /* Card Styles */
+      .border-left-primary {
+        border-left: 4px solid #4f46e5;
+      }
+
+      .border-left-success {
+        border-left: 4px solid #10b981;
+      }
+
+      .border-left-warning {
+        border-left: 4px solid #f59e0b;
+      }
+
+      .border-left-danger {
+        border-left: 4px solid #ef4444;
+      }
+
+      .card {
+        transition: transform 0.2s;
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+      }
+
+      .text-xs {
+        font-size: 0.75rem;
+      }
+
+      /* Table Styles */
+      .table th {
+        font-weight: 600;
+        background-color: #f8f9fa;
+      }
+
+      .table tbody tr {
+        transition: all 0.2s;
+      }
+
+      .table tbody tr:hover {
+        background-color: #f8f9fa;
+      }
+
+      /* Star Rating Display */
+      .star-rating {
+        color: #fbbf24;
+        font-size: 1.1rem;
+      }
+
+      .star-rating .empty-star {
+        color: #d1d5db;
+      }
+
+      /* Product Image */
+      .product-thumbnail {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 0.375rem;
+      }
+
+      /* Review Actions */
+      .btn-action {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+      }
+
+      /* Pagination */
+      .pagination {
+        margin-bottom: 0;
+      }
+
+      .page-link {
+        color: #4f46e5;
+      }
+
+      .page-item.active .page-link {
+        background-color: #4f46e5;
+        border-color: #4f46e5;
+      }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/admin-reviews.js"></script>
+  </body>
+</html>

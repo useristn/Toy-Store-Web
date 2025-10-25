@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🎯 Hỗ trợ khách hàng – T4M Admin</title>
+    <title>Hỗ trợ khách hàng – T4M Admin</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -12,121 +12,335 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+  </head>
+  <body>
+    <!-- Mobile Menu Toggle -->
+    <button
+      class="btn btn-dark d-md-none mobile-menu-toggle"
+      type="button"
+      data-bs-toggle="offcanvas"
+      data-bs-target="#adminSidebar"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="container-fluid">
+      <div class="row">
+        <!-- Sidebar -->
+        <nav
+          class="col-md-3 col-lg-2 d-md-block bg-gradient-dark sidebar offcanvas-md offcanvas-start"
+          id="adminSidebar"
+          style="min-height: 100vh"
+        >
+          <div class="offcanvas-header d-md-none">
+            <h5 class="offcanvas-title text-white">Menu Admin</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="offcanvas"
+              data-bs-target="#adminSidebar"
+            ></button>
+          </div>
+          <div class="position-sticky pt-3">
+            <!-- Admin Profile -->
+            <div class="admin-profile text-center mb-4 px-3">
+              <div class="profile-avatar mb-2">
+                <i class="fas fa-user-shield fa-3x text-white"></i>
+              </div>
+              <h6 class="text-white mb-0" id="adminName">Admin</h6>
+              <small class="text-white-50" id="adminEmail">admin@t4m.com</small>
+            </div>
+
+            <h6
+              class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1"
+            >
+              <span class="text-white-50">📊 QUẢN TRỊ</span>
+            </h6>
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <a class="nav-link" href="/admin">
+                  <i class="fas fa-home me-2"></i>Dashboard
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/admin/products">
+                  <i class="fas fa-box me-2"></i>Quản lý sản phẩm
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/admin/orders">
+                  <i class="fas fa-shopping-cart me-2"></i>Quản lý đơn hàng
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/admin/reviews">
+                  <i class="fas fa-star me-2"></i>Quản lý đánh giá
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="/admin/support">
+                  <i class="fas fa-comments me-2"></i>Hỗ trợ khách hàng
+                </a>
+              </li>
+            </ul>
+
+            <h6
+              class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1"
+            >
+              <span class="text-white-50">⚙️ HỆ THỐNG</span>
+            </h6>
+            <ul class="nav flex-column mb-2">
+              <li class="nav-item">
+                <a class="nav-link" href="/">
+                  <i class="fas fa-store me-2"></i>Xem cửa hàng
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#" onclick="logout()">
+                  <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                </a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-0 bg-light" style="height: 100vh; overflow: hidden;">
+          <div
+            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom bg-white shadow-sm px-4"
+          >
+            <h1 class="h2 mb-0">💬 Hỗ trợ khách hàng</h1>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary"
+              onclick="refreshSessions()"
+            >
+              <i class="fas fa-sync-alt me-1"></i>Làm mới
+            </button>
+          </div>
+
+          <!-- Support Chat Container -->
+          <div class="row g-0 px-3" style="height: calc(100vh - 100px);">
+            <!-- Sessions List -->
+            <div class="col-md-4 border-end bg-white shadow-sm" style="height: 100%; overflow-y: auto;">
+              <div class="p-3 border-bottom bg-light">
+                <h6 class="mb-0"><i class="fas fa-list me-2"></i>Danh sách hội thoại</h6>
+              </div>
+              <div id="sessionsList" class="p-0">
+                <!-- Sessions will be loaded here -->
+                <div class="text-center py-5">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                  <p class="mt-2 text-muted">Đang tải...</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div class="col-md-8 d-flex flex-column bg-white shadow-sm" style="height: 100%;">
+              <!-- Chat Header -->
+              <div class="p-3 border-bottom bg-light" id="chatHeader">
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-user-circle fa-2x text-secondary me-3"></i>
+                  <div>
+                    <h6 class="mb-0" id="currentUserName">Chọn một hội thoại</h6>
+                    <small class="text-muted" id="currentUserEmail"></small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Messages Area -->
+              <div class="flex-grow-1 p-4" id="messagesArea" style="overflow-y: auto; background: #f8f9fa;">
+                <div class="text-center py-5">
+                  <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+                  <h5 class="text-muted">Chọn một hội thoại để bắt đầu trò chuyện</h5>
+                </div>
+                <!-- Typing Indicator -->
+                <div id="typingIndicator" class="typing-indicator">
+                  <div class="typing-dot"></div>
+                  <div class="typing-dot"></div>
+                  <div class="typing-dot"></div>
+                </div>
+              </div>
+
+              <!-- Message Input -->
+              <div class="p-3 border-top bg-white" id="messageInputArea" style="display: none;">
+                <form onsubmit="sendMessage(event)" class="d-flex gap-2">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="messageInput"
+                    placeholder="Nhập tin nhắn..."
+                    autocomplete="off"
+                  />
+                  <button type="submit" class="btn btn-primary px-4">
+                    <i class="fas fa-paper-plane me-1"></i>Gửi
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
     <style>
-      body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      }
-
-      .support-container {
-        max-width: 1400px;
-        margin: 2rem auto;
-        padding: 0 1rem;
-      }
-
-      .support-card {
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        overflow: hidden;
-        height: 85vh;
-        display: flex;
-      }
-
-      .sessions-sidebar {
-        width: 350px;
-        border-right: 2px solid #e0e0e0;
-        display: flex;
-        flex-direction: column;
-        background: #f8f9fa;
-      }
-
-      .sidebar-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 1.5rem;
-        font-weight: bold;
-        font-size: 1.2rem;
-      }
-
-      .sessions-list {
-        flex: 1;
+      /* Sidebar Styles */
+      .sidebar {
+        position: sticky;
+        top: 0;
+        height: 100vh;
         overflow-y: auto;
-        padding: 1rem;
+        background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
       }
 
-      .session-item {
-        background: white;
-        border-radius: 10px;
+      .sidebar .nav-link {
+        font-weight: 500;
+        color: #ecf0f1;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+        border-left: 3px solid transparent;
+      }
+
+      .sidebar .nav-link:hover {
+        color: #fff;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-left-color: #3498db;
+        transform: translateX(5px);
+      }
+
+      .sidebar .nav-link.active {
+        color: #fff;
+        background-color: rgba(52, 152, 219, 0.3);
+        border-left: 3px solid #3498db;
+        font-weight: 600;
+      }
+
+      .sidebar .nav-link i {
+        width: 20px;
+      }
+
+      .sidebar-heading {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      /* Admin Profile */
+      .admin-profile {
         padding: 1rem;
-        margin-bottom: 0.75rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+      }
+
+      .profile-avatar {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .bg-gradient-dark {
+        background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+      }
+
+      /* Mobile Menu Toggle */
+      .mobile-menu-toggle {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 1040;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      }
+
+      @media (min-width: 768px) {
+        .mobile-menu-toggle {
+          display: none;
+        }
+      }
+
+      @media (max-width: 768px) {
+        main {
+          margin-top: 60px;
+        }
+      }
+
+      /* Scrollbar */
+      .sidebar::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .sidebar::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.1);
+      }
+
+      .sidebar::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 10px;
+      }
+
+      .sidebar::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.5);
+      }
+
+      /* Session Item Styles */
+      .session-item {
+        padding: 1rem;
+        border-bottom: 1px solid #e9ecef;
         cursor: pointer;
-        transition: all 0.3s;
-        border: 2px solid transparent;
+        transition: all 0.2s;
       }
 
       .session-item:hover {
-        transform: translateX(5px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        background-color: #f8f9fa;
       }
 
       .session-item.active {
-        border-color: #667eea;
-        background: #f0f4ff;
+        background-color: #e7f3ff;
+        border-left: 3px solid #0d6efd;
       }
 
-      .session-item .user-name {
-        font-weight: bold;
-        color: #333;
+      .session-item .session-name {
+        font-weight: 600;
+        color: #212529;
         margin-bottom: 0.25rem;
       }
 
-      .session-item .user-email {
+      .session-item .session-email {
         font-size: 0.85rem;
-        color: #666;
+        color: #6c757d;
         margin-bottom: 0.5rem;
       }
 
-      .session-item .last-message {
+      .session-item .session-last-message {
         font-size: 0.9rem;
-        color: #888;
+        color: #6c757d;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
 
-      .session-item .badge {
-        float: right;
+      .session-item .session-time {
+        font-size: 0.75rem;
+        color: #adb5bd;
       }
 
-      .chat-container {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        background: white;
-      }
-
-      .chat-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 1.5rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .chat-messages {
-        flex: 1;
-        overflow-y: auto;
-        padding: 2rem;
-        background: #f8f9fa;
-      }
-
+      /* Message Styles */
       .message {
         margin-bottom: 1.5rem;
         display: flex;
-        align-items: flex-start;
       }
 
       .message.user {
@@ -138,33 +352,39 @@
       }
 
       .message-bubble {
-        max-width: 60%;
-        padding: 1rem 1.25rem;
-        border-radius: 15px;
-        position: relative;
+        max-width: 70%;
+        padding: 0.75rem 1rem;
+        border-radius: 1rem;
+        word-wrap: break-word;
       }
 
       .message.user .message-bubble {
-        background: white;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        border-bottom-left-radius: 5px;
+        background-color: #e9ecef;
+        border-bottom-left-radius: 0.25rem;
       }
 
       .message.admin .message-bubble {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background-color: #0d6efd;
         color: white;
-        border-bottom-right-radius: 5px;
-      }
-
-      .message-sender {
-        font-weight: bold;
-        font-size: 0.85rem;
-        margin-bottom: 0.25rem;
+        border-bottom-right-radius: 0.25rem;
       }
 
       .message-text {
+        margin-bottom: 0.25rem;
+      }
+
+      .message-sender {
+        font-size: 0.85rem;
+        font-weight: 600;
         margin-bottom: 0.5rem;
-        word-wrap: break-word;
+      }
+
+      .message.user .message-sender {
+        color: #495057;
+      }
+
+      .message.admin .message-sender {
+        color: rgba(255, 255, 255, 0.9);
       }
 
       .message-time {
@@ -172,157 +392,61 @@
         opacity: 0.7;
       }
 
-      .chat-input-container {
-        padding: 1.5rem;
-        background: white;
-        border-top: 2px solid #e0e0e0;
+      .message.user .message-time {
+        color: #6c757d;
       }
 
-      .chat-input-form {
-        display: flex;
-        gap: 1rem;
+      .message.admin .message-time {
+        color: rgba(255, 255, 255, 0.8);
       }
 
-      .chat-input {
-        flex: 1;
-        border: 2px solid #e0e0e0;
-        border-radius: 25px;
-        padding: 0.75rem 1.5rem;
-        font-size: 0.95rem;
-      }
-
-      .chat-input:focus {
-        outline: none;
-        border-color: #667eea;
-      }
-
-      .btn-send {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s;
-      }
-
-      .btn-send:hover {
-        transform: scale(1.1);
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-      }
-
-      .empty-state {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-        color: #999;
-      }
-
-      .empty-state i {
-        font-size: 4rem;
-        margin-bottom: 1rem;
-      }
-
+      /* Typing Indicator */
       .typing-indicator {
         display: none;
-        padding: 0.5rem 1rem;
-        font-size: 0.85rem;
-        color: #666;
-        font-style: italic;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding: 0.75rem 1rem;
+        background-color: #e9ecef;
+        border-radius: 1rem;
+        width: fit-content;
+        max-width: 70px;
       }
 
       .typing-indicator.active {
-        display: block;
+        display: flex;
       }
 
-      .back-btn {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        border: 2px solid white;
-        padding: 0.5rem 1.5rem;
-        border-radius: 25px;
-        text-decoration: none;
-        transition: all 0.3s;
+      .typing-dot {
+        width: 8px;
+        height: 8px;
+        margin: 0 3px;
+        background-color: #6c757d;
+        border-radius: 50%;
+        animation: typing 1.4s infinite;
       }
 
-      .back-btn:hover {
-        background: white;
-        color: #667eea;
+      .typing-dot:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+
+      .typing-dot:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes typing {
+        0%, 60%, 100% {
+          transform: translateY(0);
+        }
+        30% {
+          transform: translateY(-10px);
+        }
       }
     </style>
-  </head>
-  <body>
-    <div class="support-container">
-      <div class="support-card">
-        <!-- Sessions Sidebar -->
-        <div class="sessions-sidebar">
-          <div class="sidebar-header">
-            <i class="fas fa-comments me-2"></i>Khách hàng cần hỗ trợ
-          </div>
-          <div class="sessions-list" id="sessionsList">
-            <div class="text-center py-5">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Đang tải...</span>
-              </div>
-              <p class="mt-2 text-muted">Đang tải danh sách...</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Chat Container -->
-        <div class="chat-container">
-          <div class="chat-header">
-            <div>
-              <h5 class="mb-0" id="chatUserName">Chọn khách hàng để bắt đầu</h5>
-              <small id="chatUserEmail"></small>
-            </div>
-            <a href="/admin" class="back-btn">
-              <i class="fas fa-arrow-left me-2"></i>Quay lại
-            </a>
-          </div>
-
-          <div class="chat-messages" id="chatMessages">
-            <div class="empty-state">
-              <i class="fas fa-comments"></i>
-              <h4>Chọn một cuộc trò chuyện</h4>
-              <p>Chọn khách hàng từ danh sách bên trái để bắt đầu hỗ trợ</p>
-            </div>
-          </div>
-
-          <div class="typing-indicator" id="typingIndicator">
-            <i class="fas fa-circle-notch fa-spin"></i> Khách hàng đang nhập...
-          </div>
-
-          <div
-            class="chat-input-container"
-            id="chatInputContainer"
-            style="display: none"
-          >
-            <form class="chat-input-form" id="chatForm">
-              <input
-                type="text"
-                class="chat-input"
-                id="messageInput"
-                placeholder="Nhập tin nhắn..."
-                autocomplete="off"
-              />
-              <button type="submit" class="btn-send">
-                <i class="fas fa-paper-plane"></i>
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
-    <script th:src="@{/js/admin-support.js}"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/admin-support.js"></script>
   </body>
 </html>
