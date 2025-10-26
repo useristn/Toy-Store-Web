@@ -32,4 +32,6 @@ public class CheckoutRequest {
     private String paymentMethod;
     
     private String notes;
+    
+    private String voucherCode;
 }

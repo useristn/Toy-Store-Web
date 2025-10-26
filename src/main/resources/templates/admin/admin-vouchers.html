@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản lý Mã giảm giá – T4M Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    body { background-color: #f8f9fa; }
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .sidebar .nav-link {
+      font-weight: 500;
+      color: #ecf0f1;
+      padding: 0.75rem 1rem;
+      transition: all 0.3s ease;
+      border-left: 3px solid transparent;
+    }
+    .sidebar .nav-link:hover {
+      color: #fff;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-left-color: #3498db;
+      transform: translateX(5px);
+    }
+    .sidebar .nav-link.active {
+      color: #fff;
+      background-color: rgba(52, 152, 219, 0.3);
+      border-left: 3px solid #3498db;
+      font-weight: 600;
+    }
+    .sidebar .nav-link i { width: 20px; }
+    .sidebar-heading {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .admin-profile {
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+    }
+    .profile-avatar {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card.border-left-primary { border-left: 4px solid #4e73df; }
+    .card.border-left-success { border-left: 4px solid #1cc88a; }
+    .card.border-left-warning { border-left: 4px solid #f6c23e; }
+    .card.border-left-danger { border-left: 4px solid #e74a3b; }
+    .badge.bg-active { background-color: #28a745 !important; }
+    .badge.bg-upcoming { background-color: #17a2b8 !important; }
+    .badge.bg-expired { background-color: #6c757d !important; }
+    .badge.bg-disabled { background-color: #dc3545 !important; }
+    .badge.bg-out-of-stock { background-color: #fd7e14 !important; }
+  </style>
+</head>
+<body>
+  <!-- Mobile Menu Toggle -->
+  <button class="btn btn-dark d-md-none mobile-menu-toggle" type="button" data-bs-toggle="offcanvas" data-bs-target="#adminSidebar">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar -->
+      <nav class="col-md-3 col-lg-2 d-md-block sidebar offcanvas-md offcanvas-start" id="adminSidebar" style="min-height: 100vh">
+        <div class="offcanvas-header d-md-none">
+          <h5 class="offcanvas-title text-white">Menu Admin</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#adminSidebar"></button>
+        </div>
+        <div class="position-sticky pt-3">
+          <!-- Admin Profile -->
+          <div class="admin-profile text-center mb-4 px-3">
+            <div class="profile-avatar mb-2">
+              <i class="fas fa-user-shield fa-3x text-white"></i>
+            </div>
+            <h6 class="text-white mb-0" id="adminName">Admin</h6>
+            <small class="text-white-50" id="adminEmail">admin@t4m.com</small>
+          </div>
+
+          <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
+            <span class="text-white-50">📊 QUẢN TRỊ</span>
+          </h6>
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link" href="/admin"><i class="fas fa-home me-2"></i>Dashboard</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/products"><i class="fas fa-box me-2"></i>Quản lý sản phẩm</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/orders"><i class="fas fa-shopping-cart me-2"></i>Quản lý đơn hàng</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/reviews"><i class="fas fa-star me-2"></i>Quản lý đánh giá</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/support"><i class="fas fa-comments me-2"></i>Hỗ trợ khách hàng</a>
+            </li>
+          </ul>
+
+          <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
+            <span class="text-white-50">🎯 MARKETING</span>
+          </h6>
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link active" href="/admin/vouchers"><i class="fas fa-ticket-alt me-2"></i>Mã giảm giá</a>
+            </li>
+          </ul>
+
+          <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
+            <span class="text-white-50">⚙️ HỆ THỐNG</span>
+          </h6>
+          <ul class="nav flex-column mb-2">
+            <li class="nav-item">
+              <a class="nav-link" href="/"><i class="fas fa-store me-2"></i>Xem cửa hàng</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <!-- Main content -->
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom bg-white shadow-sm px-3 rounded">
+          <h1 class="h2 mb-0">🎫 Quản lý Mã giảm giá</h1>
+          <div>
+            <a href="/admin/vouchers/create" class="btn btn-primary me-2">
+              <i class="fas fa-plus me-1"></i>Tạo mã mới
+            </a>
+            <button type="button" class="btn btn-outline-secondary" onclick="refreshVouchers()">
+              <i class="fas fa-sync-alt me-1"></i>Làm mới
+            </button>
+          </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+          <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-primary shadow-sm h-100">
+              <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                  <div class="col mr-2">
+                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Tổng mã giảm giá</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalVouchers">0</div>
+                  </div>
+                  <div class="col-auto">
+                    <i class="fas fa-ticket-alt fa-2x text-primary"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-success shadow-sm h-100">
+              <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                  <div class="col mr-2">
+                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Đang hoạt động</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800" id="activeVouchers">0</div>
+                  </div>
+                  <div class="col-auto">
+                    <i class="fas fa-check-circle fa-2x text-success"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-warning shadow-sm h-100">
+              <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                  <div class="col mr-2">
+                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Sắp diễn ra</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800" id="upcomingVouchers">0</div>
+                  </div>
+                  <div class="col-auto">
+                    <i class="fas fa-clock fa-2x text-warning"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-danger shadow-sm h-100">
+              <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                  <div class="col mr-2">
+                    <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Lượt sử dụng</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalUsage">0</div>
+                  </div>
+                  <div class="col-auto">
+                    <i class="fas fa-users fa-2x text-danger"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-body">
+            <form id="filterForm" class="row g-3">
+              <div class="col-md-3">
+                <label class="form-label">Tìm theo mã</label>
+                <input type="text" class="form-control" id="filterCode" placeholder="Nhập mã voucher..." />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Trạng thái</label>
+                <select class="form-select" id="filterStatus">
+                  <option value="">Tất cả</option>
+                  <option value="ACTIVE">Đang hoạt động</option>
+                  <option value="UPCOMING">Sắp diễn ra</option>
+                  <option value="EXPIRED">Đã hết hạn</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Loại giảm giá</label>
+                <select class="form-select" id="filterType">
+                  <option value="">Tất cả</option>
+                  <option value="PERCENTAGE">Giảm theo %</option>
+                  <option value="FIXED_AMOUNT">Giảm tiền cố định</option>
+                  <option value="FREE_SHIPPING">Miễn phí ship</option>
+                </select>
+              </div>
+              <div class="col-md-3 d-flex align-items-end">
+                <button type="button" class="btn btn-primary w-100" onclick="applyFilters()">
+                  <i class="fas fa-filter me-1"></i>Lọc
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Vouchers Table -->
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead class="table-light">
+                  <tr>
+                    <th>Mã Code</th>
+                    <th>Mô tả</th>
+                    <th>Loại</th>
+                    <th>Giá trị</th>
+                    <th>Số lượng</th>
+                    <th>Thời gian</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                  </tr>
+                </thead>
+                <tbody id="vouchersTableBody">
+                  <tr>
+                    <td colspan="8" class="text-center py-5">
+                      <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Vouchers pagination">
+              <ul class="pagination justify-content-center mb-0" id="pagination"></ul>
+            </nav>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Xác nhận xóa</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          Bạn có chắc chắn muốn xóa mã giảm giá này không?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="button" class="btn btn-danger" onclick="confirmDelete()">Xóa</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/admin-vouchers.js"></script>
+</body>
+</html>

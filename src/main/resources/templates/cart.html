@@ -60,6 +60,46 @@
                             <span>Số lượng sản phẩm:</span>
                             <strong id="totalItems">0</strong>
                         </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tạm tính:</span>
+                            <strong id="subtotalPrice">0 ₫</strong>
+                        </div>
+
+                        <!-- Voucher Section -->
+                        <hr>
+                        <div id="voucherSection">
+                            <h6 class="mb-2"><i class="fas fa-ticket-alt me-2"></i>Mã giảm giá</h6>
+                            
+                            <!-- Voucher Input (shown when no voucher applied) -->
+                            <div id="voucherInputGroup" class="mb-3">
+                                <div class="input-group input-group-sm">
+                                    <input type="text" class="form-control" id="voucherCodeInput" 
+                                           placeholder="Nhập mã giảm giá..." />
+                                    <button class="btn btn-outline-success" type="button" id="applyVoucherBtn">
+                                        <i class="fas fa-check me-1"></i>Áp dụng
+                                    </button>
+                                </div>
+                                <div id="voucherMessage" class="mt-2" style="display: none;"></div>
+                            </div>
+
+                            <!-- Applied Voucher (shown when voucher is applied) -->
+                            <div id="appliedVoucherGroup" class="mb-3" style="display: none;">
+                                <div class="alert alert-success mb-2 py-2 px-3 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        <strong id="appliedVoucherCode"></strong>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-danger" id="removeVoucherBtn" title="Xóa mã">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <div class="d-flex justify-content-between text-success">
+                                    <span>Giảm giá:</span>
+                                    <strong id="voucherDiscount">- 0 ₫</strong>
+                                </div>
+                            </div>
+                        </div>
+
                         <hr>
                         <div class="d-flex justify-content-between mb-3">
                             <h5>Tổng cộng:</h5>

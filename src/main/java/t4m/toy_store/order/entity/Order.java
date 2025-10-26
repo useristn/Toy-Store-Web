@@ -50,6 +50,15 @@ public class Order {
     @Column(name = "total_amount", nullable = false)
     private BigDecimal totalAmount;
 
+    @Column(name = "voucher_code")
+    private String voucherCode;
+
+    @Column(name = "voucher_discount")
+    private BigDecimal voucherDiscount;
+
+    @Column(name = "voucher_type")
+    private String voucherType;
+
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private OrderStatus status;

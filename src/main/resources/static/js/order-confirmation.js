@@ -130,8 +130,19 @@ function displayOrderDetails(order) {
         itemsList.appendChild(itemDiv);
     });
 
+    // Calculate subtotal (items total before discount)
+    const itemsSubtotal = order.items.reduce((sum, item) => sum + item.subtotal, 0);
+    
     // Order totals
-    document.getElementById('orderSubtotal').textContent = formatPrice(order.totalAmount);
+    document.getElementById('orderSubtotal').textContent = formatPrice(itemsSubtotal);
+    
+    // Display voucher discount if applied
+    if (order.voucherCode && order.voucherDiscount && order.voucherDiscount > 0) {
+        document.getElementById('voucherDiscountRow').style.display = 'flex';
+        document.getElementById('displayVoucherCode').textContent = order.voucherCode;
+        document.getElementById('displayVoucherDiscount').textContent = formatPrice(order.voucherDiscount);
+    }
+    
     document.getElementById('orderTotal').textContent = formatPrice(order.totalAmount);
 }
 

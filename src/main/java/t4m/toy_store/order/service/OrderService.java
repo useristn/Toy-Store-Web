@@ -22,6 +22,9 @@ import t4m.toy_store.order.entity.OrderStatus;
 import t4m.toy_store.order.repository.OrderRepository;
 import t4m.toy_store.product.entity.Product;
 import t4m.toy_store.product.repository.ProductRepository;
+import t4m.toy_store.voucher.entity.Voucher;
+import t4m.toy_store.voucher.dto.VoucherValidationResponse;
+import t4m.toy_store.voucher.service.VoucherService;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -37,6 +40,7 @@ public class OrderService {
     private final UserRepository userRepository;
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
+    private final VoucherService voucherService;
 
     @Transactional
     public OrderResponse createOrder(String userEmail, CheckoutRequest request) {
@@ -52,6 +56,44 @@ public class OrderService {
             throw new RuntimeException("Cart is empty");
         }
 
+        // Calculate cart subtotal
+        BigDecimal subtotal = cart.getTotalPrice();
+        BigDecimal voucherDiscount = BigDecimal.ZERO;
+        Voucher appliedVoucher = null;
+        
+        // Validate and apply voucher if provided
+        if (request.getVoucherCode() != null && !request.getVoucherCode().trim().isEmpty()) {
+            try {
+                VoucherValidationResponse validationResponse = voucherService.validateVoucher(
+                    request.getVoucherCode(), 
+                    subtotal, 
+                    user
+                );
+                
+                if (!validationResponse.isValid()) {
+                    throw new RuntimeException(validationResponse.getMessage());
+                }
+                
+                voucherDiscount = validationResponse.getDiscountAmount();
+                appliedVoucher = voucherService.getVoucherByCode(request.getVoucherCode());
+                
+                if (appliedVoucher == null) {
+                    throw new RuntimeException("Không thể tìm thấy mã giảm giá");
+                }
+                
+                logger.info("Voucher applied: {} with discount: {}", appliedVoucher.getCode(), voucherDiscount);
+            } catch (Exception e) {
+                logger.warn("Failed to apply voucher: {}", e.getMessage());
+                throw new RuntimeException("Mã giảm giá không hợp lệ: " + e.getMessage());
+            }
+        }
+
+        // Calculate final total
+        BigDecimal finalTotal = subtotal.subtract(voucherDiscount);
+        if (finalTotal.compareTo(BigDecimal.ZERO) < 0) {
+            finalTotal = BigDecimal.ZERO;
+        }
+
         // Create order
         Order order = Order.builder()
                 .user(user)
@@ -60,9 +102,12 @@ public class OrderService {
                 .customerPhone(request.getCustomerPhone())
                 .shippingAddress(request.getShippingAddress())
                 .paymentMethod(request.getPaymentMethod())
-                .totalAmount(cart.getTotalPrice())
+                .totalAmount(finalTotal)
                 .status(OrderStatus.PENDING)
                 .notes(request.getNotes())
+                .voucherCode(appliedVoucher != null ? appliedVoucher.getCode() : null)
+                .voucherDiscount(voucherDiscount)
+                .voucherType(appliedVoucher != null ? appliedVoucher.getDiscountType().name() : null)
                 .build();
 
         // Add order items from cart
@@ -91,6 +136,12 @@ public class OrderService {
 
         // Save order
         Order savedOrder = orderRepository.save(order);
+        
+        // Record voucher usage if applied
+        if (appliedVoucher != null) {
+            voucherService.recordVoucherUsage(appliedVoucher, user);
+            logger.info("Voucher usage recorded for: {}", appliedVoucher.getCode());
+        }
 
         // Clear cart
         cart.getCartItems().clear();
@@ -144,6 +195,9 @@ public class OrderService {
                 .notes(order.getNotes())
                 .items(items)
                 .createdAt(order.getCreatedAt())
+                .voucherCode(order.getVoucherCode())
+                .voucherDiscount(order.getVoucherDiscount())
+                .voucherType(order.getVoucherType())
                 .build();
     }
 

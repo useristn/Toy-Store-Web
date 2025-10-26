@@ -332,13 +332,29 @@ async function clearCart() {
 
 // Update cart summary
 function updateCartSummary(cart) {
+    const subtotal = cart.totalPrice || 0;
     document.getElementById('totalItems').textContent = cart.totalItems || 0;
-    document.getElementById('totalPrice').textContent = formatPrice(cart.totalPrice || 0);
+    document.getElementById('subtotalPrice').textContent = formatPrice(subtotal);
+    
+    // Calculate final total with voucher discount
+    const voucherDiscount = parseFloat(localStorage.getItem('voucherDiscount')) || 0;
+    const finalTotal = Math.max(0, subtotal - voucherDiscount);
+    
+    document.getElementById('totalPrice').textContent = formatPrice(finalTotal);
+    
+    // Store subtotal for voucher validation
+    localStorage.setItem('cartSubtotal', subtotal);
     
     // Update cart badge in header if function exists
     if (typeof updateCartBadge === 'function') {
         updateCartBadge();
     }
+    
+    // Setup voucher button handlers
+    setupVoucherHandlers();
+    
+    // Display applied voucher if exists
+    displayAppliedVoucher();
 }
 
 // Format price with Vietnamese currency
@@ -416,4 +432,134 @@ async function addToCart(productId, quantity = 1) {
         showNotification(error.message || 'Không thể thêm vào giỏ hàng!', 'error');
         return false;
     }
+}
+
+// ==================== VOUCHER FUNCTIONS ====================
+
+function setupVoucherHandlers() {
+    const applyBtn = document.getElementById('applyVoucherBtn');
+    const removeBtn = document.getElementById('removeVoucherBtn');
+    const voucherInput = document.getElementById('voucherCodeInput');
+    
+    if (applyBtn && !applyBtn.hasAttribute('data-handler-attached')) {
+        applyBtn.addEventListener('click', applyVoucher);
+        applyBtn.setAttribute('data-handler-attached', 'true');
+    }
+    
+    if (removeBtn && !removeBtn.hasAttribute('data-handler-attached')) {
+        removeBtn.addEventListener('click', removeVoucher);
+        removeBtn.setAttribute('data-handler-attached', 'true');
+    }
+    
+    if (voucherInput && !voucherInput.hasAttribute('data-handler-attached')) {
+        voucherInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                applyVoucher();
+            }
+        });
+        voucherInput.setAttribute('data-handler-attached', 'true');
+    }
+}
+
+async function applyVoucher() {
+    const voucherInput = document.getElementById('voucherCodeInput');
+    const voucherCode = voucherInput.value.trim().toUpperCase();
+    const messageDiv = document.getElementById('voucherMessage');
+    
+    if (!voucherCode) {
+        showVoucherMessage('Vui lòng nhập mã giảm giá', 'danger');
+        return;
+    }
+    
+    // Get cart subtotal
+    const subtotal = parseFloat(localStorage.getItem('cartSubtotal')) || 0;
+    
+    if (subtotal <= 0) {
+        showVoucherMessage('Giỏ hàng trống', 'danger');
+        return;
+    }
+    
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+        const response = await fetch(`/api/vouchers/validate?code=${voucherCode}&orderTotal=${subtotal}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.valid) {
+            // Save voucher info to localStorage
+            localStorage.setItem('voucherCode', result.voucherCode);
+            localStorage.setItem('voucherDiscount', result.discountAmount);
+            
+            // Update display
+            displayAppliedVoucher();
+            updateTotalPrice();
+            
+            showVoucherMessage(result.message, 'success');
+            
+            // Hide input, show applied voucher
+            document.getElementById('voucherInputGroup').style.display = 'none';
+            document.getElementById('appliedVoucherGroup').style.display = 'block';
+        } else {
+            showVoucherMessage(result.message, 'danger');
+        }
+    } catch (error) {
+        console.error('Error validating voucher:', error);
+        showVoucherMessage('Lỗi kết nối máy chủ', 'danger');
+    }
+}
+
+function removeVoucher() {
+    // Clear voucher from localStorage
+    localStorage.removeItem('voucherCode');
+    localStorage.removeItem('voucherDiscount');
+    
+    // Hide applied voucher, show input
+    document.getElementById('appliedVoucherGroup').style.display = 'none';
+    document.getElementById('voucherInputGroup').style.display = 'block';
+    document.getElementById('voucherCodeInput').value = '';
+    
+    // Update total price
+    updateTotalPrice();
+    
+    showNotification('Đã xóa mã giảm giá', 'info');
+}
+
+function displayAppliedVoucher() {
+    const voucherCode = localStorage.getItem('voucherCode');
+    const voucherDiscount = parseFloat(localStorage.getItem('voucherDiscount')) || 0;
+    
+    if (voucherCode && voucherDiscount > 0) {
+        document.getElementById('appliedVoucherCode').textContent = voucherCode;
+        document.getElementById('voucherDiscount').textContent = '- ' + formatPrice(voucherDiscount);
+        document.getElementById('voucherInputGroup').style.display = 'none';
+        document.getElementById('appliedVoucherGroup').style.display = 'block';
+    } else {
+        document.getElementById('voucherInputGroup').style.display = 'block';
+        document.getElementById('appliedVoucherGroup').style.display = 'none';
+    }
+}
+
+function updateTotalPrice() {
+    const subtotal = parseFloat(localStorage.getItem('cartSubtotal')) || 0;
+    const voucherDiscount = parseFloat(localStorage.getItem('voucherDiscount')) || 0;
+    const finalTotal = Math.max(0, subtotal - voucherDiscount);
+    
+    document.getElementById('totalPrice').textContent = formatPrice(finalTotal);
+}
+
+function showVoucherMessage(message, type) {
+    const messageDiv = document.getElementById('voucherMessage');
+    messageDiv.className = `alert alert-${type} py-1 px-2 small mb-0`;
+    messageDiv.textContent = message;
+    messageDiv.style.display = 'block';
+    
+    setTimeout(() => {
+        messageDiv.style.display = 'none';
+    }, 5000);
 }

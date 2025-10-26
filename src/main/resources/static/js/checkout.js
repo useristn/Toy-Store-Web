@@ -118,8 +118,27 @@ function displayCheckoutItems(items) {
 
 // Update checkout summary
 function updateCheckoutSummary(cart) {
-    document.getElementById('subtotal').textContent = formatPrice(cart.totalPrice);
-    document.getElementById('totalAmount').textContent = formatPrice(cart.totalPrice);
+    const subtotal = cart.totalPrice || 0;
+    document.getElementById('subtotal').textContent = formatPrice(subtotal);
+    
+    // Load voucher info from localStorage
+    const voucherCode = localStorage.getItem('voucherCode');
+    const voucherDiscount = parseFloat(localStorage.getItem('voucherDiscount')) || 0;
+    
+    if (voucherCode && voucherDiscount > 0) {
+        // Display voucher
+        document.getElementById('voucherDisplay').style.display = 'block';
+        document.getElementById('displayVoucherCode').textContent = voucherCode;
+        document.getElementById('displayVoucherDiscount').textContent = '- ' + formatPrice(voucherDiscount);
+        
+        // Calculate final total
+        const finalTotal = Math.max(0, subtotal - voucherDiscount);
+        document.getElementById('totalAmount').textContent = formatPrice(finalTotal);
+    } else {
+        // Hide voucher display
+        document.getElementById('voucherDisplay').style.display = 'none';
+        document.getElementById('totalAmount').textContent = formatPrice(subtotal);
+    }
 }
 
 // Setup form validation
@@ -175,7 +194,8 @@ function setupCheckoutButton() {
             customerPhone: document.getElementById('customerPhone').value.trim(),
             shippingAddress: document.getElementById('shippingAddress').value.trim(),
             paymentMethod: document.querySelector('input[name="paymentMethod"]:checked').value,
-            notes: document.getElementById('notes').value.trim()
+            notes: document.getElementById('notes').value.trim(),
+            voucherCode: localStorage.getItem('voucherCode') || null
         };
 
         // Disable button and show loading
@@ -216,6 +236,11 @@ function setupCheckoutButton() {
             if (!order.orderNumber) {
                 throw new Error('Order number not returned from server');
             }
+            
+            // Clear voucher from localStorage after successful order
+            localStorage.removeItem('voucherCode');
+            localStorage.removeItem('voucherDiscount');
+            localStorage.removeItem('cartSubtotal');
             
             // Show success and redirect
             showNotification('Đặt hàng thành công! Đang chuyển hướng...', 'success');

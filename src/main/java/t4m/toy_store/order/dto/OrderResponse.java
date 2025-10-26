@@ -31,6 +31,9 @@ public class OrderResponse {
     private LocalDateTime createdAt;
     private Long shipperId;
     private String shipperEmail;
+    private String voucherCode;
+    private BigDecimal voucherDiscount;
+    private String voucherType;
 
     public static OrderResponse fromEntity(Order order) {
         List<OrderItemResponse> items = order.getOrderItems().stream()
@@ -60,6 +63,9 @@ public class OrderResponse {
                 .createdAt(order.getCreatedAt())
                 .shipperId(order.getShipper() != null ? order.getShipper().getId() : null)
                 .shipperEmail(order.getShipper() != null ? order.getShipper().getEmail() : null)
+                .voucherCode(order.getVoucherCode())
+                .voucherDiscount(order.getVoucherDiscount())
+                .voucherType(order.getVoucherType())
                 .build();
     }
 }

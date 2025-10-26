@@ -40,4 +40,19 @@ public class AdminViewController {
     public String reviews() {
         return "admin/admin-reviews";
     }
+
+    @GetMapping("/vouchers")
+    public String vouchers() {
+        return "admin/admin-vouchers";
+    }
+
+    @GetMapping("/vouchers/create")
+    public String createVoucher() {
+        return "admin/admin-voucher-form";
+    }
+
+    @GetMapping("/vouchers/edit/{id}")
+    public String editVoucher() {
+        return "admin/admin-voucher-form";
+    }
 }

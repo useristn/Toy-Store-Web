@@ -302,6 +302,10 @@ function displayOrders(orders) {
                         `).join('')}
                     </div>
                     <div class="col-md-4 text-md-end">
+                        ${order.voucherCode ? `
+                            <p class="text-muted mb-1">Mã giảm giá: <span class="badge bg-success">${order.voucherCode}</span></p>
+                            <p class="text-success mb-1">Giảm: -${formatPrice(order.voucherDiscount || 0)}</p>
+                        ` : ''}
                         <p class="text-muted mb-1">Tổng tiền:</p>
                         <h4 class="text-danger mb-3">${formatPrice(order.totalAmount)}</h4>
                         <div class="d-flex gap-2 justify-content-md-end">
