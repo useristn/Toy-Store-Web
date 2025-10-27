@@ -19,23 +19,27 @@ async function loadOrderDetails() {
             throw new Error('Order number not found');
         }
 
-        // Get authentication token
-        const token = localStorage.getItem('authToken') || localStorage.getItem('token');
-        const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
+        // Try to use public endpoint first (for VNPay redirect case)
+        let response = await fetch(`/api/orders/public/${orderNumber}`);
+        
+        // If public endpoint fails (404), try authenticated endpoint
+        if (response.status === 404) {
+            const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+            const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
 
-        if (!token || !userEmail) {
-            // Redirect to login if not authenticated
-            window.location.href = '/login';
-            return;
-        }
-
-        const response = await fetch(`/api/orders/${orderNumber}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'X-User-Email': userEmail
+            if (!token || !userEmail) {
+                window.location.href = '/login';
+                return;
             }
-        });
+
+            response = await fetch(`/api/orders/${orderNumber}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    'X-User-Email': userEmail
+                }
+            });
+        }
 
         if (response.status === 401) {
             window.location.href = '/login';

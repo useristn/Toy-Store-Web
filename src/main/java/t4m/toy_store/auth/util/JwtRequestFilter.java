@@ -67,7 +67,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             if (isApiRequest && 
                 !requestUri.startsWith("/api/auth/") && 
                 !requestUri.startsWith("/api/products") &&
-                !requestUri.startsWith("/api/chatbot/")) {
+                !requestUri.startsWith("/api/chatbot/") &&
+                !requestUri.startsWith("/api/payment/vnpay/") &&  // VNPay callbacks
+                !requestUri.startsWith("/api/orders/public/")) {  // Public order view after payment
                 logger.warn("No JWT token in API request to: {}", requestUri);
                 response.sendError(HttpStatus.UNAUTHORIZED.value(), "Missing JWT token");
                 return;

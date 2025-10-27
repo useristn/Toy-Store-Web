@@ -229,7 +229,30 @@ function setupCheckoutButton() {
                 throw new Error(error.error || 'Đặt hàng thất bại');
             }
 
-            const order = await response.json();
+            const result = await response.json();
+            console.log('Checkout result:', result);
+            
+            // Check if need to redirect to VNPay
+            if (result.redirectToPayment && result.paymentUrl) {
+                const order = result.order;
+                console.log('Redirecting to VNPay for payment:', result.paymentUrl);
+                
+                // Clear voucher from localStorage
+                localStorage.removeItem('voucherCode');
+                localStorage.removeItem('voucherDiscount');
+                localStorage.removeItem('cartSubtotal');
+                
+                // Show message and redirect to VNPay
+                showNotification('Đang chuyển đến cổng thanh toán VNPay...', 'info');
+                
+                setTimeout(() => {
+                    window.location.href = result.paymentUrl;
+                }, 1000);
+                return;
+            }
+            
+            // For COD payment
+            const order = result.order || result;
             console.log('Order created successfully:', order);
             console.log('Order number:', order.orderNumber);
             

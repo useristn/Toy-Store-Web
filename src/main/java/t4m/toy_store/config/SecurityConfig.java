@@ -136,6 +136,7 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/products", "/products/**", "/product/**").permitAll()
                         .requestMatchers("/cart", "/checkout", "/orders", "/favorites", "/profile").permitAll()
+                        .requestMatchers("/order-confirmation", "/order-confirmation/**").permitAll() // Order confirmation after payment
                         .requestMatchers("/test-search", "/test-support.html", "/debug-admin.html").permitAll()
 
                         // Admin HTML pages - allow access, JS will check role
@@ -151,6 +152,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/products/**").permitAll()
                         .requestMatchers("/api/chatbot/**").permitAll()
+                        
+                        // VNPay payment callback endpoints - MUST be public
+                        .requestMatchers("/api/payment/vnpay/**").permitAll()
 
                         // WebSocket endpoint
                         .requestMatchers("/ws-support/**").permitAll()
@@ -162,6 +166,7 @@ public class SecurityConfig {
                         // Protected API endpoints - require authentication
                         .requestMatchers("/api/cart/**").authenticated()
                         .requestMatchers("/api/checkout/**").authenticated()
+                        .requestMatchers("/api/orders/public/**").permitAll() // Public order confirmation after VNPay
                         .requestMatchers("/api/orders/**").authenticated()
                         .requestMatchers("/api/favorites/**").authenticated()
                         .requestMatchers("/api/user/**").authenticated()

@@ -66,6 +66,19 @@ public class Order {
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 
+    // VNPay payment fields
+    @Column(name = "payment_status")
+    private String paymentStatus; // PENDING, PAID, FAILED
+
+    @Column(name = "vnpay_transaction_no")
+    private String vnpayTransactionNo;
+
+    @Column(name = "vnpay_bank_code")
+    private String vnpayBankCode;
+
+    @Column(name = "vnpay_response_code")
+    private String vnpayResponseCode;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<OrderItem> orderItems = new ArrayList<>();

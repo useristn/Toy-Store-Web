@@ -1,5 +1,6 @@
 package t4m.toy_store.order.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import t4m.toy_store.order.dto.CheckoutRequest;
 import t4m.toy_store.order.dto.OrderResponse;
 import t4m.toy_store.order.service.OrderService;
+import t4m.toy_store.payment.service.VNPayService;
 
 import java.util.HashMap;
 import java.util.List;
@@ -21,12 +23,14 @@ import java.util.Map;
 public class OrderController {
 
     private final OrderService orderService;
+    private final VNPayService vnPayService;
 
     @PostMapping("/checkout")
     public ResponseEntity<?> checkout(
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody CheckoutRequest request,
-            @RequestHeader(value = "X-User-Email", required = false) String userEmail) {
+            @RequestHeader(value = "X-User-Email", required = false) String userEmail,
+            HttpServletRequest httpRequest) {
         try {
             // Get email from UserDetails or fallback to header
             String email = userDetails != null ? userDetails.getUsername() : userEmail;
@@ -37,7 +41,27 @@ public class OrderController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
             }
             
+            // Create order first
             OrderResponse order = orderService.createOrder(email, request);
+            
+            // If payment method is E_WALLET, create VNPay payment URL
+            if ("E_WALLET".equalsIgnoreCase(request.getPaymentMethod())) {
+                String paymentUrl = vnPayService.createPaymentUrl(
+                    order.getOrderNumber(),
+                    order.getTotalAmount(),
+                    "Thanh toan don hang " + order.getOrderNumber(),
+                    httpRequest
+                );
+                
+                Map<String, Object> response = new HashMap<>();
+                response.put("order", order);
+                response.put("paymentUrl", paymentUrl);
+                response.put("redirectToPayment", true);
+                
+                return ResponseEntity.ok(response);
+            }
+            
+            // For COD, just return order
             return ResponseEntity.ok(order);
         } catch (RuntimeException e) {
             Map<String, String> error = new HashMap<>();
@@ -126,6 +150,23 @@ public class OrderController {
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
+    }
+    
+    /**
+     * Public endpoint to get order details after VNPay payment
+     * This endpoint doesn't require authentication because user may lose JWT token
+     * after redirecting from VNPay
+     */
+    @GetMapping("/public/{orderNumber}")
+    public ResponseEntity<?> getOrderPublic(@PathVariable String orderNumber) {
+        try {
+            OrderResponse order = orderService.getOrderByNumber(orderNumber);
+            return ResponseEntity.ok(order);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
         }
     }
 }

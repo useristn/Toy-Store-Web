@@ -108,6 +108,7 @@ public class OrderService {
                 .voucherCode(appliedVoucher != null ? appliedVoucher.getCode() : null)
                 .voucherDiscount(voucherDiscount)
                 .voucherType(appliedVoucher != null ? appliedVoucher.getDiscountType().name() : null)
+                .paymentStatus("COD".equalsIgnoreCase(request.getPaymentMethod()) ? "PENDING" : "PENDING")
                 .build();
 
         // Add order items from cart
@@ -322,5 +323,64 @@ public class OrderService {
         logger.info("Order {} cancelled by user {}", orderId, userEmail);
         
         return convertToOrderResponse(cancelledOrder);
+    }
+
+    // VNPay payment methods
+    
+    /**
+     * Check if order exists by order number
+     */
+    public boolean orderExists(String orderNumber) {
+        return orderRepository.findByOrderNumber(orderNumber).isPresent();
+    }
+
+    /**
+     * Verify if order amount matches VNPay amount
+     */
+    public boolean verifyOrderAmount(String orderNumber, long vnpayAmount) {
+        Order order = orderRepository.findByOrderNumber(orderNumber).orElse(null);
+        if (order == null) {
+            return false;
+        }
+        long orderAmount = order.getTotalAmount().longValue();
+        return orderAmount == vnpayAmount;
+    }
+
+    /**
+     * Check if payment already confirmed
+     */
+    public boolean isPaymentConfirmed(String orderNumber) {
+        Order order = orderRepository.findByOrderNumber(orderNumber).orElse(null);
+        if (order == null) {
+            return false;
+        }
+        return "PAID".equals(order.getPaymentStatus());
+    }
+
+    /**
+     * Update VNPay payment status
+     */
+    @Transactional
+    public void updateVNPayPaymentStatus(String orderNumber, boolean isSuccess, 
+                                          String transactionNo, String bankCode, String responseCode) {
+        Order order = orderRepository.findByOrderNumber(orderNumber)
+                .orElseThrow(() -> new RuntimeException("Order not found: " + orderNumber));
+
+        if (isSuccess) {
+            order.setPaymentStatus("PAID");
+            order.setStatus(OrderStatus.PROCESSING); // Move to processing after successful payment
+        } else {
+            order.setPaymentStatus("FAILED");
+            order.setStatus(OrderStatus.CANCELLED); // Cancel order if payment failed
+        }
+
+        order.setVnpayTransactionNo(transactionNo);
+        order.setVnpayBankCode(bankCode);
+        order.setVnpayResponseCode(responseCode);
+        
+        orderRepository.save(order);
+        
+        logger.info("Updated VNPay payment status for order {}: status={}, transactionNo={}", 
+                    orderNumber, order.getPaymentStatus(), transactionNo);
     }
 }
