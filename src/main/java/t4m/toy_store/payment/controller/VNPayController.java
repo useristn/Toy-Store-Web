@@ -27,7 +27,7 @@ public class VNPayController {
 
     /**
      * Return URL - Nơi VNPay redirect khách hàng về sau khi thanh toán
-     * Chỉ hiển thị kết quả cho khách hàng, KHÔNG cập nhật database
+     * Cập nhật database tại đây vì IPN không hoạt động với localhost
      */
     @GetMapping("/return")
     public String paymentReturn(HttpServletRequest request, Model model) {
@@ -64,6 +64,29 @@ public class VNPayController {
 
             // Check response code
             boolean isSuccess = "00".equals(vnp_ResponseCode);
+
+            // ✅ UPDATE DATABASE HERE (vì localhost không nhận được IPN)
+            try {
+                // Check if order exists
+                if (orderService.orderExists(vnp_TxnRef)) {
+                    // Check if not already processed
+                    if (!orderService.isPaymentConfirmed(vnp_TxnRef)) {
+                        // Update payment status
+                        orderService.updateVNPayPaymentStatus(
+                            vnp_TxnRef, 
+                            isSuccess, 
+                            vnp_TransactionNo, 
+                            vnp_BankCode,
+                            vnp_ResponseCode
+                        );
+                        log.info("✅ Payment status updated from Return URL for order: {}", vnp_TxnRef);
+                    } else {
+                        log.info("Order {} already confirmed", vnp_TxnRef);
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Error updating payment status from Return URL", e);
+            }
 
             // Add to model for display
             model.addAttribute("success", isSuccess);
@@ -177,6 +200,55 @@ public class VNPayController {
             response.put("RspCode", "99");
             response.put("Message", "Unknown error");
             return ResponseEntity.ok(response);
+        }
+    }
+
+    /**
+     * Create new payment link for existing order (for retry payment)
+     */
+    @PostMapping("/create-payment-link")
+    @ResponseBody
+    public ResponseEntity<?> createPaymentLink(@RequestBody Map<String, Object> requestData, 
+                                                HttpServletRequest httpRequest) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            String orderNumber = (String) requestData.get("orderNumber");
+            String orderInfo = (String) requestData.get("orderInfo");
+            Number amountNumber = (Number) requestData.get("amount");
+            
+            if (orderNumber == null || amountNumber == null) {
+                response.put("error", "Missing required parameters");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            // Convert amount to BigDecimal
+            java.math.BigDecimal amount = new java.math.BigDecimal(amountNumber.toString());
+            
+            // Check if order exists and is still PENDING_PAYMENT
+            if (!orderService.orderExists(orderNumber)) {
+                response.put("error", "Order not found");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            // Create VNPay payment URL
+            String paymentUrl = vnPayService.createPaymentUrl(
+                orderNumber,
+                amount,
+                orderInfo != null ? orderInfo : "Thanh toan don hang " + orderNumber,
+                httpRequest
+            );
+            
+            response.put("paymentUrl", paymentUrl);
+            response.put("success", true);
+            
+            log.info("Created payment link for order: {}", orderNumber);
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            log.error("Error creating payment link", e);
+            response.put("error", "Cannot create payment link");
+            return ResponseEntity.badRequest().body(response);
         }
     }
 

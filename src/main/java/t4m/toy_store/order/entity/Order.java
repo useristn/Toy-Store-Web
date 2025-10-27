@@ -59,7 +59,7 @@ public class Order {
     @Column(name = "voucher_type")
     private String voucherType;
 
-    @Column(name = "status", nullable = false)
+    @Column(name = "status", nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 

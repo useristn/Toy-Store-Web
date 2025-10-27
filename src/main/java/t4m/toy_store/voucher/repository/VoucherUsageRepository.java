@@ -19,4 +19,8 @@ public interface VoucherUsageRepository extends JpaRepository<VoucherUsage, Long
     List<VoucherUsage> findByVoucher(Voucher voucher);
     
     List<VoucherUsage> findByUser(User user);
+    
+    // Find and delete the most recent usage for restore operation
+    @Query("SELECT vu FROM VoucherUsage vu WHERE vu.voucher = :voucher AND vu.user = :user ORDER BY vu.usedAt DESC")
+    List<VoucherUsage> findTopByVoucherAndUserOrderByUsedAtDesc(@Param("voucher") Voucher voucher, @Param("user") User user);
 }

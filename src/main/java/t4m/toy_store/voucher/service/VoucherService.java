@@ -14,6 +14,7 @@ import t4m.toy_store.voucher.repository.VoucherUsageRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -127,6 +128,21 @@ public class VoucherService {
         usage.setUser(user);
         usage.setUsedAt(LocalDateTime.now());
         voucherUsageRepository.save(usage);
+    }
+    
+    @Transactional
+    public void restoreVoucherUsage(Voucher voucher, User user) {
+        // Decrement used quantity if payment failed
+        if (voucher.getUsedQuantity() > 0) {
+            voucher.setUsedQuantity(voucher.getUsedQuantity() - 1);
+            voucherRepository.save(voucher);
+        }
+        
+        // Remove the latest usage record for this user and voucher
+        List<VoucherUsage> usages = voucherUsageRepository.findTopByVoucherAndUserOrderByUsedAtDesc(voucher, user);
+        if (!usages.isEmpty()) {
+            voucherUsageRepository.delete(usages.get(0));
+        }
     }
 
     @Transactional(readOnly = true)

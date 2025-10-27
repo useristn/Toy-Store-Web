@@ -206,6 +206,7 @@ function displayOrders(data) {
 
 function getStatusBadge(status) {
     const badges = {
+        'PENDING_PAYMENT': '<span class="badge bg-warning">💳 Chờ thanh toán</span>',
         'PENDING': '<span class="badge bg-warning">Chờ xử lý</span>',
         'PROCESSING': '<span class="badge bg-info">Đang xử lý</span>',
         'SHIPPING': '<span class="badge bg-primary">Đang giao</span>',
@@ -218,6 +219,7 @@ function getStatusBadge(status) {
 
 function getStatusClass(status) {
     const classes = {
+        'PENDING_PAYMENT': 'bg-warning',
         'PENDING': 'bg-warning',
         'PROCESSING': 'bg-info',
         'SHIPPING': 'bg-primary',

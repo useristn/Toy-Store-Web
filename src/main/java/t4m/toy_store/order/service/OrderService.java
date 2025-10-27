@@ -94,6 +94,20 @@ public class OrderService {
             finalTotal = BigDecimal.ZERO;
         }
 
+        // Determine order status and payment status based on payment method
+        OrderStatus initialStatus;
+        String paymentStatus;
+        
+        if ("E_WALLET".equalsIgnoreCase(request.getPaymentMethod())) {
+            // For E_WALLET, wait for VNPay confirmation
+            initialStatus = OrderStatus.PENDING_PAYMENT;
+            paymentStatus = "PENDING";
+        } else {
+            // For COD and other methods
+            initialStatus = OrderStatus.PENDING;
+            paymentStatus = "COD".equalsIgnoreCase(request.getPaymentMethod()) ? "PENDING" : "PENDING";
+        }
+        
         // Create order
         Order order = Order.builder()
                 .user(user)
@@ -103,12 +117,12 @@ public class OrderService {
                 .shippingAddress(request.getShippingAddress())
                 .paymentMethod(request.getPaymentMethod())
                 .totalAmount(finalTotal)
-                .status(OrderStatus.PENDING)
+                .status(initialStatus)
                 .notes(request.getNotes())
                 .voucherCode(appliedVoucher != null ? appliedVoucher.getCode() : null)
                 .voucherDiscount(voucherDiscount)
                 .voucherType(appliedVoucher != null ? appliedVoucher.getDiscountType().name() : null)
-                .paymentStatus("COD".equalsIgnoreCase(request.getPaymentMethod()) ? "PENDING" : "PENDING")
+                .paymentStatus(paymentStatus)
                 .build();
 
         // Add order items from cart
@@ -367,11 +381,37 @@ public class OrderService {
                 .orElseThrow(() -> new RuntimeException("Order not found: " + orderNumber));
 
         if (isSuccess) {
+            // Payment successful - confirm order
             order.setPaymentStatus("PAID");
-            order.setStatus(OrderStatus.PROCESSING); // Move to processing after successful payment
+            order.setStatus(OrderStatus.PENDING); // Change from PENDING_PAYMENT to PENDING (ready for processing)
+            logger.info("Payment successful for order {}", orderNumber);
         } else {
+            // Payment failed - cancel order and restore stock
             order.setPaymentStatus("FAILED");
-            order.setStatus(OrderStatus.CANCELLED); // Cancel order if payment failed
+            order.setStatus(OrderStatus.CANCELLED);
+            
+            // Restore product stock
+            for (OrderItem item : order.getOrderItems()) {
+                Product product = item.getProduct();
+                product.setStock(product.getStock() + item.getQuantity());
+                productRepository.save(product);
+                logger.info("Restored stock for product {}: +{}", product.getName(), item.getQuantity());
+            }
+            
+            // Restore voucher usage if applied
+            if (order.getVoucherCode() != null) {
+                try {
+                    Voucher voucher = voucherService.getVoucherByCode(order.getVoucherCode());
+                    if (voucher != null) {
+                        voucherService.restoreVoucherUsage(voucher, order.getUser());
+                        logger.info("Restored voucher usage for: {}", order.getVoucherCode());
+                    }
+                } catch (Exception e) {
+                    logger.warn("Failed to restore voucher usage: {}", e.getMessage());
+                }
+            }
+            
+            logger.info("Payment failed for order {} - order cancelled and stock restored", orderNumber);
         }
 
         order.setVnpayTransactionNo(transactionNo);

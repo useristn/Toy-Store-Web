@@ -336,6 +336,7 @@ function canCancelOrder(order) {
 
 function getStatusBadgeClass(status) {
     const classes = {
+        'PENDING_PAYMENT': 'bg-warning',
         'PENDING': 'bg-warning',
         'CONFIRMED': 'bg-info',
         'PROCESSING': 'bg-primary',
@@ -349,6 +350,7 @@ function getStatusBadgeClass(status) {
 
 function getStatusText(status) {
     const texts = {
+        'PENDING_PAYMENT': '💳 Chờ thanh toán',
         'PENDING': '⏳ Chờ xử lý',
         'CONFIRMED': '✅ Đã xác nhận',
         'PROCESSING': '📦 Đang xử lý',

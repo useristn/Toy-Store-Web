@@ -1065,6 +1065,7 @@ function formatDateTime(dateString) {
 
 function getStatusBadge(status) {
     const statusMap = {
+        'PENDING_PAYMENT': { text: '💳 Chờ thanh toán', class: 'warning' },
         'PENDING': { text: 'Chờ xử lý', class: 'warning' },
         'CONFIRMED': { text: 'Đã xác nhận', class: 'info' },
         'PROCESSING': { text: 'Đang xử lý', class: 'primary' },

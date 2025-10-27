@@ -195,10 +195,10 @@ function formatPrice(price) {
 }
 
 function addCancelButton(order) {
-    // Only show cancel button for PENDING orders with COD payment
+    const actionButtons = document.getElementById('actionButtons');
+    
+    // Show cancel button for PENDING orders with COD payment
     if (order.status === 'PENDING' && order.paymentMethod === 'COD') {
-        const actionButtons = document.getElementById('actionButtons');
-        
         // Add cancel button
         const cancelBtn = document.createElement('button');
         cancelBtn.className = 'btn btn-outline-danger btn-lg mt-2 mt-md-0';
@@ -212,6 +212,23 @@ function addCancelButton(order) {
         infoAlert.className = 'alert alert-warning mt-3';
         infoAlert.innerHTML = '<i class="fas fa-info-circle me-2"></i>Bạn có thể hủy đơn hàng COD trong khi đơn đang chờ xử lý.';
         actionButtons.parentElement.insertBefore(infoAlert, actionButtons);
+    }
+    
+    // Show "Continue Payment" button for PENDING_PAYMENT E_WALLET orders
+    if (order.status === 'PENDING_PAYMENT' && order.paymentMethod === 'E_WALLET') {
+        // Add continue payment button
+        const continuePaymentBtn = document.createElement('button');
+        continuePaymentBtn.className = 'btn btn-primary btn-lg mt-2 mt-md-0';
+        continuePaymentBtn.innerHTML = '<i class="fas fa-credit-card me-2"></i>Tiếp tục thanh toán';
+        continuePaymentBtn.onclick = () => continuePayment(order.orderNumber, order.totalAmount);
+        
+        actionButtons.insertBefore(continuePaymentBtn, actionButtons.firstChild);
+        
+        // Add warning alert
+        const warningAlert = document.createElement('div');
+        warningAlert.className = 'alert alert-warning mt-3';
+        warningAlert.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i><strong>Chưa thanh toán:</strong> Vui lòng hoàn tất thanh toán để xử lý đơn hàng của bạn.';
+        actionButtons.parentElement.insertBefore(warningAlert, actionButtons);
     }
 }
 
@@ -306,6 +323,81 @@ async function performCancelOrder() {
     }
 }
 
+async function continuePayment(orderNumber, totalAmount) {
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+        const userEmail = localStorage.getItem('authEmail') || localStorage.getItem('userEmail');
+        
+        if (!token || !userEmail) {
+            window.location.href = '/login';
+            return;
+        }
+
+        // Show loading overlay instead of modal
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.id = 'paymentLoadingOverlay';
+        loadingOverlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        `;
+        loadingOverlay.innerHTML = `
+            <div class="card text-center p-4" style="min-width: 300px;">
+                <div class="spinner-border text-primary mx-auto" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Đang xử lý...</span>
+                </div>
+                <p class="mt-3 mb-0">Đang tạo liên kết thanh toán...</p>
+            </div>
+        `;
+        document.body.appendChild(loadingOverlay);
+
+        // Call backend to recreate VNPay payment URL
+        const response = await fetch('/api/payment/vnpay/create-payment-link', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'X-User-Email': userEmail
+            },
+            body: JSON.stringify({
+                orderNumber: orderNumber,
+                amount: totalAmount,
+                orderInfo: `Thanh toan don hang ${orderNumber}`
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Không thể tạo liên kết thanh toán');
+        }
+
+        const data = await response.json();
+        
+        // Redirect to VNPay
+        if (data.paymentUrl) {
+            window.location.href = data.paymentUrl;
+        } else {
+            throw new Error('Không nhận được URL thanh toán');
+        }
+
+    } catch (error) {
+        // Remove loading overlay
+        const overlay = document.getElementById('paymentLoadingOverlay');
+        if (overlay) {
+            overlay.remove();
+        }
+        
+        console.error('Error continuing payment:', error);
+        showErrorModal('Không thể tiếp tục thanh toán. Vui lòng thử lại sau!');
+    }
+}
+
 function startCountdown(seconds) {
     let timeLeft = seconds;
     const timerElement = document.getElementById('countdownTimer');
@@ -324,7 +416,7 @@ function startCountdown(seconds) {
 }
 
 function showErrorModal(message) {
-    document.getElementById('errorMessage').textContent = message;
+    document.getElementById('errorMessage').innerHTML = message;
     const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
     errorModal.show();
 }
