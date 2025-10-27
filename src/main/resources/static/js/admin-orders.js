@@ -440,6 +440,15 @@ function displayOrderDetail(order) {
                         : '<span class="badge bg-warning">Chưa thanh toán</span>'}
                 </span>
             </div>
+            ${order.voucherCode && order.voucherDiscount && order.voucherDiscount > 0 ? `
+            <div class="detail-row">
+                <span class="detail-label">Mã giảm giá:</span>
+                <span class="detail-value">
+                    <span class="badge bg-success">${order.voucherCode}</span>
+                    <span class="text-success ms-2">-${formatPrice(order.voucherDiscount)}</span>
+                </span>
+            </div>
+            ` : ''}
         </div>
         
         <!-- Notes -->

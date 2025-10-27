@@ -867,6 +867,15 @@ function displayOrderDetail(order) {
         </div>
         ` : ''}
 
+        <!-- Voucher Info -->
+        ${order.voucherCode && order.voucherDiscount && order.voucherDiscount > 0 ? `
+        <div class="alert alert-success mt-3">
+            <i class="fas fa-ticket-alt me-2"></i>
+            <strong>Mã giảm giá:</strong> <span class="badge bg-success">${order.voucherCode}</span>
+            <span class="ms-2">Giảm: <strong>${formatCurrency(order.voucherDiscount)}</strong></span>
+        </div>
+        ` : ''}
+
         <!-- Notes -->
         ${order.notes ? `
         <div class="alert alert-secondary mt-3">

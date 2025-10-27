@@ -96,7 +96,7 @@ function handleRegister(event) {
     const email = document.getElementById('registerEmail').value.trim();
     const password = document.getElementById('registerPassword').value;
     const confirmPassword = document.getElementById('registerConfirmPassword').value;
-    const role = document.getElementById('registerRole').value.trim();
+    const role = 'ROLE_USER'; // Always register as USER, other roles created by admin
 
     if (password !== confirmPassword) {
         displayMessage('registerMessage', 'Mật khẩu không khớp. Vui lòng kiểm tra lại.', true);

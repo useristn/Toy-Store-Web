@@ -18,7 +18,6 @@ import t4m.toy_store.auth.exception.*;
 
 import lombok.RequiredArgsConstructor;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -33,30 +32,27 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final OtpService otpService;
-    private static final Set<String> ALLOWED_ROLES = new HashSet<>(Set.of("ROLE_USER", "ROLE_VENDOR", "ROLE_SHIPPER"));
+
     private final Cache<String, Role> roleCache = Caffeine.newBuilder()
             .expireAfterWrite(1, TimeUnit.HOURS)
             .maximumSize(100)
             .build();
 
     /**
-     * Register a new user with email, password, and role.
+     * Register a new user with email and password.
+     * All registrations are forced to ROLE_USER. Other roles must be created by admin.
      * Sends OTP for account activation.
      */
     public void register(RegisterRequest dto) {
         String sanitizedEmail = dto.getEmail().trim().toLowerCase();
-        String sanitizedRole = dto.getRole().trim();
+        // Force all public registrations to ROLE_USER only
+        String sanitizedRole = "ROLE_USER";
 
-        logger.info("Attempting to register user with email: {}", sanitizedEmail);
+        logger.info("Attempting to register user with email: {} (role: {})", sanitizedEmail, sanitizedRole);
 
         if (userRepository.findByEmail(sanitizedEmail).isPresent()) {
             logger.warn("Registration failed: Email already exists - {}", sanitizedEmail);
             throw new EmailAlreadyExistsException("Email already exists");
-        }
-
-        if (!ALLOWED_ROLES.contains(sanitizedRole)) {
-            logger.warn("Registration failed: Invalid role - {}", sanitizedRole);
-            throw new InvalidRoleException("Only ROLE_USER, ROLE_VENDOR, or ROLE_SHIPPER are allowed for registration");
         }
 
         User user = new User();

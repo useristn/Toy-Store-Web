@@ -16,6 +16,6 @@ public class RegisterRequest {
             message = "Password must be at least 8 characters, include uppercase, lowercase, number, and special character")
     private String password;
 
-    @NotBlank(message = "Role is required")
+    // Role is not required from client, will be set to ROLE_USER by default in service
     private String role;
 }

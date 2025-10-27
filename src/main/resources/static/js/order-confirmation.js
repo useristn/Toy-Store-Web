@@ -137,10 +137,26 @@ function displayOrderDetails(order) {
     document.getElementById('orderSubtotal').textContent = formatPrice(itemsSubtotal);
     
     // Display voucher discount if applied
-    if (order.voucherCode && order.voucherDiscount && order.voucherDiscount > 0) {
-        document.getElementById('voucherDiscountRow').style.display = 'flex';
+    const voucherRow = document.getElementById('voucherDiscountRow');
+    
+    // Debug: Log voucher info
+    console.log('Voucher Debug:', {
+        voucherCode: order.voucherCode,
+        voucherDiscount: order.voucherDiscount,
+        voucherType: typeof order.voucherDiscount
+    });
+    
+    const hasVoucher = order.voucherCode && 
+                       order.voucherCode.trim() !== '' && 
+                       order.voucherDiscount && 
+                       parseFloat(order.voucherDiscount) > 0;
+    
+    if (hasVoucher) {
+        voucherRow.style.display = 'flex';
         document.getElementById('displayVoucherCode').textContent = order.voucherCode;
         document.getElementById('displayVoucherDiscount').textContent = formatPrice(order.voucherDiscount);
+    } else {
+        voucherRow.style.display = 'none';
     }
     
     document.getElementById('orderTotal').textContent = formatPrice(order.totalAmount);
