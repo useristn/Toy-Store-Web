@@ -538,6 +538,11 @@
         transition: all 0.2s ease;
       }
 
+      /* Subtle hover effect for all stat cards */
+      .stat-card:hover i {
+        transform: scale(1.1);
+      }
+
       /* Text styling */
       .stat-card h5 {
         font-size: 1.1rem;
@@ -555,14 +560,17 @@
       }
 
       .order-id {
-        font-weight: bold;
+        font-weight: 600;
         color: #0d6efd;
         cursor: pointer;
         text-decoration: none;
+        transition: all 0.2s ease;
       }
 
       .order-id:hover {
         text-decoration: underline;
+        color: #0a58ca;
+        transform: scale(1.05);
       }
 
       .customer-info {
@@ -696,6 +704,78 @@
 
       .table td {
         vertical-align: middle;
+      }
+
+      .table tbody tr {
+        transition: all 0.2s ease;
+      }
+
+      .table tbody tr:hover {
+        background-color: #f8f9fa;
+        transform: scale(1.005);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+
+      /* Subtle highlight for delivered orders */
+      .table tbody tr.order-delivered {
+        background-color: #f8fdf9;
+      }
+
+      .table tbody tr.order-delivered:hover {
+        background-color: #f0fdf4;
+      }
+
+      /* Enhanced Badge Styles */
+      .badge {
+        font-weight: 500;
+        letter-spacing: 0.3px;
+        transition: all 0.3s ease;
+      }
+
+      .badge i {
+        font-size: 0.9em;
+      }
+
+      /* Subtle styling for DELIVERED status */
+      .badge-delivered {
+        background-color: #28a745 !important;
+        font-weight: 600;
+      }
+
+      .badge-delivered:hover {
+        box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+      }
+
+      /* Payment Success Alert */
+      .payment-success-alert {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        border-left: 4px solid #28a745;
+        border-radius: 8px;
+      }
+
+      .payment-success-alert .alert-heading {
+        color: #155724;
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+
+      .payment-success-alert small {
+        color: #155724;
+        opacity: 0.85;
+      }
+
+      /* Status Select Enhancement */
+      .status-select.bg-success {
+        background-color: #28a745 !important;
+        color: white;
+        font-weight: 600;
+        border: 1px solid #28a745;
+      }
+
+      .status-select:disabled {
+        opacity: 0.75;
+        cursor: not-allowed;
       }
 
       /* Responsive adjustments for status cards */

@@ -167,8 +167,11 @@ function displayOrders(data) {
         // Payment status badge (pass orderStatus for COD logic)
         const paymentStatusBadge = getPaymentStatusBadge(order.paymentStatus, order.paymentMethod, order.status);
         
+        // Add special class for delivered orders
+        const rowClass = order.status === 'DELIVERED' ? 'order-delivered' : '';
+        
         return `
-            <tr>
+            <tr class="${rowClass}">
                 <td>
                     <span class="order-id" onclick="viewOrderDetail(${order.id})">#${order.id}</span>
                 </td>
@@ -214,13 +217,13 @@ function displayOrders(data) {
 
 function getStatusBadge(status) {
     const badges = {
-        'PENDING_PAYMENT': '<span class="badge bg-warning">💳 Chờ thanh toán</span>',
-        'PENDING': '<span class="badge bg-warning">Chờ xử lý</span>',
-        'PROCESSING': '<span class="badge bg-info">Đang xử lý</span>',
-        'SHIPPING': '<span class="badge bg-primary">Đang giao</span>',
-        'DELIVERED': '<span class="badge bg-success">Giao thành công</span>',
-        'FAILED': '<span class="badge bg-warning text-dark">Giao thất bại</span>',
-        'CANCELLED': '<span class="badge bg-danger">Đã hủy</span>'
+        'PENDING_PAYMENT': '<span class="badge bg-warning"><i class="fas fa-credit-card me-1"></i>Chờ thanh toán</span>',
+        'PENDING': '<span class="badge bg-warning"><i class="fas fa-clock me-1"></i>Chờ xử lý</span>',
+        'PROCESSING': '<span class="badge bg-info"><i class="fas fa-cogs me-1"></i>Đang xử lý</span>',
+        'SHIPPING': '<span class="badge bg-primary"><i class="fas fa-shipping-fast me-1"></i>Đang giao</span>',
+        'DELIVERED': '<span class="badge bg-success badge-delivered"><i class="fas fa-check-circle me-1"></i>Giao thành công</span>',
+        'FAILED': '<span class="badge bg-warning text-dark"><i class="fas fa-exclamation-triangle me-1"></i>Giao thất bại</span>',
+        'CANCELLED': '<span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i>Đã hủy</span>'
     };
     return badges[status] || '<span class="badge bg-secondary">N/A</span>';
 }
@@ -449,9 +452,14 @@ function displayOrderDetail(order) {
                 <span class="detail-value">${getPaymentStatusBadge(order.paymentStatus, order.paymentMethod, order.status)}</span>
             </div>
             ${order.paymentMethod === 'COD' && order.status === 'DELIVERED' ? `
-                <div class="alert alert-success mt-3">
-                    <i class="fas fa-info-circle"></i> 
-                    <strong>Ghi chú:</strong> Đơn hàng COD đã giao thành công - Tiền đã được thu
+                <div class="alert alert-success mt-3 payment-success-alert">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-check-circle me-3 text-success"></i>
+                        <div>
+                            <h6 class="alert-heading mb-1"><i class="fas fa-money-bill-wave me-1"></i> Thanh toán COD hoàn tất</h6>
+                            <small>Đơn hàng đã được giao thành công và tiền đã được thu từ khách hàng.</small>
+                        </div>
+                    </div>
                 </div>
             ` : ''}
             ${order.paymentMethod === 'E_WALLET' && order.vnpayTransactionNo ? `
