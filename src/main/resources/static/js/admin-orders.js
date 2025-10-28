@@ -139,7 +139,7 @@ function displayOrders(data) {
     if (data.content.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" class="text-center py-5">
+                <td colspan="9" class="text-center py-5">
                     <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
                     <p class="text-muted">Không có đơn hàng nào</p>
                 </td>
@@ -161,6 +161,12 @@ function displayOrders(data) {
         `).join('');
         const moreItems = items.length > 2 ? `<small class="text-muted">+${items.length - 2} sản phẩm khác</small>` : '';
         
+        // Payment method display
+        const paymentMethodText = getPaymentMethodText(order.paymentMethod);
+        
+        // Payment status badge
+        const paymentStatusBadge = getPaymentStatusBadge(order.paymentStatus, order.paymentMethod);
+        
         return `
             <tr>
                 <td>
@@ -179,6 +185,8 @@ function displayOrders(data) {
                     </div>
                 </td>
                 <td><strong>${formatPrice(order.totalAmount)}</strong></td>
+                <td><span class="badge bg-secondary">${paymentMethodText}</span></td>
+                <td>${paymentStatusBadge}</td>
                 <td>
                     <select class="status-select ${getStatusClass(order.status)}" 
                             onchange="updateOrderStatus(${order.id}, this.value)"
@@ -432,6 +440,42 @@ function displayOrderDetail(order) {
             <h6><i class="fas fa-credit-card"></i> Thông tin thanh toán</h6>
             <div class="detail-row">
                 <span class="detail-label">Phương thức:</span>
+                <span class="detail-value">
+                    <span class="badge bg-secondary">${getPaymentMethodText(order.paymentMethod)}</span>
+                </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Trạng thái thanh toán:</span>
+                <span class="detail-value">${getPaymentStatusBadge(order.paymentStatus, order.paymentMethod)}</span>
+            </div>
+            ${order.paymentMethod === 'E_WALLET' && order.vnpayTransactionNo ? `
+                <div class="alert alert-info mt-3">
+                    <h6 class="alert-heading"><i class="fas fa-wallet"></i> Thông tin giao dịch VNPay</h6>
+                    <hr>
+                    <div class="detail-row mb-2">
+                        <span class="detail-label"><strong>Mã giao dịch:</strong></span>
+                        <span class="detail-value"><code>${order.vnpayTransactionNo}</code></span>
+                    </div>
+                    ${order.vnpayBankCode ? `
+                        <div class="detail-row mb-2">
+                            <span class="detail-label"><strong>Ngân hàng:</strong></span>
+                            <span class="detail-value"><span class="badge bg-primary">${order.vnpayBankCode}</span></span>
+                        </div>
+                    ` : ''}
+                    ${order.vnpayResponseCode ? `
+                        <div class="detail-row mb-2">
+                            <span class="detail-label"><strong>Mã phản hồi:</strong></span>
+                            <span class="detail-value">
+                                <span class="badge ${order.vnpayResponseCode === '00' ? 'bg-success' : 'bg-danger'}">
+                                    ${order.vnpayResponseCode} - ${getVNPayResponseText(order.vnpayResponseCode)}
+                                </span>
+                            </span>
+                        </div>
+                    ` : ''}
+                </div>
+            ` : ''}
+            <div class="detail-row">
+                <span class="detail-label">Phương thức:</span>
                 <span class="detail-value">${order.paymentMethod || 'COD'}</span>
             </div>
             <div class="detail-row">
@@ -540,6 +584,55 @@ function formatDateTime(dateString) {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
     return date.toLocaleString('vi-VN');
+}
+
+function getPaymentMethodText(method) {
+    const methodMap = {
+        'COD': 'COD',
+        'E_WALLET': 'VNPay',
+        'BANK_TRANSFER': 'Chuyển khoản'
+    };
+    return methodMap[method] || method || 'N/A';
+}
+
+function getPaymentStatusBadge(status, paymentMethod) {
+    if (paymentMethod === 'COD') {
+        return '<span class="badge bg-info">COD</span>';
+    }
+    
+    if (!status) {
+        return '<span class="badge bg-secondary">N/A</span>';
+    }
+    
+    const statusMap = {
+        'PENDING': { class: 'warning', text: 'Chờ thanh toán', icon: 'clock' },
+        'PAID': { class: 'success', text: 'Đã thanh toán', icon: 'check-circle' },
+        'FAILED': { class: 'danger', text: 'Thất bại', icon: 'times-circle' }
+    };
+    
+    const statusInfo = statusMap[status] || { class: 'secondary', text: status, icon: 'question-circle' };
+    return `<span class="badge bg-${statusInfo.class}">
+                <i class="fas fa-${statusInfo.icon}"></i> ${statusInfo.text}
+            </span>`;
+}
+
+function getVNPayResponseText(code) {
+    const responseMap = {
+        '00': 'Giao dịch thành công',
+        '07': 'Trừ tiền thành công. Giao dịch bị nghi ngờ (liên quan tới lừa đảo, giao dịch bất thường).',
+        '09': 'Thẻ/Tài khoản chưa đăng ký dịch vụ InternetBanking tại ngân hàng.',
+        '10': 'Khách hàng xác thực thông tin thẻ/tài khoản không đúng quá 3 lần',
+        '11': 'Đã hết hạn chờ thanh toán. Xin quý khách vui lòng thực hiện lại giao dịch.',
+        '12': 'Thẻ/Tài khoản bị khóa.',
+        '13': 'Quý khách nhập sai mật khẩu xác thực giao dịch (OTP).',
+        '24': 'Khách hàng hủy giao dịch',
+        '51': 'Tài khoản không đủ số dư để thực hiện giao dịch.',
+        '65': 'Tài khoản đã vượt quá hạn mức giao dịch trong ngày.',
+        '75': 'Ngân hàng thanh toán đang bảo trì.',
+        '79': 'KH nhập sai mật khẩu thanh toán quá số lần quy định.',
+        '99': 'Các lỗi khác'
+    };
+    return responseMap[code] || 'Không xác định';
 }
 
 function showToast(message, type = 'success') {

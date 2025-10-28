@@ -34,6 +34,12 @@ public class OrderResponse {
     private String voucherCode;
     private BigDecimal voucherDiscount;
     private String voucherType;
+    
+    // VNPay payment information
+    private String paymentStatus;
+    private String vnpayTransactionNo;
+    private String vnpayBankCode;
+    private String vnpayResponseCode;
 
     public static OrderResponse fromEntity(Order order) {
         List<OrderItemResponse> items = order.getOrderItems().stream()
@@ -66,6 +72,10 @@ public class OrderResponse {
                 .voucherCode(order.getVoucherCode())
                 .voucherDiscount(order.getVoucherDiscount())
                 .voucherType(order.getVoucherType())
+                .paymentStatus(order.getPaymentStatus())
+                .vnpayTransactionNo(order.getVnpayTransactionNo())
+                .vnpayBankCode(order.getVnpayBankCode())
+                .vnpayResponseCode(order.getVnpayResponseCode())
                 .build();
     }
 }
