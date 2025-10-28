@@ -3,7 +3,87 @@ document.addEventListener('DOMContentLoaded', function() {
     loadCheckoutData();
     setupFormValidation();
     setupCheckoutButton();
+    setupPaymentMethodListeners();
 });
+
+// Setup payment method change listeners
+function setupPaymentMethodListeners() {
+    const bankTransferRadio = document.getElementById('bankTransfer');
+    const creditCardRadio = document.getElementById('creditCard');
+    
+    if (bankTransferRadio) {
+        bankTransferRadio.addEventListener('change', function() {
+            if (this.checked) {
+                showComingSoonModal('Chuyển khoản ngân hàng');
+                // Switch back to COD
+                document.getElementById('codPayment').checked = true;
+            }
+        });
+    }
+    
+    if (creditCardRadio) {
+        creditCardRadio.addEventListener('change', function() {
+            if (this.checked) {
+                showComingSoonModal('Thanh toán thẻ tín dụng/ATM');
+                // Switch back to COD
+                document.getElementById('codPayment').checked = true;
+            }
+        });
+    }
+}
+
+// Show coming soon modal
+function showComingSoonModal(paymentMethod) {
+    const modalHtml = `
+        <div class="modal fade" id="comingSoonModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title">
+                            <i class="fas fa-tools me-2"></i>Chức năng đang hoàn thiện
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center py-4">
+                        <i class="fas fa-hard-hat fa-4x text-warning mb-3"></i>
+                        <h5 class="mb-3">Tính năng "${paymentMethod}" đang được phát triển</h5>
+                        <p class="text-muted">
+                            Chúng tôi đang hoàn thiện tính năng này. 
+                            Hiện tại bạn có thể sử dụng các phương thức thanh toán khác:
+                        </p>
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-check-circle me-2"></i>Thanh toán khi nhận hàng<br>
+                            <i class="fas fa-check-circle me-2"></i>Ví điện tử VNPay
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                            <i class="fas fa-check me-2"></i>Đã hiểu
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if any
+    const existingModal = document.getElementById('comingSoonModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('comingSoonModal'));
+    modal.show();
+    
+    // Clean up after modal is hidden
+    document.getElementById('comingSoonModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
+}
 
 // Load cart data for checkout
 async function loadCheckoutData() {
