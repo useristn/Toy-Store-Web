@@ -206,12 +206,18 @@ function handleLogin(event) {
                 console.log('User role saved:', data.role);
             }
             
-            // Check if user is admin and redirect accordingly
+            // Check user role and redirect accordingly
             if (data.role && data.role.includes('ADMIN')) {
                 console.log('Redirecting to admin dashboard...');
                 displayMessage('loginMessage', 'Đăng nhập Admin thành công! Đang chuyển đến trang quản trị...');
                 setTimeout(() => {
                     window.location.href = '/admin';
+                }, 1500);
+            } else if (data.role && data.role.includes('SHIPPER')) {
+                console.log('Redirecting to shipper dashboard...');
+                displayMessage('loginMessage', 'Đăng nhập Shipper thành công! Đang chuyển đến trang quản lý vận chuyển...');
+                setTimeout(() => {
+                    window.location.href = '/shipper';
                 }, 1500);
             } else {
                 console.log('Redirecting to profile...');
