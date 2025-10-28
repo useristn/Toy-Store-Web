@@ -199,7 +199,7 @@ function displayOrders(data) {
                         <option value="SHIPPING" ${order.status === 'SHIPPING' ? 'selected' : ''}>Đang giao</option>
                         <option value="DELIVERED" ${order.status === 'DELIVERED' ? 'selected' : ''}>Giao thành công</option>
                         <option value="FAILED" ${order.status === 'FAILED' ? 'selected' : ''}>Giao thất bại</option>
-                        <option value="CANCELLED" ${order.status === 'CANCELLED' ? 'selected' : ''}>Đã hủy</option>
+                        <option value="CANCELLED" ${order.status === 'CANCELLED' ? 'selected' : ''}>Đơn bị hủy</option>
                     </select>
                 </td>
                 <td>${formatDate(order.createdAt)}</td>
@@ -223,7 +223,7 @@ function getStatusBadge(status) {
         'SHIPPING': '<span class="badge bg-primary"><i class="fas fa-shipping-fast me-1"></i>Đang giao</span>',
         'DELIVERED': '<span class="badge bg-success badge-delivered"><i class="fas fa-check-circle me-1"></i>Giao thành công</span>',
         'FAILED': '<span class="badge bg-warning text-dark"><i class="fas fa-exclamation-triangle me-1"></i>Giao thất bại</span>',
-        'CANCELLED': '<span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i>Đã hủy</span>'
+        'CANCELLED': '<span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i>Đơn bị hủy</span>'
     };
     return badges[status] || '<span class="badge bg-secondary">N/A</span>';
 }
@@ -528,7 +528,7 @@ function getStatusText(status) {
         'SHIPPING': 'Đang giao',
         'DELIVERED': 'Giao thành công',
         'FAILED': 'Giao thất bại',
-        'CANCELLED': 'Đã hủy'
+        'CANCELLED': 'Đơn bị hủy'
     };
     return texts[status] || status;
 }
