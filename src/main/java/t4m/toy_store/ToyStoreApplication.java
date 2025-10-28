@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 import t4m.toy_store.auth.entity.Role;
 import t4m.toy_store.auth.entity.User;
 import t4m.toy_store.auth.repository.RoleRepository;
@@ -22,7 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @SpringBootApplication
-@EnableScheduling // Enable scheduled tasks for chatbot cleanup
+@EnableScheduling
 public class ToyStoreApplication {
 
     public static void main(String[] args) {
@@ -33,16 +34,18 @@ public class ToyStoreApplication {
     @Order(1)
     public ApplicationRunner initRoles(RoleRepository roleRepository) {
         return args -> {
+            // Danh sách các vai trò cần được khởi tạo
             List<String> roleNames = Arrays.asList("ROLE_USER", "ROLE_VENDOR", "ROLE_SHIPPER", "ROLE_ADMIN");
 
-            for (String rname : roleNames) {
-                if (roleRepository.findByRname(rname).isEmpty()) {
+            for (String roleName : roleNames) {
+                // Kiểm tra xem Role đã tồn tại chưa trước khi tạo
+                if (roleRepository.findByRname(roleName).isEmpty()) {
                     Role role = new Role();
-                    role.setRname(rname);
+                    role.setRname(roleName);
                     roleRepository.save(role);
-                    System.out.println("Initialized role: " + rname);
+                    System.out.println("Initialized role: " + roleName);
                 } else {
-                    System.out.println("Role already exists: " + rname);
+                    System.out.println("Role already exists: " + roleName);
                 }
             }
         };
@@ -55,26 +58,27 @@ public class ToyStoreApplication {
         return args -> {
             String adminEmail = "admin@t4m.com";
 
-            // Check if admin user already exists
+            // Kiểm tra xem người dùng admin đã tồn tại chưa
             if (userRepository.findByEmail(adminEmail).isEmpty()) {
-                // Get ADMIN role
+                // Lấy vai trò ADMIN
                 Role adminRole = roleRepository.findByRname("ROLE_ADMIN")
                         .orElseThrow(() -> new RuntimeException(
                                 "ROLE_ADMIN not found. Please ensure initRoles runs first."));
 
-                // Create admin user
+                // Tạo người dùng admin
                 User adminUser = new User();
                 adminUser.setEmail(adminEmail);
-                adminUser.setPasswd(passwordEncoder.encode("admin123")); // Password: admin123
-                adminUser.setName("Admin User");
-                adminUser.setPhone("0987654321");
-                adminUser.setAddress("Admin Office");
+                adminUser.setPasswd(passwordEncoder.encode("admin123")); // Mật khẩu mặc định: admin123
+                adminUser.setName("Administrator");
+                adminUser.setPhone("0123456789");
+                adminUser.setAddress("Administrative Office");
                 adminUser.setActivated(true);
                 adminUser.setCreated(LocalDateTime.now());
                 adminUser.setUpdated(LocalDateTime.now());
                 adminUser.getRoles().add(adminRole);
 
                 userRepository.save(adminUser);
+                System.out.println("Initialized Admin user: " + adminEmail);
             } else {
                 System.out.println("Admin user already exists: " + adminEmail);
             }
@@ -85,18 +89,18 @@ public class ToyStoreApplication {
     @Order(3)
     public ApplicationRunner initShipperUsers(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         return args -> {
-            // Get SHIPPER role
+            // Lấy vai trò SHIPPER
             Role shipperRole = roleRepository.findByRname("ROLE_SHIPPER")
                     .orElseThrow(() -> new RuntimeException("ROLE_SHIPPER not found. Please ensure initRoles runs first."));
 
-            // Shipper
             String shipper1Email = "shipper@t4m.com";
+            // Tạo Shipper
             if (userRepository.findByEmail(shipper1Email).isEmpty()) {
                 User shipper1 = new User();
                 shipper1.setEmail(shipper1Email);
-                shipper1.setPasswd(passwordEncoder.encode("shipper123")); // Password: shipper123
+                shipper1.setPasswd(passwordEncoder.encode("shipper123")); // Mật khẩu mặc định: shipper123
                 shipper1.setName("John Shipper");
-                shipper1.setPhone("0901234567");
+                shipper1.setPhone("0123456789");
                 shipper1.setAddress("123 Shipper Street, District 1, Ho Chi Minh City");
                 shipper1.setActivated(true);
                 shipper1.setCreated(LocalDateTime.now());
@@ -104,6 +108,7 @@ public class ToyStoreApplication {
                 shipper1.getRoles().add(shipperRole);
 
                 userRepository.save(shipper1);
+                System.out.println("Initialized Shipper user: " + shipper1Email);
             } else {
                 System.out.println("Shipper user already exists: " + shipper1Email);
             }
@@ -112,10 +117,41 @@ public class ToyStoreApplication {
 
     @Bean
     @Order(4)
+    public ApplicationRunner initRegularUsers(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+        return args -> {
+            // Lấy vai trò USER
+            Role userRole = roleRepository.findByRname("ROLE_USER")
+                    .orElseThrow(() -> new RuntimeException("ROLE_USER not found. Please ensure initRoles runs first."));
+
+            String user1Email = "user@t4m.com";
+            // Tạo User
+            if (userRepository.findByEmail(user1Email).isEmpty()) {
+                User user1 = new User();
+                user1.setEmail(user1Email);
+                user1.setPasswd(passwordEncoder.encode("user123")); // Mật khẩu mặc định: user123
+                user1.setName("User One");
+                user1.setPhone("0123456789");
+                user1.setAddress("123 User Street, District 3, Ho Chi Minh City");
+                user1.setActivated(true);
+                user1.setCreated(LocalDateTime.now());
+                user1.setUpdated(LocalDateTime.now());
+                user1.getRoles().add(userRole);
+
+                userRepository.save(user1);
+                System.out.println("Initialized Regular user: " + user1Email);
+            } else {
+                System.out.println("User already exists: " + user1Email);
+            }
+        };
+    }
+
+    @Bean
+    @Order(5)
     public ApplicationRunner initCategories(CategoryRepository categoryRepository, ProductRepository productRepository) {
         return args -> {
+            // Chỉ khởi tạo nếu chưa có Category nào trong DB
             if (categoryRepository.count() == 0) {
-                // Create categories
+                // --- Tạo các danh mục (Categories) ---
                 Category vehicles = Category.builder().name("Xe & Phi thuyền").description("Phương tiện vũ trụ")
                         .icon("🚀").build();
                 Category building = Category.builder().name("Xếp hình & Ghép").description("Đồ chơi sáng tạo")
@@ -135,6 +171,8 @@ public class ToyStoreApplication {
 
                 categoryRepository
                         .saveAll(Arrays.asList(vehicles, building, science, outdoor, arts, electronic, board, dolls));
+
+                // --- Khởi tạo các sản phẩm mẫu (Products) ---
 
                 // VEHICLES & SPACESHIPS (15 products)
                 productRepository.saveAll(Arrays.asList(
@@ -476,7 +514,7 @@ public class ToyStoreApplication {
                                 .imageUrl("https://res.cloudinary.com/t4m/image/upload/f_auto,q_auto,w_300,h_200,c_pad,dpr_2.0/v1761227559/3aa0aaeba3d7e95497f721fb63bf1470_oqbmle.jpg")
                                 .build()));
 
-                // Create sample products - DOLLS & PRINCESSES (12 products)
+                // DOLLS & PRINCESSES (12 products)
                 productRepository.saveAll(Arrays.asList(
                         Product.builder().name("Búp bê Công chúa Elsa")
                                 .description("Công chúa băng giá xinh đẹp với bộ váy lung linh")
@@ -534,6 +572,8 @@ public class ToyStoreApplication {
                                 .imageUrl("https://res.cloudinary.com/t4m/image/upload/v1761205542/disney-princess-cong-chua-aurora-hlw09-hlw02_h8ay3b.jpg").build()));
 
                 System.out.println("Initialized 8 categories and 100 products successfully!");
+            } else {
+                System.out.println("Categories and products already exist. Skipping initialization.");
             }
         };
     }
