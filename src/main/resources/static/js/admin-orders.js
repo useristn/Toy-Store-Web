@@ -613,7 +613,7 @@ function getPaymentMethodText(method) {
     const methodMap = {
         'COD': 'COD',
         'E_WALLET': 'VNPay',
-        'BANK_TRANSFER': 'Chuyển khoản'
+        'BANK_TRANSFER': 'Banking'
     };
     return methodMap[method] || method || 'N/A';
 }
