@@ -463,8 +463,7 @@ public class ToyStoreApplication {
                                 .imageUrl("https://res.cloudinary.com/t4m/image/upload/f_auto,q_auto,w_300,h_200,c_pad,dpr_2.0/v1761226607/Do-choi-o-to-bien-hinh-robot-5-in-1-1_gtjp1z.png").build(),
                         Product.builder().name("Robot lắp ghép sáng tạo").description("500 chi tiết lắp tự do")
                                 .price(new BigDecimal("749000")).category(electronic).stock(22).featured(false)
-                                .imageUrl("https://res.cloudinary.com/t4m/image/upload/v1761226670/do-choi-lap-rap-lloyd-va-chien-giap-jet-lego-ninjago-71845_1_ogjwgt.jpg")
-                                .build()));
+                                .imageUrl("https://res.cloudinary.com/t4m/image/upload/v1761226670/do-choi-lap-rap-lloyd-va-chien-giap-jet-lego-ninjago-71845_1_ogjwgt.jpg").build()));
 
                 // BOARD GAMES & PUZZLE (13 products)
                 productRepository.saveAll(Arrays.asList(
@@ -511,30 +510,39 @@ public class ToyStoreApplication {
                                 .imageUrl("https://res.cloudinary.com/t4m/image/upload/f_auto,q_auto,w_300,h_200,c_pad,dpr_2.0/v1761227520/catan3_ftwnlf.jpg").build(),
                         Product.builder().name("Bộ bài Tây 52 lá plastic").description("Bài nhựa cao cấp chống nước")
                                 .price(new BigDecimal("99000")).category(board).stock(100).featured(false)
-                                .imageUrl("https://res.cloudinary.com/t4m/image/upload/f_auto,q_auto,w_300,h_200,c_pad,dpr_2.0/v1761227559/3aa0aaeba3d7e95497f721fb63bf1470_oqbmle.jpg")
-                                .build()));
+                                .imageUrl("https://res.cloudinary.com/t4m/image/upload/f_auto,q_auto,w_300,h_200,c_pad,dpr_2.0/v1761227559/3aa0aaeba3d7e95497f721fb63bf1470_oqbmle.jpg").build()));
 
                 // DOLLS & PRINCESSES (12 products)
-                productRepository.saveAll(Arrays.asList(
+                productRepository.saveAll(Arrays.asList(                        
+                        Product.builder().name("Set búp bê gia đình hạnh phúc")
+                                .description("Bộ búp bê gia đình 4 người")
+                                .price(new BigDecimal("599000")).discountPrice(new BigDecimal("499000")).category(dolls)
+                                .stock(25).featured(true)
+                                .imageUrl("https://res.cloudinary.com/t4m/image/upload/v1761204930/do-choi-deo-spy-x-family-gia-dinh-diep-vien-series-1-spy-family-s1-sxf11521_9_ik41qn.png").build(),
+                        Product.builder().name("Set búp bê Disney Princess").description("Bộ 5 công chúa Disney")
+                                .price(new BigDecimal("899000")).discountPrice(new BigDecimal("749000")).category(dolls)
+                                .stock(15).featured(true)
+                                .imageUrl("https://www.mykingdom.com.vn/cdn/shop/files/43219_f5a25a4d-dba3-4ea2-9539-97dde924e077.jpg?v=1725527687&width=1206").build(),
+                        Product.builder().name("Búp bê baby doll").description("Em bé búp bê biết khóc, cười")
+                                .price(new BigDecimal("459000")).category(dolls).stock(30).featured(false)
+                                .imageUrl("https://res.cloudinary.com/t4m/image/upload/v1761205333/dw60280_1_de4ec532-2512-4235-a56b-9a231996b30f_iwhq9p.jpg").build(),
+                        Product.builder().name("Búp bê LOL Surprise").description("Búp bê bất ngờ với nhiều phụ kiện")
+                                .price(new BigDecimal("199000")).category(dolls).stock(60).featured(true)
+                                .imageUrl("https://res.cloudinary.com/t4m/image/upload/v1761205423/589365euc_6_531b0aaf-789f-4d3c-8674-daefcd0238e4_e2qcwp.jpg").build(),
                         Product.builder().name("Búp bê Công chúa Elsa")
                                 .description("Công chúa băng giá xinh đẹp với bộ váy lung linh")
                                 .price(new BigDecimal("299000")).discountPrice(new BigDecimal("249000")).category(dolls)
                                 .stock(50).featured(true)
-                                .imageUrl(
-                                        "https://res.cloudinary.com/t4m/image/upload/v1761204262/disney-frozen-cong-chua-elsa-2-hlw48-hlw46_jcd9hw.jpg")
-                                .build(),
+                                .imageUrl("https://res.cloudinary.com/t4m/image/upload/v1761204262/disney-frozen-cong-chua-elsa-2-hlw48-hlw46_jcd9hw.jpg").build(),
                         Product.builder().name("Búp bê Anna cổ tích")
                                 .description("Công chúa dũng cảm với trang phục đẹp mắt")
                                 .price(new BigDecimal("289000")).category(dolls).stock(45).featured(false)
-                                .imageUrl(
-                                        "https://res.cloudinary.com/t4m/image/upload/v1761204088/disney-frozen-cong-chua-anna-hmj43-hmj41_v8ztjq.jpg")
-                                .build(),
+                                .imageUrl("https://res.cloudinary.com/t4m/image/upload/v1761204088/disney-frozen-cong-chua-anna-hmj43-hmj41_v8ztjq.jpg").build(),
                         Product.builder().name("Búp bê Barbie Dream House")
                                 .description("Búp bê Barbie sang trọng với ngôi nhà mơ ước")
                                 .price(new BigDecimal("1299000")).discountPrice(new BigDecimal("999000"))
                                 .category(dolls).stock(20).featured(true)
-                                .imageUrl("https://res.cloudinary.com/t4m/image/upload/f_auto,q_auto,w_300,h_200,c_pad,dpr_2.0/v1761204482/3_xa65js.webp")
-                                .build(),
+                                .imageUrl("https://res.cloudinary.com/t4m/image/upload/f_auto,q_auto,w_300,h_200,c_pad,dpr_2.0/v1761204482/3_xa65js.webp").build(),
                         Product.builder().name("Búp bê Ariel nàng tiên cá")
                                 .description("Nàng tiên cá xinh đẹp với đuôi cá lấp lánh")
                                 .price(new BigDecimal("329000")).category(dolls).stock(40).featured(true)
@@ -551,21 +559,6 @@ public class ToyStoreApplication {
                                 .description("Công chúa Lọ Lem với giày thủy tinh")
                                 .price(new BigDecimal("299000")).category(dolls).stock(47).featured(false)
                                 .imageUrl("https://res.cloudinary.com/t4m/image/upload/v1761204799/disney-princess-cong-chua-lo-lem-cinderella-hlw06-hlw02_wrny5i.jpg").build(),
-                        Product.builder().name("Set búp bê gia đình hạnh phúc")
-                                .description("Bộ búp bê gia đình 4 người")
-                                .price(new BigDecimal("599000")).discountPrice(new BigDecimal("499000")).category(dolls)
-                                .stock(25).featured(true)
-                                .imageUrl("https://res.cloudinary.com/t4m/image/upload/v1761204930/do-choi-deo-spy-x-family-gia-dinh-diep-vien-series-1-spy-family-s1-sxf11521_9_ik41qn.png").build(),
-                        Product.builder().name("Búp bê baby doll").description("Em bé búp bê biết khóc, cười")
-                                .price(new BigDecimal("459000")).category(dolls).stock(30).featured(false)
-                                .imageUrl("https://res.cloudinary.com/t4m/image/upload/v1761205333/dw60280_1_de4ec532-2512-4235-a56b-9a231996b30f_iwhq9p.jpg").build(),
-                        Product.builder().name("Búp bê LOL Surprise").description("Búp bê bất ngờ với nhiều phụ kiện")
-                                .price(new BigDecimal("199000")).category(dolls).stock(60).featured(true)
-                                .imageUrl("https://res.cloudinary.com/t4m/image/upload/v1761205423/589365euc_6_531b0aaf-789f-4d3c-8674-daefcd0238e4_e2qcwp.jpg").build(),
-                        Product.builder().name("Set búp bê Disney Princess").description("Bộ 5 công chúa Disney")
-                                .price(new BigDecimal("899000")).discountPrice(new BigDecimal("749000")).category(dolls)
-                                .stock(15).featured(true)
-                                .imageUrl("https://www.mykingdom.com.vn/cdn/shop/files/43219_f5a25a4d-dba3-4ea2-9539-97dde924e077.jpg?v=1725527687&width=1206").build(),
                         Product.builder().name("Búp bê Aurora ngủ trong rừng")
                                 .description("Công chúa ngủ trong rừng xinh đẹp")
                                 .price(new BigDecimal("329000")).category(dolls).stock(34).featured(false)

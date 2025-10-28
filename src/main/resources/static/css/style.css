@@ -116,29 +116,6 @@ body {
     padding: 0.5rem 0 !important;
 }
 
-.category-nav::before {
-    content: '🌟 ⭐ 🚀 🛸 🌙 ⭐ 🌟 🚀 🛸 🌙 ⭐ 🌟';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    transform: translateY(-50%);
-    white-space: nowrap;
-    animation: scroll-stars 20s linear infinite;
-    opacity: 0.3;
-    font-size: 0.8rem;
-    z-index: 0;
-}
-
-@keyframes scroll-stars {
-    0% {
-        transform: translateX(100%) translateY(-50%);
-    }
-    100% {
-        transform: translateX(-100%) translateY(-50%);
-    }
-}
-
 .category-nav .navbar-nav {
     position: relative;
     z-index: 1;

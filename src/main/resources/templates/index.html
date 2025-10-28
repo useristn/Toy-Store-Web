@@ -3,13 +3,390 @@
 <head th:replace="~{fragments/header :: head}">
     <title>🚀 T4M - Cửa hàng đồ chơi vũ trụ</title>
 </head>
+<style>
+    /* Scroll Snap Effect */
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    body {
+        scroll-snap-type: y proximity;
+    }
+    
+    section {
+        scroll-snap-align: start;
+        scroll-snap-stop: normal;
+    }
+    
+    /* Adjust snap for specific sections */
+    .hero-section,
+    #featured,
+    .py-5 {
+        scroll-snap-align: start;
+    }
+    
+    /* Text Glowing Effect */
+    @keyframes textGlow {
+        0%, 100% {
+            text-shadow: 0 0 10px rgba(108, 92, 231, 0.5),
+                         0 0 20px rgba(108, 92, 231, 0.3),
+                         0 0 30px rgba(108, 92, 231, 0.2);
+        }
+        50% {
+            text-shadow: 0 0 20px rgba(108, 92, 231, 0.8),
+                         0 0 30px rgba(108, 92, 231, 0.5),
+                         0 0 40px rgba(108, 92, 231, 0.3);
+        }
+    }
+    
+    .hero-section h1 {
+        animation: textGlow 3s ease-in-out infinite;
+    }
+    
+    .space-text {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .space-text:hover {
+        animation: textGlow 2s ease-in-out infinite;
+    }
+    
+    /* Button Ripple Animation */
+    .btn {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.5);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+    
+    .btn:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+    
+    .btn > * {
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Trust Badges Glass Effect */
+    .trust-badges {
+        margin-top: 3rem !important;
+    }
+    
+    .trust-badges a {
+        display: block;
+        height: 100%;
+    }
+    
+    .trust-badge {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+        padding: 1.5rem 1rem;
+        transition: all 0.3s ease;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        height: 100%;
+        cursor: pointer;
+    }
+    
+    .trust-badge:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 12px 40px rgba(108, 92, 231, 0.3);
+        border-color: rgba(108, 92, 231, 0.3);
+    }
+    
+    .trust-badge i {
+        color: #fff;
+        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
+        transition: all 0.3s ease;
+    }
+    
+    .trust-badge:hover i {
+        color: #fff;
+        filter: drop-shadow(0 0 15px rgba(108, 92, 231, 1));
+        transform: scale(1.1);
+    }
+    
+    .trust-badge h6 {
+        color: #fff;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    .trust-badge small {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.85rem;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Category Cards Styles */
+    .category-card {
+        display: block;
+        background: white;
+        border-radius: 15px;
+        padding: 2rem 1rem;
+        text-align: center;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        height: 100%;
+        border: 2px solid transparent;
+    }
+    
+    .category-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        border-color: var(--nebula-cyan);
+    }
+    
+    .category-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        transition: transform 0.3s ease;
+    }
+    
+    .category-card:hover .category-icon {
+        transform: scale(1.2) rotate(10deg);
+    }
+    
+    .category-card h5 {
+        color: #333;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+    }
+    
+    .category-card p {
+        margin-bottom: 0;
+    }
+    
+    /* Skeleton Loading Styles */
+    .skeleton-card {
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    
+    .skeleton {
+        background: linear-gradient(
+            90deg,
+            #f0f0f0 0%,
+            #e0e0e0 50%,
+            #f0f0f0 100%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 8px;
+    }
+    
+    .skeleton-img {
+        height: 200px;
+        width: 100%;
+        border-radius: 0;
+    }
+    
+    .skeleton-title {
+        height: 20px;
+        width: 80%;
+        margin-bottom: 0.75rem;
+    }
+    
+    .skeleton-text {
+        height: 14px;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .skeleton-text.short {
+        width: 60%;
+    }
+    
+    .skeleton-price {
+        height: 24px;
+        width: 40%;
+        margin-bottom: 0.75rem;
+    }
+    
+    .skeleton-button {
+        height: 38px;
+        width: 100%;
+        border-radius: 6px;
+    }
+    
+    @keyframes shimmer {
+        0% {
+            background-position: -200% 0;
+        }
+        100% {
+            background-position: 200% 0;
+        }
+    }
+    
+    /* Counter Animation Styles */
+    .stat-card {
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .counter {
+        display: inline-block;
+        font-weight: 700;
+        color: var(--nebula-cyan);
+    }
+    
+    /* Support Chat Message Styles */
+    .message-customer {
+        margin-bottom: 1rem;
+        display: flex;
+    }
+    
+    .message-customer.user {
+        justify-content: flex-end;
+    }
+    
+    .message-customer.admin {
+        justify-content: flex-start;
+    }
+    
+    .message-bubble-customer {
+        max-width: 70%;
+        padding: 0.75rem 1rem;
+        border-radius: 15px;
+        word-wrap: break-word;
+    }
+    
+    .message-customer.user .message-bubble-customer {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-bottom-right-radius: 5px;
+    }
+    
+    .message-customer.admin .message-bubble-customer {
+        background: #e9ecef;
+        color: #333;
+        border-bottom-left-radius: 5px;
+    }
+    
+    .message-sender-customer {
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        opacity: 0.8;
+    }
+    
+    .message-text-customer {
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+    
+    .message-time-customer {
+        font-size: 0.7rem;
+        margin-top: 0.25rem;
+        opacity: 0.7;
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .trust-badge {
+            padding: 1rem 0.5rem;
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .trust-badge i {
+            font-size: 1.5rem;
+        }
+        
+        .trust-badge h6 {
+            font-size: 0.9rem;
+        }
+        
+        .hero-section h1 {
+            font-size: 2rem;
+        }
+        
+        .category-card {
+            padding: 1.5rem 0.75rem;
+        }
+        
+        .category-icon {
+            font-size: 2rem;
+        }
+        
+        .category-card h5 {
+            font-size: 0.95rem;
+        }
+        
+        .skeleton-img {
+            height: 150px;
+        }
+        
+        /* Reduce animation intensity on mobile */
+        .btn::before {
+            transition: width 0.4s, height 0.4s;
+        }
+        
+        .btn:hover::before {
+            width: 200px;
+            height: 200px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .trust-badges {
+            margin-top: 2rem !important;
+        }
+        
+        .trust-badge h6 {
+            font-size: 0.85rem;
+        }
+        
+        .trust-badge small {
+            font-size: 0.75rem;
+        }
+        
+        .hero-section h1 {
+            font-size: 1.75rem;
+            animation: textGlow 4s ease-in-out infinite;
+        }
+        
+        .category-card h5 {
+            font-size: 0.9rem;
+        }
+        
+        .category-card p {
+            font-size: 0.8rem;
+        }
+    }
+</style>
 <body>
 <div th:replace="~{fragments/header :: header}"></div>
 
 <!-- Hero Section -->
 <section class="hero-section space-bg">
     <div class="container text-center">
-        <h1 class="display-4 fw-bold mb-4 fade-in">Chào mừng đến với T4M!</h1>
+        <h1 class="display-4 fw-bold mb-4 fade-in">Chào mừng đến với thiên hà đồ chơi!</h1>
         <p class="lead mb-4 fade-in">Khám phá thiên hà đồ chơi tuyệt vời nhất vũ trụ!</p>
         <div class="fade-in">
             <a href="#featured" class="btn btn-light btn-lg me-3">
@@ -18,6 +395,112 @@
             <a th:href="@{/products}" class="btn btn-outline-light btn-lg">
                 <i class="fas fa-star me-2"></i>Xem tất cả sản phẩm
             </a>
+        </div>
+        
+        <!-- Trust Badges -->
+        <div class="row mt-5 trust-badges">
+            <div class="col-6 col-md-3 mb-3">
+                <a href="#featured" class="text-decoration-none">
+                    <div class="trust-badge">
+                        <i class="fas fa-shipping-fast fa-2x mb-2"></i>
+                        <h6>Giao hàng nhanh</h6>
+                        <small>Trong 24h</small>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 mb-3">
+                <a th:href="@{/return-policy}" class="text-decoration-none">
+                    <div class="trust-badge">
+                        <i class="fas fa-undo-alt fa-2x mb-2"></i>
+                        <h6>Đổi trả dễ dàng</h6>
+                        <small>Trong 7 ngày</small>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 mb-3">
+                <a th:href="@{/shopping-guide}" class="text-decoration-none">
+                    <div class="trust-badge">
+                        <i class="fas fa-shield-alt fa-2x mb-2"></i>
+                        <h6>100% chính hãng</h6>
+                        <small>Cam kết chất lượng</small>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 mb-3">
+                <div class="trust-badge" id="openSupportChatHome" style="cursor: pointer;" title="Click để chat với admin">
+                    <i class="fas fa-headset fa-2x mb-2"></i>
+                    <h6>Hỗ trợ 24/7</h6>
+                    <small>Luôn sẵn sàng</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold space-text">Danh mục sản phẩm</h2>
+            <p class="text-muted">Khám phá thế giới đồ chơi đa dạng</p>
+        </div>
+        <div class="row g-3">
+            <div class="col-6 col-md-4 col-lg-3">
+                <a href="/products?category=1" class="category-card">
+                    <div class="category-icon">🚀</div>
+                    <h5>Xe & Phi thuyền</h5>
+                    <p class="text-muted small mb-0">Phương tiện vũ trụ</p>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <a href="/products?category=2" class="category-card">
+                    <div class="category-icon">🧩</div>
+                    <h5>Xếp hình</h5>
+                    <p class="text-muted small mb-0">Đồ chơi sáng tạo</p>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <a href="/products?category=3" class="category-card">
+                    <div class="category-icon">🔬</div>
+                    <h5>Khoa học</h5>
+                    <p class="text-muted small mb-0">Học tập vui vẻ</p>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <a href="/products?category=4" class="category-card">
+                    <div class="category-icon">⚽</div>
+                    <h5>Ngoài trời</h5>
+                    <p class="text-muted small mb-0">Vận động thể thao</p>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <a href="/products?category=5" class="category-card">
+                    <div class="category-icon">🎨</div>
+                    <h5>Nghệ thuật</h5>
+                    <p class="text-muted small mb-0">Sáng tạo nghệ thuật</p>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <a href="/products?category=6" class="category-card">
+                    <div class="category-icon">🤖</div>
+                    <h5>Robot</h5>
+                    <p class="text-muted small mb-0">Công nghệ hiện đại</p>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <a href="/products?category=7" class="category-card">
+                    <div class="category-icon">🎲</div>
+                    <h5>Board Game</h5>
+                    <p class="text-muted small mb-0">Trò chơi trí tuệ</p>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <a href="/products?category=8" class="category-card">
+                    <div class="category-icon">👸</div>
+                    <h5>Búp bê</h5>
+                    <p class="text-muted small mb-0">Búp bê xinh đẹp</p>
+                </a>
+            </div>
         </div>
     </div>
 </section>
@@ -30,12 +513,24 @@
             <p class="text-muted">Những món đồ chơi được yêu thích nhất trong thiên hà!</p>
         </div>
         <div id="featuredProducts" class="row">
-            <!-- Loading State -->
-            <div class="col-12 text-center py-5">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Đang tải...</span>
+            <!-- Skeleton Loading State -->
+            <div class="col-12">
+                <div class="row" id="skeletonLoader">
+                    <div class="col-md-6 col-lg-3 mb-4" th:each="i : ${#numbers.sequence(1, 8)}">
+                        <div class="card skeleton-card">
+                            <div class="skeleton skeleton-img"></div>
+                            <div class="card-body">
+                                <div class="skeleton skeleton-title mb-2"></div>
+                                <div class="skeleton skeleton-text mb-2"></div>
+                                <div class="skeleton skeleton-text" style="width: 60%;"></div>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <div class="skeleton skeleton-price"></div>
+                                    <div class="skeleton skeleton-button"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <p class="mt-3 text-muted">Đang tải sản phẩm nổi bật...</p>
             </div>
         </div>
         <div class="text-center mt-4">
@@ -68,38 +563,44 @@
 <section class="py-5">
     <div class="container">
         <div class="text-center mb-5">
-            <h2 class="fw-bold space-text">Những điều thú vị về T4M</h2>
+            <h2 class="fw-bold space-text">Những điều thú vị về thiên hà đồ chơi</h2>
         </div>
         <div class="row text-center">
             <div class="col-md-3 mb-4">
-                <div class="card h-100" style="border: 3px solid var(--nebula-cyan); border-radius: 20px;">
+                <div class="card h-100 stat-card" style="border: 3px solid var(--nebula-cyan); border-radius: 20px;">
                     <div class="card-body">
                         <div class="display-4 mb-3">🚀</div>
-                        <h5 class="space-text">10,000+</h5>
+                        <h5 class="space-text">
+                            <span class="counter" data-target="10000">0</span>+
+                        </h5>
                         <p class="text-muted">Phi hành gia nhí hạnh phúc</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-3 mb-4">
-                <div class="card h-100" style="border: 3px solid var(--galaxy-pink); border-radius: 20px;">
+                <div class="card h-100 stat-card" style="border: 3px solid var(--galaxy-pink); border-radius: 20px;">
                     <div class="card-body">
                         <div class="display-4 mb-3">🎯</div>
-                        <h5 class="space-text">5,000+</h5>
+                        <h5 class="space-text">
+                            <span class="counter" data-target="5000">0</span>+
+                        </h5>
                         <p class="text-muted">Đồ chơi tuyệt vời</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-3 mb-4">
-                <div class="card h-100" style="border: 3px solid var(--star-yellow); border-radius: 20px;">
+                <div class="card h-100 stat-card" style="border: 3px solid var(--star-yellow); border-radius: 20px;">
                     <div class="card-body">
                         <div class="display-4 mb-3">⭐</div>
-                        <h5 class="space-text">100%</h5>
+                        <h5 class="space-text">
+                            <span class="counter" data-target="100">0</span>%
+                        </h5>
                         <p class="text-muted">An toàn & Chất lượng</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-3 mb-4">
-                <div class="card h-100" style="border: 3px solid var(--cosmic-purple); border-radius: 20px;">
+                <div class="card h-100 stat-card" style="border: 3px solid var(--cosmic-purple); border-radius: 20px;">
                     <div class="card-body">
                         <div class="display-4 mb-3">🌟</div>
                         <h5 class="space-text">24/7</h5>
@@ -111,8 +612,122 @@
     </div>
 </section>
 
+<!-- Support Chat Modal -->
+<div
+  class="modal fade"
+  id="supportChatModal"
+  tabindex="-1"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div
+      class="modal-content"
+      style="border-radius: 15px; overflow: hidden"
+    >
+      <div
+        class="modal-header"
+        style="
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+        "
+      >
+        <h5 class="modal-title">
+          <i class="fas fa-comments me-2"></i>Hỗ trợ khách hàng
+        </h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body p-0">
+        <div
+          id="supportChatContainer"
+          style="height: 500px; display: flex; flex-direction: column"
+        >
+          <div
+            id="supportMessages"
+            style="
+              flex: 1;
+              overflow-y: auto;
+              padding: 1.5rem;
+              background: #f8f9fa;
+            "
+          >
+            <div class="text-center py-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Đang kết nối...</span>
+              </div>
+              <p class="mt-2 text-muted">Đang kết nối với admin...</p>
+            </div>
+          </div>
+          <div
+            class="typing-indicator-customer"
+            id="typingIndicatorCustomer"
+            style="
+              display: none;
+              padding: 0.5rem 1.5rem;
+              font-size: 0.85rem;
+              color: #666;
+              font-style: italic;
+            "
+          >
+            <i class="fas fa-circle-notch fa-spin"></i> Admin đang nhập...
+          </div>
+          <div class="p-3 bg-white" style="border-top: 2px solid #e0e0e0">
+            <form id="supportChatForm" class="d-flex gap-2">
+              <input
+                type="text"
+                id="supportMessageInput"
+                class="form-control"
+                placeholder="Nhập tin nhắn..."
+                autocomplete="off"
+                style="border-radius: 25px"
+              />
+              <button
+                type="submit"
+                class="btn btn-primary"
+                style="border-radius: 50%; width: 45px; height: 45px"
+              >
+                <i class="fas fa-paper-plane"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script th:src="@{/js/auth.js}"></script>
 <script th:src="@{/js/home.js}" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<script th:src="@{/js/support-chat.js}" defer></script>
+<script>
+// Add click handler for home page support badge
+document.addEventListener('DOMContentLoaded', function() {
+    const supportBadge = document.getElementById('openSupportChatHome');
+    if (supportBadge) {
+        supportBadge.addEventListener('click', function() {
+            // Check if user is logged in
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                alert('Vui lòng đăng nhập để sử dụng chức năng hỗ trợ!');
+                window.location.href = '/login';
+                return;
+            }
+            
+            // Call the openSupportChat function from support-chat.js
+            if (typeof openSupportChat === 'function') {
+                openSupportChat();
+            } else {
+                console.error('openSupportChat function not found');
+            }
+        });
+    }
+});
+</script>
 </body>
 </html>

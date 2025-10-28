@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     loadFeaturedProducts();
+    initCounterAnimation();
+    initLazyLoading();
     
     // Header search functionality for home page
     const searchBtn = document.getElementById('searchBtn');
@@ -26,15 +28,92 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// ===== COUNTER ANIMATION =====
+function initCounterAnimation() {
+    const counters = document.querySelectorAll('.counter');
+    const speed = 200; // Animation speed
+    
+    const observerOptions = {
+        threshold: 0.5,
+        rootMargin: '0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const counter = entry.target;
+                const target = +counter.getAttribute('data-target');
+                
+                animateCounter(counter, target, speed);
+                observer.unobserve(counter);
+            }
+        });
+    }, observerOptions);
+    
+    counters.forEach(counter => observer.observe(counter));
+}
+
+function animateCounter(element, target, speed) {
+    let current = 0;
+    const increment = target / speed;
+    
+    const updateCounter = () => {
+        current += increment;
+        if (current < target) {
+            element.textContent = Math.ceil(current).toLocaleString('vi-VN');
+            requestAnimationFrame(updateCounter);
+        } else {
+            element.textContent = target.toLocaleString('vi-VN');
+        }
+    };
+    
+    updateCounter();
+}
+
+// ===== LAZY LOADING FOR IMAGES =====
+function initLazyLoading() {
+    const images = document.querySelectorAll('img[loading="lazy"]');
+    
+    if ('IntersectionObserver' in window) {
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    img.src = img.dataset.src || img.src;
+                    img.classList.add('loaded');
+                    observer.unobserve(img);
+                }
+            });
+        });
+        
+        images.forEach(img => imageObserver.observe(img));
+    } else {
+        // Fallback for browsers that don't support IntersectionObserver
+        images.forEach(img => {
+            img.src = img.dataset.src || img.src;
+        });
+    }
+}
+
 function loadFeaturedProducts() {
+    const skeletonLoader = document.getElementById('skeletonLoader');
+    const container = document.getElementById('featuredProducts');
+    
     fetch('/api/products/featured')
         .then(response => response.json())
         .then(products => {
+            // Hide skeleton loader
+            if (skeletonLoader) {
+                skeletonLoader.style.display = 'none';
+            }
             displayFeaturedProducts(products);
         })
         .catch(error => {
             console.error('Error loading featured products:', error);
-            document.getElementById('featuredProducts').innerHTML = `
+            if (skeletonLoader) {
+                skeletonLoader.style.display = 'none';
+            }
+            container.innerHTML = `
                 <div class="col-12 text-center py-5">
                     <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
                     <p class="text-muted">Không thể tải sản phẩm. Vui lòng thử lại sau!</p>
@@ -67,6 +146,7 @@ function displayFeaturedProducts(products) {
                 <img src="${product.imageUrl || 'https://via.placeholder.com/300x200/6c5ce7/FFFFFF?text=' + encodeURIComponent(product.name)}" 
                      class="card-img-top" 
                      alt="${product.name}"
+                     loading="lazy"
                      style="cursor: pointer;"
                      onclick="viewProduct(${product.id})">
                 <div class="card-body d-flex flex-column">
