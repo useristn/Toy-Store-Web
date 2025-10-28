@@ -164,8 +164,8 @@ function displayOrders(data) {
         // Payment method display
         const paymentMethodText = getPaymentMethodText(order.paymentMethod);
         
-        // Payment status badge
-        const paymentStatusBadge = getPaymentStatusBadge(order.paymentStatus, order.paymentMethod);
+        // Payment status badge (pass orderStatus for COD logic)
+        const paymentStatusBadge = getPaymentStatusBadge(order.paymentStatus, order.paymentMethod, order.status);
         
         return `
             <tr>
@@ -446,8 +446,14 @@ function displayOrderDetail(order) {
             </div>
             <div class="detail-row">
                 <span class="detail-label">Trạng thái thanh toán:</span>
-                <span class="detail-value">${getPaymentStatusBadge(order.paymentStatus, order.paymentMethod)}</span>
+                <span class="detail-value">${getPaymentStatusBadge(order.paymentStatus, order.paymentMethod, order.status)}</span>
             </div>
+            ${order.paymentMethod === 'COD' && order.status === 'DELIVERED' ? `
+                <div class="alert alert-success mt-3">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>Ghi chú:</strong> Đơn hàng COD đã giao thành công - Tiền đã được thu
+                </div>
+            ` : ''}
             ${order.paymentMethod === 'E_WALLET' && order.vnpayTransactionNo ? `
                 <div class="alert alert-info mt-3">
                     <h6 class="alert-heading"><i class="fas fa-wallet"></i> Thông tin giao dịch VNPay</h6>
@@ -595,9 +601,14 @@ function getPaymentMethodText(method) {
     return methodMap[method] || method || 'N/A';
 }
 
-function getPaymentStatusBadge(status, paymentMethod) {
+function getPaymentStatusBadge(status, paymentMethod, orderStatus) {
+    // For COD orders, show payment status based on delivery status
     if (paymentMethod === 'COD') {
-        return '<span class="badge bg-info">COD</span>';
+        if (orderStatus === 'DELIVERED') {
+            return '<span class="badge bg-success"><i class="fas fa-check-circle"></i> Đã thanh toán</span>';
+        } else {
+            return '<span class="badge bg-info"><i class="fas fa-money-bill-wave"></i> COD</span>';
+        }
     }
     
     if (!status) {
