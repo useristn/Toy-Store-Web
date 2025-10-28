@@ -19,6 +19,11 @@ async function loadOrderDetails() {
             throw new Error('Order number not found');
         }
 
+        // Check for VNPay payment result in URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentType = urlParams.get('payment');
+        const paymentStatus = urlParams.get('status');
+
         // Try to use public endpoint first (for VNPay redirect case)
         let response = await fetch(`/api/orders/public/${orderNumber}`);
         
@@ -57,8 +62,8 @@ async function loadOrderDetails() {
         // Save current order
         currentOrder = order;
 
-        // Display order details
-        displayOrderDetails(order);
+        // Display order details with payment result
+        displayOrderDetails(order, paymentType, paymentStatus);
 
         loadingState.style.display = 'none';
         orderDetails.style.display = 'block';
@@ -66,8 +71,10 @@ async function loadOrderDetails() {
         // Add cancel button if applicable
         addCancelButton(order);
 
-        // Trigger confetti animation
-        celebrateOrder();
+        // Trigger confetti animation only for successful payments
+        if (!paymentType || paymentStatus === 'success') {
+            celebrateOrder();
+        }
 
     } catch (error) {
         console.error('Error loading order:', error);
@@ -96,7 +103,46 @@ async function loadOrderDetails() {
     }
 }
 
-function displayOrderDetails(order) {
+function displayOrderDetails(order, paymentType, paymentStatus) {
+    // Update success/failure message based on payment status
+    const successSection = document.querySelector('.card-body.text-center.py-5');
+    
+    if (paymentType === 'vnpay') {
+        const successIcon = successSection.querySelector('.success-animation i');
+        const heading = successSection.querySelector('h2');
+        const subheading = successSection.querySelector('.lead');
+        
+        if (paymentStatus === 'success') {
+            // Payment successful
+            successIcon.className = 'fas fa-check-circle text-success';
+            successIcon.style.fontSize = '5rem';
+            heading.textContent = '🎉 Tàu đã phóng thành công!';
+            heading.className = 'fw-bold mb-3 space-text text-success';
+            subheading.textContent = 'Thanh toán VNPay thành công! Cảm ơn phi hành gia đã đặt hàng tại T4M!';
+        } else {
+            // Payment failed or cancelled
+            successIcon.className = 'fas fa-times-circle text-danger';
+            successIcon.style.fontSize = '5rem';
+            heading.textContent = '❌ Thanh toán thất bại';
+            heading.className = 'fw-bold mb-3 text-danger';
+            
+            // Check specific failure reason from order status
+            if (order.vnpayResponseCode === '24') {
+                subheading.textContent = 'Bạn đã hủy giao dịch thanh toán. Đơn hàng vẫn được lưu và bạn có thể thanh toán lại.';
+            } else {
+                subheading.textContent = 'Thanh toán không thành công. Vui lòng thử lại hoặc chọn phương thức thanh toán khác.';
+            }
+            subheading.className = 'lead text-danger mb-4';
+        }
+    } else if (order.paymentMethod === 'COD') {
+        // COD order - show success
+        const successIcon = successSection.querySelector('.success-animation i');
+        const heading = successSection.querySelector('h2');
+        successIcon.className = 'fas fa-check-circle text-success';
+        heading.textContent = '🎉 Tàu đã phóng thành công!';
+        heading.className = 'fw-bold mb-3 space-text text-success';
+    }
+    
     // Order number
     document.getElementById('orderNumberDisplay').textContent = order.orderNumber;
 

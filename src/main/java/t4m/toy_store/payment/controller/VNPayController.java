@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import t4m.toy_store.order.service.OrderService;
 import t4m.toy_store.payment.service.VNPayService;
 
@@ -30,7 +31,7 @@ public class VNPayController {
      * Cập nhật database tại đây vì IPN không hoạt động với localhost
      */
     @GetMapping("/return")
-    public String paymentReturn(HttpServletRequest request, Model model) {
+    public String paymentReturn(HttpServletRequest request, RedirectAttributes redirectAttributes) {
         try {
             // Lấy tất cả parameters từ VNPay
             Map<String, String> params = new HashMap<>();
@@ -48,9 +49,10 @@ public class VNPayController {
             
             if (!isValidSignature) {
                 log.error("Invalid VNPay signature");
-                model.addAttribute("success", false);
-                model.addAttribute("message", "Chữ ký không hợp lệ");
-                return "payment-result";
+                redirectAttributes.addFlashAttribute("paymentSuccess", false);
+                redirectAttributes.addFlashAttribute("paymentMessage", "Chữ ký không hợp lệ");
+                redirectAttributes.addFlashAttribute("responseCode", "97");
+                return "redirect:/order-confirmation/error";
             }
 
             // Lấy thông tin từ response
@@ -88,27 +90,23 @@ public class VNPayController {
                 log.error("Error updating payment status from Return URL", e);
             }
 
-            // Add to model for display
-            model.addAttribute("success", isSuccess);
-            model.addAttribute("orderNumber", vnp_TxnRef);
-            model.addAttribute("transactionNo", vnp_TransactionNo);
-            model.addAttribute("amount", Long.parseLong(vnp_Amount) / 100); // Convert back
-            model.addAttribute("bankCode", vnp_BankCode);
-            model.addAttribute("cardType", vnp_CardType);
-            model.addAttribute("payDate", vnp_PayDate);
-            model.addAttribute("responseCode", vnp_ResponseCode);
-            model.addAttribute("message", getResponseMessage(vnp_ResponseCode));
+            // Add flash attributes for redirect (these will be available after redirect)
+            redirectAttributes.addFlashAttribute("paymentSuccess", isSuccess);
+            redirectAttributes.addFlashAttribute("paymentMessage", getResponseMessage(vnp_ResponseCode));
+            redirectAttributes.addFlashAttribute("responseCode", vnp_ResponseCode);
+            redirectAttributes.addFlashAttribute("transactionNo", vnp_TransactionNo);
+            redirectAttributes.addFlashAttribute("bankCode", vnp_BankCode);
 
-            log.info("Payment result for order {}: success={}", vnp_TxnRef, isSuccess);
+            log.info("Payment result for order {}: success={}, responseCode={}", vnp_TxnRef, isSuccess, vnp_ResponseCode);
 
-            // Redirect về trang order confirmation
-            return "redirect:/order-confirmation/" + vnp_TxnRef;
+            // Redirect về trang order confirmation với query parameter
+            return "redirect:/order-confirmation/" + vnp_TxnRef + "?payment=vnpay&status=" + (isSuccess ? "success" : "failed");
 
         } catch (Exception e) {
             log.error("Error processing VNPay return", e);
-            model.addAttribute("success", false);
-            model.addAttribute("message", "Lỗi xử lý kết quả thanh toán");
-            return "payment-result";
+            redirectAttributes.addFlashAttribute("paymentSuccess", false);
+            redirectAttributes.addFlashAttribute("paymentMessage", "Lỗi xử lý kết quả thanh toán");
+            return "redirect:/order-confirmation/error";
         }
     }
 

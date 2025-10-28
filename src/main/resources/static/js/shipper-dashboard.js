@@ -515,7 +515,7 @@ function displayActiveOrders(orders) {
                     <i class="fas fa-check me-1"></i>Giao thành công
                 </button>
                 <button class="btn btn-sm btn-danger me-1" onclick="failOrder(${order.id})">
-                    <i class="fas fa-times me-1"></i>Thất bại
+                    <i class="fas fa-times me-1"></i>Giao thất bại
                 </button>
                 <button class="btn btn-sm btn-outline-info me-1" onclick="showOrderDetail(${order.id})">
                     <i class="fas fa-eye"></i>
