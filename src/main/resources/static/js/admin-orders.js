@@ -191,16 +191,7 @@ function displayOrders(data) {
                 <td><span class="badge bg-secondary">${paymentMethodText}</span></td>
                 <td>${paymentStatusBadge}</td>
                 <td>
-                    <select class="status-select ${getStatusClass(order.status)}" 
-                            onchange="updateOrderStatus(${order.id}, this.value)"
-                            ${order.status === 'DELIVERED' || order.status === 'FAILED' || order.status === 'CANCELLED' ? 'disabled' : ''}>
-                        <option value="PENDING" ${order.status === 'PENDING' ? 'selected' : ''}>Chờ xử lý</option>
-                        <option value="PROCESSING" ${order.status === 'PROCESSING' ? 'selected' : ''}>Đang xử lý</option>
-                        <option value="SHIPPING" ${order.status === 'SHIPPING' ? 'selected' : ''}>Đang giao</option>
-                        <option value="DELIVERED" ${order.status === 'DELIVERED' ? 'selected' : ''}>Giao thành công</option>
-                        <option value="FAILED" ${order.status === 'FAILED' ? 'selected' : ''}>Giao thất bại</option>
-                        <option value="CANCELLED" ${order.status === 'CANCELLED' ? 'selected' : ''}>Đơn bị hủy</option>
-                    </select>
+                    ${getOrderStatusControl(order)}
                 </td>
                 <td>${formatDate(order.createdAt)}</td>
                 <td>
@@ -239,6 +230,24 @@ function getStatusClass(status) {
         'CANCELLED': 'bg-danger'
     };
     return classes[status] || '';
+}
+
+function getOrderStatusControl(order) {
+    const status = order.status;
+    
+    // If order is in status that admin can't control, show badge only
+    if (status === 'SHIPPING' || status === 'DELIVERED' || status === 'FAILED' || status === 'CANCELLED') {
+        return getStatusBadge(status);
+    }
+    
+    // Admin can only control PENDING and PROCESSING
+    return `
+        <select class="status-select ${getStatusClass(status)}" 
+                onchange="updateOrderStatus(${order.id}, this.value)">
+            <option value="PENDING" ${status === 'PENDING' ? 'selected' : ''}>Chờ xử lý</option>
+            <option value="PROCESSING" ${status === 'PROCESSING' ? 'selected' : ''}>Đang xử lý</option>
+        </select>
+    `;
 }
 
 function filterByStatus(status, element) {
