@@ -20,17 +20,74 @@ function refreshDashboard() {
 
 // Logout function
 function logout() {
-    if (confirm('Bạn có chắc muốn đăng xuất?')) {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('token');
-        localStorage.removeItem('authEmail');
-        localStorage.removeItem('userEmail');
-        localStorage.removeItem('userRole');
-        showToast('Đã đăng xuất thành công!', 'success');
-        setTimeout(() => {
-            window.location.href = '/login';
-        }, 1000);
+    // Create beautiful logout modal
+    const modalHtml = `
+        <div class="modal fade" id="logoutModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="border: none; border-radius: 20px; overflow: hidden;">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                        <h5 class="modal-title">
+                            <i class="fas fa-sign-out-alt me-2"></i>Xác nhận đăng xuất
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center py-4">
+                        <div class="mb-3">
+                            <i class="fas fa-question-circle" style="font-size: 4rem; color: #667eea;"></i>
+                        </div>
+                        <h5 class="mb-3">Bạn có chắc muốn đăng xuất?</h5>
+                        <p class="text-muted">Bạn sẽ cần đăng nhập lại để tiếp tục sử dụng hệ thống.</p>
+                    </div>
+                    <div class="modal-footer" style="border: none; justify-content: center; gap: 10px;">
+                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal" style="border-radius: 25px;">
+                            <i class="fas fa-times me-2"></i>Hủy bỏ
+                        </button>
+                        <button type="button" class="btn btn-danger px-4" onclick="confirmLogout()" style="border-radius: 25px;">
+                            <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if any
+    const existingModal = document.getElementById('logoutModal');
+    if (existingModal) {
+        existingModal.remove();
     }
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('logoutModal'));
+    modal.show();
+    
+    // Remove modal from DOM after it's hidden
+    document.getElementById('logoutModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
+}
+
+// Confirm logout action
+function confirmLogout() {
+    // Close modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
+    modal.hide();
+    
+    // Clear storage
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('token');
+    localStorage.removeItem('authEmail');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userRole');
+    
+    showToast('Đã đăng xuất thành công!', 'success');
+    
+    setTimeout(() => {
+        window.location.href = '/login';
+    }, 1000);
 }
 
 function checkAdminAuth() {

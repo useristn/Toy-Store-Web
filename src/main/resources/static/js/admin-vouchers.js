@@ -306,6 +306,55 @@ function showAlert(message, type) {
 }
 
 function logout() {
+    const modalHtml = `
+        <div class="modal fade" id="logoutModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="border: none; border-radius: 20px; overflow: hidden;">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                        <h5 class="modal-title">
+                            <i class="fas fa-sign-out-alt me-2"></i>Xác nhận đăng xuất
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center py-4">
+                        <div class="mb-3">
+                            <i class="fas fa-question-circle" style="font-size: 4rem; color: #667eea;"></i>
+                        </div>
+                        <h5 class="mb-3">Bạn có chắc muốn đăng xuất?</h5>
+                        <p class="text-muted">Bạn sẽ cần đăng nhập lại để tiếp tục sử dụng hệ thống.</p>
+                    </div>
+                    <div class="modal-footer" style="border: none; justify-content: center; gap: 10px;">
+                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal" style="border-radius: 25px;">
+                            <i class="fas fa-times me-2"></i>Hủy bỏ
+                        </button>
+                        <button type="button" class="btn btn-danger px-4" onclick="confirmLogout()" style="border-radius: 25px;">
+                            <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const existingModal = document.getElementById('logoutModal');
+    if (existingModal) existingModal.remove();
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    const modal = new bootstrap.Modal(document.getElementById('logoutModal'));
+    modal.show();
+    
+    document.getElementById('logoutModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
+}
+
+function confirmLogout() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
+    modal.hide();
+    
     localStorage.clear();
-    window.location.href = '/login';
+    showToast('Đã đăng xuất thành công!', 'success');
+    setTimeout(() => {
+        window.location.href = '/login';
+    }, 1000);
 }

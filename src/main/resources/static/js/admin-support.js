@@ -161,11 +161,11 @@ function displaySessions(sessions) {
     
     sessionsList.innerHTML = sessions.map(session => `
         <div class="session-item ${session.sessionId === currentSessionId ? 'active' : ''}" 
-             onclick="selectSession('${session.sessionId}', '${escapeHtml(session.userName)}', '${escapeHtml(session.userEmail)}')">
+             onclick="selectSession('${session.sessionId}', '${escapeHtml(session.userName || session.userEmail)}', '${escapeHtml(session.userEmail)}')">
             <div class="d-flex justify-content-between align-items-start">
                 <div class="flex-grow-1">
                     <div class="session-name">
-                        <i class="fas fa-user-circle me-2"></i>${session.userName || 'Khách hàng'}
+                        <i class="fas fa-user-circle me-2"></i>${session.userName || session.userEmail}
                     </div>
                     <div class="session-email">${session.userEmail}</div>
                     <div class="session-last-message">${session.lastMessage || 'Chưa có tin nhắn'}</div>
@@ -186,7 +186,7 @@ function escapeHtml(text) {
 function selectSession(sessionId, userName, userEmail) {
     console.log('Selecting session:', sessionId, userName, userEmail);
     currentSessionId = sessionId;
-    currentUserName = userName;
+    currentUserName = userName || userEmail;
     currentUserEmail = userEmail;
     
     // Update UI - Sử dụng ID mới từ HTML
@@ -194,7 +194,7 @@ function selectSession(sessionId, userName, userEmail) {
     const userEmailElement = document.getElementById('currentUserEmail');
     const inputArea = document.getElementById('messageInputArea');
     
-    if (userNameElement) userNameElement.textContent = userName || 'Khách hàng';
+    if (userNameElement) userNameElement.textContent = userName || userEmail;
     if (userEmailElement) userEmailElement.textContent = userEmail || '';
     if (inputArea) inputArea.style.display = 'block';
     
@@ -273,9 +273,14 @@ function displayMessage(chatMessage) {
         minute: '2-digit'
     });
     
+    // Hiển thị tên: nếu là ADMIN thì "Bạn (Admin)", nếu là USER thì userName hoặc userEmail
+    const senderName = chatMessage.senderType === 'ADMIN' 
+        ? 'Bạn (Admin)' 
+        : (chatMessage.userName || chatMessage.userEmail || 'Khách hàng');
+    
     messageDiv.innerHTML = `
         <div class="message-bubble">
-            <div class="message-sender">${chatMessage.senderType === 'ADMIN' ? 'Bạn (Admin)' : chatMessage.userName}</div>
+            <div class="message-sender">${senderName}</div>
             <div class="message-text">${escapeHtml(chatMessage.message)}</div>
             <div class="message-time">${time}</div>
         </div>
