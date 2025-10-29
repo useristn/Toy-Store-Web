@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head}">
+    <title>Chính sách bảo mật - T4M Toy Store</title>
+</head>
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <!-- Header -->
+                <div class="text-center mb-5">
+                    <h1 class="display-4 fw-bold mb-3">
+                        Chính sách bảo mật
+                    </h1>
+                    <p class="lead text-muted">Cam kết bảo vệ thông tin cá nhân của bạn</p>
+                    <small class="text-muted">Cập nhật lần cuối: 25/10/2025</small>
+                </div>
+
+                <!-- Content -->
+                <div class="card shadow-lg border-0 mb-4">
+                    <div class="card-body p-5">
+                        <h3 class="text-success mb-4">1. Thu thập thông tin</h3>
+                        <p>T4M thu thập các thông tin sau để cung cấp dịch vụ tốt nhất:</p>
+                        <ul class="mb-4">
+                            <li><strong>Thông tin cá nhân:</strong> Họ tên, email, số điện thoại, địa chỉ</li>
+                            <li><strong>Thông tin đơn hàng:</strong> Sản phẩm, giá trị, thời gian mua</li>
+                            <li><strong>Thông tin kỹ thuật:</strong> IP address, cookie, trình duyệt</li>
+                            <li><strong>Lịch sử tương tác:</strong> Sản phẩm xem, yêu thích, giỏ hàng</li>
+                        </ul>
+
+                        <hr class="my-4">
+
+                        <h3 class="text-success mb-4">2. Sử dụng thông tin</h3>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="card bg-light h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Xử lý đơn hàng</h5>
+                                        <p class="card-text">Xác nhận, đóng gói và giao hàng cho bạn</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Liên hệ khách hàng</h5>
+                                        <p class="card-text">Gửi thông báo về đơn hàng, khuyến mãi</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Cá nhân hóa trải nghiệm</h5>
+                                        <p class="card-text">Đề xuất sản phẩm phù hợp với sở thích</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Phân tích và cải thiện</h5>
+                                        <p class="card-text">Cải thiện chất lượng dịch vụ</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h3 class="text-success mb-4">3. Bảo vệ thông tin</h3>
+                        <div class="alert alert-success">
+                            <h5 class="alert-heading">Các biện pháp bảo mật:</h5>
+                            <ul class="mb-0">
+                                <li>Mã hóa SSL cho mọi giao dịch</li>
+                                <li>Hệ thống firewall bảo vệ server</li>
+                                <li>Định kỳ backup dữ liệu</li>
+                                <li>Giới hạn quyền truy cập nội bộ</li>
+                                <li>Tuân thủ tiêu chuẩn PCI DSS</li>
+                            </ul>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h3 class="text-success mb-4">4. Quyền của bạn</h3>
+                        <p>Bạn có quyền:</p>
+                        <ul class="list-group list-group-flush mb-4">
+                            <li class="list-group-item">Truy cập và xem thông tin cá nhân</li>
+                            <li class="list-group-item">Yêu cầu chỉnh sửa thông tin không chính xác</li>
+                            <li class="list-group-item">Yêu cầu xóa tài khoản và dữ liệu</li>
+                            <li class="list-group-item">Từ chối nhận email marketing</li>
+                            <li class="list-group-item">Khiếu nại về vi phạm quyền riêng tư</li>
+                        </ul>
+
+                        <hr class="my-4">
+
+                        <h3 class="text-success mb-4">5. Chia sẻ thông tin</h3>
+                        <p>T4M <strong>KHÔNG</strong> bán hoặc chia sẻ thông tin của bạn cho bên thứ ba, trừ các trường hợp:</p>
+                        <ul>
+                            <li>Đối tác vận chuyển (để giao hàng)</li>
+                            <li>Cổng thanh toán (để xử lý giao dịch)</li>
+                            <li>Cơ quan pháp luật (khi có yêu cầu hợp pháp)</li>
+                        </ul>
+
+                        <hr class="my-4">
+
+                        <h3 class="text-success mb-4">6. Liên hệ</h3>
+                        <p>Nếu có câu hỏi về chính sách bảo mật:</p>
+                        <div class="bg-light p-4 rounded">
+                            <p class="mb-2"><strong>Email:</strong> privacy@t4m.com</p>
+                            <p class="mb-2"><strong>Hotline:</strong> 1800-8080</p>
+                            <p class="mb-0"><strong>Địa chỉ:</strong> Số 1 Độc Lập, Ba Đình, Hà Nội</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Back button -->
+                <div class="text-center">
+                    <a href="/" class="btn btn-success btn-lg">
+                        Quay về trang chủ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script th:src="@{/js/auth.js}"></script>
+</body>
+</html>

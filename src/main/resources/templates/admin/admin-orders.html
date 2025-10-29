@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản lý Đơn hàng – T4M Admin</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <!-- Mobile Menu Toggle -->
+    <button
+      class="btn btn-dark d-md-none mobile-menu-toggle"
+      type="button"
+      data-bs-toggle="offcanvas"
+      data-bs-target="#adminSidebar"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="container-fluid">
+      <div class="row">
+        <!-- Sidebar -->
+        <nav
+          class="col-md-3 col-lg-2 d-md-block bg-gradient-dark sidebar offcanvas-md offcanvas-start"
+          id="adminSidebar"
+          style="min-height: 100vh"
+        >
+          <div class="offcanvas-header d-md-none">
+            <h5 class="offcanvas-title text-white">Menu Admin</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="offcanvas"
+              data-bs-target="#adminSidebar"
+            ></button>
+          </div>
+          <div class="position-sticky pt-3">
+            <!-- Admin Profile -->
+            <div class="admin-profile text-center mb-4 px-3">
+              <div class="profile-avatar mb-2">
+                <i class="fas fa-user-shield fa-3x text-white"></i>
+              </div>
+              <h6 class="text-white mb-0" id="adminName">Admin</h6>
+              <small class="text-white-50" id="adminEmail">admin@t4m.com</small>
+            </div>
+
+            <h6
+              class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1"
+            >
+              <span class="text-white-50">📊 QUẢN TRỊ</span>
+            </h6>
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <a class="nav-link" href="/admin">
+                  <i class="fas fa-home me-2"></i>Dashboard
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/admin/products">
+                  <i class="fas fa-box me-2"></i>Quản lý sản phẩm
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="/admin/orders">
+                  <i class="fas fa-shopping-cart me-2"></i>Quản lý đơn hàng
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/admin/reviews">
+                  <i class="fas fa-star me-2"></i>Quản lý đánh giá
+                </a>
+              </li>
+            </ul>
+
+            <h6
+              class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1"
+            >
+              <span class="text-white-50">🎯 MARKETING</span>
+            </h6>
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <a class="nav-link" href="/admin/vouchers">
+                  <i class="fas fa-ticket-alt me-2"></i>Mã giảm giá
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/admin/support">
+                  <i class="fas fa-comments me-2"></i>Hỗ trợ khách hàng
+                </a>
+              </li>
+            </ul>
+
+            <h6
+              class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1"
+            >
+              <span class="text-white-50">⚙️ HỆ THỐNG</span>
+            </h6>
+            <ul class="nav flex-column mb-2">
+              <li class="nav-item">
+                <a class="nav-link" href="#" onclick="logout()">
+                  <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                </a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+          <div
+            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
+          >
+            <h1 class="h2">🛒 Quản lý Đơn hàng</h1>
+          </div>
+
+          <!-- Stats Row - Tất cả trạng thái trên 1 dòng -->
+          <div class="row mb-3 g-2">
+            <div class="col">
+              <div
+                class="card text-center shadow-sm status-card active"
+                data-status=""
+                id="stat-all"
+                onclick="filterByStatus('', this)"
+                style="cursor: pointer"
+              >
+                <div class="card-body py-2">
+                  <div class="d-flex align-items-center justify-content-center">
+                    <i class="fas fa-list-ul me-2 text-primary"></i>
+                    <div>
+                      <h5 id="totalOrders" class="mb-0 text-primary fw-bold">
+                        0
+                      </h5>
+                      <small class="text-muted d-block">Tất cả</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div
+                class="card text-center shadow-sm status-card"
+                data-status="PENDING"
+                id="stat-pending"
+                onclick="filterByStatus('PENDING', this)"
+                style="cursor: pointer"
+              >
+                <div class="card-body py-2">
+                  <div class="d-flex align-items-center justify-content-center">
+                    <i class="fas fa-clock me-2 text-warning"></i>
+                    <div>
+                      <h5 id="pendingOrders" class="mb-0 text-warning fw-bold">
+                        0
+                      </h5>
+                      <small class="text-muted d-block">Chờ xử lý</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div
+                class="card text-center shadow-sm status-card"
+                data-status="PROCESSING"
+                id="stat-processing"
+                onclick="filterByStatus('PROCESSING', this)"
+                style="cursor: pointer"
+              >
+                <div class="card-body py-2">
+                  <div class="d-flex align-items-center justify-content-center">
+                    <i class="fas fa-cogs me-2 text-info"></i>
+                    <div>
+                      <h5 id="processingOrders" class="mb-0 text-info fw-bold">
+                        0
+                      </h5>
+                      <small class="text-muted d-block">Đang xử lý</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div
+                class="card text-center shadow-sm status-card"
+                data-status="SHIPPING"
+                id="stat-shipping"
+                onclick="filterByStatus('SHIPPING', this)"
+                style="cursor: pointer"
+              >
+                <div class="card-body py-2">
+                  <div class="d-flex align-items-center justify-content-center">
+                    <i class="fas fa-shipping-fast me-2 text-primary"></i>
+                    <div>
+                      <h5 id="shippedOrders" class="mb-0 text-primary fw-bold">
+                        0
+                      </h5>
+                      <small class="text-muted d-block">Đang giao</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div
+                class="card text-center shadow-sm status-card"
+                data-status="DELIVERED"
+                id="stat-delivered"
+                onclick="filterByStatus('DELIVERED', this)"
+                style="cursor: pointer"
+              >
+                <div class="card-body py-2">
+                  <div class="d-flex align-items-center justify-content-center">
+                    <i class="fas fa-check-circle me-2 text-success"></i>
+                    <div>
+                      <h5
+                        id="deliveredOrders"
+                        class="mb-0 text-success fw-bold"
+                      >
+                        0
+                      </h5>
+                      <small class="text-muted d-block">Giao thành công</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div
+                class="card text-center shadow-sm status-card"
+                data-status="FAILED"
+                id="stat-failed"
+                onclick="filterByStatus('FAILED', this)"
+                style="cursor: pointer"
+              >
+                <div class="card-body py-2">
+                  <div class="d-flex align-items-center justify-content-center">
+                    <i
+                      class="fas fa-exclamation-triangle me-2 text-warning"
+                    ></i>
+                    <div>
+                      <h5 id="failedOrders" class="mb-0 text-warning fw-bold">
+                        0
+                      </h5>
+                      <small class="text-muted d-block">Giao thất bại</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div
+                class="card text-center shadow-sm status-card"
+                data-status="CANCELLED"
+                id="stat-cancelled"
+                onclick="filterByStatus('CANCELLED', this)"
+                style="cursor: pointer"
+              >
+                <div class="card-body py-2">
+                  <div class="d-flex align-items-center justify-content-center">
+                    <i class="fas fa-times-circle me-2 text-danger"></i>
+                    <div>
+                      <h5 id="cancelledOrders" class="mb-0 text-danger fw-bold">
+                        0
+                      </h5>
+                      <small class="text-muted d-block">Đã hủy</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Search and Filters -->
+          <div class="row mb-3">
+            <div class="col-md-6"></div>
+            <div class="col-md-6 text-end">
+              <button
+                class="btn btn-outline-secondary"
+                onclick="clearFilters()"
+              >
+                <i class="fas fa-times me-1"></i>Xóa bộ lọc
+              </button>
+              <button
+                class="btn btn-outline-primary ms-2"
+                onclick="loadOrders()"
+              >
+                <i class="fas fa-sync-alt me-1"></i>Làm mới
+              </button>
+            </div>
+          </div>
+
+          <!-- Orders Table -->
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Mã ĐH</th>
+                      <th>Khách hàng</th>
+                      <th>Sản phẩm</th>
+                      <th>Tổng tiền</th>
+                      <th>PT Thanh toán</th>
+                      <th>TT Thanh toán</th>
+                      <th>Trạng thái</th>
+                      <th>Ngày đặt</th>
+                      <th>Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody id="ordersTableBody">
+                    <tr>
+                      <td colspan="9" class="text-center py-5">
+                        <div
+                          class="spinner-border text-primary"
+                          role="status"
+                        ></div>
+                        <p class="mt-3 text-muted">Đang tải...</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Pagination -->
+              <nav>
+                <ul
+                  class="pagination justify-content-center"
+                  id="pagination"
+                ></ul>
+              </nav>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Order Detail Modal -->
+    <div class="modal fade" id="orderDetailModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title">
+              <i class="fas fa-file-invoice"></i> Chi tiết đơn hàng
+              <span id="modalOrderId"></span>
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body" id="orderDetailContent">
+            <!-- Content will be loaded dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script th:src="@{/js/admin-orders.js}"></script>
+
+    <style>
+      /* Sidebar Styles */
+      .sidebar {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
+        background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .sidebar .nav-link {
+        font-weight: 500;
+        color: #ecf0f1;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+        border-left: 3px solid transparent;
+      }
+
+      .sidebar .nav-link:hover {
+        color: #fff;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-left-color: #3498db;
+        transform: translateX(5px);
+      }
+
+      .sidebar .nav-link.active {
+        color: #fff;
+        background-color: rgba(52, 152, 219, 0.3);
+        border-left: 3px solid #3498db;
+        font-weight: 600;
+      }
+
+      .sidebar .nav-link i {
+        width: 20px;
+      }
+
+      .sidebar-heading {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      /* Admin Profile */
+      .admin-profile {
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+      }
+
+      .profile-avatar {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .bg-gradient-dark {
+        background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+      }
+
+      /* Mobile Menu Toggle */
+      .mobile-menu-toggle {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 1040;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      }
+
+      @media (min-width: 768px) {
+        .mobile-menu-toggle {
+          display: none;
+        }
+      }
+
+      @media (max-width: 768px) {
+        main {
+          margin-top: 60px;
+        }
+      }
+
+      /* Scrollbar */
+      .sidebar::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .sidebar::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.1);
+      }
+
+      .sidebar::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 10px;
+      }
+
+      .sidebar::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.5);
+      }
+
+      /* ========== STATUS CARD STYLES - ĐƠN GIẢN ========== */
+
+      /* Base card style */
+      .stat-card {
+        transition: all 0.2s ease;
+        border: 2px solid #e0e0e0;
+        position: relative;
+        overflow: hidden;
+        background: #ffffff;
+        cursor: pointer;
+      }
+
+      /* NON-ACTIVE CARDS */
+      .stat-card:not(.active):not(.border-primary) {
+        background: #ffffff;
+        border-color: #e0e0e0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Hover cho non-active cards */
+      .stat-card:not(.active):not(.border-primary):hover {
+        border-color: #bbb;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+      }
+
+      /* ========== ACTIVE STATE - ĐƠN GIẢN ========== */
+      .stat-card.active,
+      .stat-card.border-primary {
+        border-color: #0d6efd !important;
+        border-width: 3px !important;
+        background: #ffffff !important;
+        box-shadow: 0 2px 8px rgba(13, 110, 253, 0.2) !important;
+      }
+
+      /* Thanh dưới cho active card */
+      .stat-card.active::after,
+      .stat-card.border-primary::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: #0d6efd;
+      }
+
+      /* ========== CARD CONTENT STYLING ========== */
+      .stat-card .card-body {
+        padding: 0.75rem 0.5rem;
+      }
+
+      /* Icon styling */
+      .stat-card i {
+        font-size: 1.5rem;
+        transition: all 0.2s ease;
+      }
+
+      /* Subtle hover effect for all stat cards */
+      .stat-card:hover i {
+        transform: scale(1.1);
+      }
+
+      /* Text styling */
+      .stat-card h5 {
+        font-size: 1.1rem;
+        margin-bottom: 0;
+      }
+
+      .stat-card small {
+        font-size: 0.75rem;
+      }
+
+      /* Active card - chỉ làm đậm text */
+      .stat-card.active h5,
+      .stat-card.border-primary h5 {
+        font-weight: 600;
+      }
+
+      .order-id {
+        font-weight: 600;
+        color: #0d6efd;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+      }
+
+      .order-id:hover {
+        text-decoration: underline;
+        color: #0a58ca;
+        transform: scale(1.05);
+      }
+
+      .customer-info {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .customer-name {
+        font-weight: 600;
+        color: #333;
+      }
+
+      .customer-email {
+        font-size: 0.85rem;
+        color: #666;
+      }
+
+      .order-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+      }
+
+      .order-item img {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 5px;
+        margin-right: 10px;
+        border: 1px solid #ddd;
+      }
+
+      .status-select {
+        padding: 5px 10px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        cursor: pointer;
+        font-size: 0.9rem;
+      }
+
+      .order-detail-section {
+        margin-bottom: 20px;
+        padding: 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        background: #f8f9fa;
+      }
+
+      .order-detail-section h6 {
+        color: #0d6efd;
+        font-weight: bold;
+        margin-bottom: 10px;
+        border-bottom: 2px solid #0d6efd;
+        padding-bottom: 5px;
+      }
+
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      .detail-row:last-child {
+        border-bottom: none;
+      }
+
+      .detail-label {
+        font-weight: 600;
+        color: #666;
+      }
+
+      .detail-value {
+        color: #333;
+        text-align: right;
+      }
+
+      .table img {
+        max-width: 60px;
+        max-height: 60px;
+        object-fit: cover;
+        border-radius: 4px;
+      }
+
+      .badge {
+        padding: 0.5em 0.8em;
+      }
+
+      /* Payment Status Badges */
+      .badge i {
+        margin-right: 3px;
+      }
+
+      .badge.bg-warning {
+        color: #000;
+      }
+
+      /* VNPay Info Box */
+      .alert-info {
+        background-color: #e7f3ff;
+        border-left: 4px solid #0d6efd;
+      }
+
+      .alert-info .alert-heading {
+        color: #0d6efd;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .alert-info code {
+        background-color: #fff;
+        padding: 2px 6px;
+        border-radius: 3px;
+        color: #d63384;
+        font-weight: 600;
+      }
+
+      .alert-info .badge {
+        font-size: 0.9rem;
+        padding: 0.4em 0.7em;
+      }
+
+      /* Table Improvements */
+      .table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #495057;
+        border-bottom: 2px solid #dee2e6;
+      }
+
+      .table td {
+        vertical-align: middle;
+      }
+
+      .table tbody tr {
+        transition: all 0.2s ease;
+      }
+
+      .table tbody tr:hover {
+        background-color: #f8f9fa;
+        transform: scale(1.005);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+
+      /* Subtle highlight for delivered orders */
+      .table tbody tr.order-delivered {
+        background-color: #f8fdf9;
+      }
+
+      .table tbody tr.order-delivered:hover {
+        background-color: #f0fdf4;
+      }
+
+      /* Enhanced Badge Styles */
+      .badge {
+        font-weight: 500;
+        letter-spacing: 0.3px;
+        transition: all 0.3s ease;
+      }
+
+      .badge i {
+        font-size: 0.9em;
+      }
+
+      /* Subtle styling for DELIVERED status */
+      .badge-delivered {
+        background-color: #28a745 !important;
+        font-weight: 600;
+      }
+
+      .badge-delivered:hover {
+        box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+      }
+
+      /* Payment Success Alert */
+      .payment-success-alert {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        border-left: 4px solid #28a745;
+        border-radius: 8px;
+      }
+
+      .payment-success-alert .alert-heading {
+        color: #155724;
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+
+      .payment-success-alert small {
+        color: #155724;
+        opacity: 0.85;
+      }
+
+      /* Status Select Enhancement */
+      .status-select.bg-success {
+        background-color: #28a745 !important;
+        color: white;
+        font-weight: 600;
+        border: 1px solid #28a745;
+      }
+
+      .status-select:disabled {
+        opacity: 0.75;
+        cursor: not-allowed;
+      }
+
+      /* Responsive adjustments for status cards */
+      @media (max-width: 1400px) {
+        .stat-card .card-body {
+          padding: 0.5rem 0.3rem;
+        }
+
+        .stat-card h5 {
+          font-size: 1rem;
+        }
+
+        .stat-card small {
+          font-size: 0.7rem;
+        }
+
+        .stat-card i {
+          font-size: 1.2rem;
+        }
+      }
+
+      @media (max-width: 992px) {
+        .row.g-2 {
+          flex-wrap: wrap;
+        }
+
+        .row.g-2 > .col {
+          flex: 0 0 auto;
+          width: calc(33.333% - 0.5rem);
+          margin-bottom: 0.5rem;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .row.g-2 > .col {
+          width: calc(50% - 0.5rem);
+        }
+
+        .stat-card .d-flex {
+          flex-direction: column;
+          gap: 0.25rem;
+        }
+
+        .stat-card i {
+          margin: 0 !important;
+        }
+      }
+    </style>
+  </body>
+</html>

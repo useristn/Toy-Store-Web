@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head}">
+    <title>Thanh toán an toàn - T4M Toy Store</title>
+</head>
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <!-- Header -->
+                <div class="text-center mb-5">
+                    <h1 class="display-4 fw-bold mb-3">
+                        Thanh toán an toàn
+                    </h1>
+                    <p class="lead text-muted">Cam kết bảo mật 100% thông tin thanh toán</p>
+                </div>
+
+                <!-- Security badges -->
+                <div class="text-center mb-5">
+                    <span class="badge bg-success fs-5 me-2 mb-2">
+                        SSL Encrypted
+                    </span>
+                    <span class="badge bg-primary fs-5 me-2 mb-2">
+                        PCI DSS
+                    </span>
+                    <span class="badge bg-warning text-dark fs-5 me-2 mb-2">
+                        Secure Payment
+                    </span>
+                </div>
+
+                <!-- Payment methods -->
+                <div class="card shadow-lg border-0 mb-4">
+                    <div class="card-body p-5">
+                        <h3 class="text-success mb-4">Phương thức thanh toán</h3>
+                        
+                        <div class="row g-4 mb-5">
+                            <div class="col-md-6">
+                                <div class="card h-100 border-2 border-primary">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Thẻ ATM/Visa/Master</h5>
+                                        <p class="card-text">Thanh toán trực tuyến qua cổng thanh toán an toàn</p>
+                                        <span class="badge bg-primary">Phổ biến nhất</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card h-100 border-2 border-success">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Ví điện tử</h5>
+                                        <p class="card-text">MoMo, ZaloPay, VNPay, ShopeePay</p>
+                                        <span class="badge bg-success">Nhanh chóng</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card h-100 border-2 border-warning">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Chuyển khoản</h5>
+                                        <p class="card-text">Chuyển khoản ngân hàng trực tiếp</p>
+                                        <span class="badge bg-warning text-dark">Tin cậy</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card h-100 border-2 border-info">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">COD</h5>
+                                        <p class="card-text">Thanh toán khi nhận hàng</p>
+                                        <span class="badge bg-info">Tiện lợi</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h3 class="text-success mb-4">Bảo mật thanh toán</h3>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h5>Mã hóa SSL</h5>
+                                        <p class="mb-0 small">Tất cả giao dịch được mã hóa SSL 256-bit</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h5>Bảo mật OTP</h5>
+                                        <p class="mb-0 small">Xác thực 2 lớp với mã OTP qua SMS/Email</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h5>Không lưu thẻ</h5>
+                                        <p class="mb-0 small">T4M không lưu trữ thông tin thẻ của bạn</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h5>Chuẩn PCI DSS</h5>
+                                        <p class="mb-0 small">Tuân thủ tiêu chuẩn bảo mật quốc tế</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h3 class="text-success mb-4">Quy trình thanh toán</h3>
+                        <ol class="list-group list-group-numbered">
+                            <li class="list-group-item">Chọn sản phẩm và thêm vào giỏ hàng</li>
+                            <li class="list-group-item">Điền thông tin giao hàng</li>
+                            <li class="list-group-item">Chọn phương thức thanh toán</li>
+                            <li class="list-group-item">Xác nhận và hoàn tất thanh toán</li>
+                            <li class="list-group-item">Nhận mã đơn hàng qua email/SMS</li>
+                        </ol>
+
+                        <div class="alert alert-success mt-4">
+                            <h5 class="alert-heading">Lưu ý quan trọng</h5>
+                            <ul class="mb-0">
+                                <li>T4M <strong>KHÔNG BAO GIỜ</strong> yêu cầu mã CVV/OTP qua điện thoại</li>
+                                <li>Kiểm tra kỹ URL có ổ khóa trước khi nhập thông tin</li>
+                                <li>Không chia sẻ thông tin thẻ với bất kỳ ai</li>
+                                <li>Liên hệ ngay nếu phát hiện giao dịch bất thường</li>
+                            </ul>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h3 class="text-success mb-4">Thông tin chuyển khoản</h3>
+                        <div class="bg-light p-4 rounded">
+                            <p class="mb-2"><strong>Ngân hàng:</strong> Vietcombank</p>
+                            <p class="mb-2"><strong>Tên tài khoản:</strong> CÔNG TY T4M TOY STORE</p>
+                            <p class="mb-2"><strong>Số tài khoản:</strong> 0123456789</p>
+                            <p class="mb-0"><strong>Nội dung:</strong> [Mã đơn hàng] [Số điện thoại]</p>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h3 class="text-success mb-4">Hỗ trợ thanh toán</h3>
+                        <p>Gặp vấn đề khi thanh toán? Liên hệ ngay:</p>
+                        <div class="bg-light p-4 rounded">
+                            <p class="mb-2"><strong>Hotline:</strong> 1800-8080 (24/7)</p>
+                            <p class="mb-2"><strong>Email:</strong> payment@t4m.com</p>
+                            <p class="mb-0"><strong>Chat:</strong> Widget góc phải màn hình</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Back button -->
+                <div class="text-center">
+                    <a href="/" class="btn btn-success btn-lg">
+                        Quay về trang chủ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script th:src="@{/js/auth.js}"></script>
+</body>
+</html>

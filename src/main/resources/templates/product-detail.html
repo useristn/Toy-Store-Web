@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head}">
+    <title>🌟 Chi tiết sản phẩm – T4M</title>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<!-- Breadcrumb -->
+<section class="bg-light py-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/products}">Sản phẩm</a></li>
+                <li class="breadcrumb-item active" id="breadcrumbProduct">Chi tiết</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<div class="container py-5">
+    <!-- Product Detail -->
+    <div id="productDetailContainer">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Đang tải...</span>
+            </div>
+            <p class="mt-3 text-muted">Đang tải thông tin sản phẩm...</p>
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    <section class="mt-5">
+        <h3 class="fw-bold mb-4 space-text">
+            <i class="fas fa-star me-2"></i>Sản phẩm tương tự
+        </h3>
+        <div id="relatedProducts" class="row">
+            <div class="col-12 text-center py-3">
+                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                    <span class="visually-hidden">Đang tải...</span>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/product-detail.js}" defer></script>
+</body>
+</html>

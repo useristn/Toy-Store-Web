@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head}">
+    <title>T4M - Cửa hàng đồ chơi vũ trụ</title>
+</head>
+<style>
+    /* Scroll Snap Effect */
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    body {
+        scroll-snap-type: y proximity;
+    }
+    
+    section {
+        scroll-snap-align: start;
+        scroll-snap-stop: normal;
+    }
+    
+    /* Adjust snap for specific sections */
+    .hero-section,
+    #featured,
+    .py-5 {
+        scroll-snap-align: start;
+    }
+    
+    /* Text Glowing Effect */
+    @keyframes textGlow {
+        0%, 100% {
+            text-shadow: 0 0 10px rgba(108, 92, 231, 0.5),
+                         0 0 20px rgba(108, 92, 231, 0.3),
+                         0 0 30px rgba(108, 92, 231, 0.2);
+        }
+        50% {
+            text-shadow: 0 0 20px rgba(108, 92, 231, 0.8),
+                         0 0 30px rgba(108, 92, 231, 0.5),
+                         0 0 40px rgba(108, 92, 231, 0.3);
+        }
+    }
+    
+    .hero-section {
+        position: relative;
+        overflow: hidden;
+        isolation: isolate;
+    }
+
+    .hero-section::before,
+    .hero-section::after {
+        content: '';
+        position: absolute;
+        width: 18rem;
+        height: 18rem;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.55), rgba(103, 58, 183, 0.15));
+        filter: blur(0);
+        opacity: 0.6;
+        z-index: -1;
+        animation: floatOrbit 16s ease-in-out infinite;
+    }
+
+    .hero-section::before {
+        top: -6rem;
+        left: -5rem;
+        animation-delay: 0s;
+    }
+
+    .hero-section::after {
+        bottom: -6rem;
+        right: -8rem;
+        background: radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.45), rgba(3, 169, 244, 0.15));
+        animation-delay: 4s;
+    }
+
+    .hero-floaters {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    .hero-floaters span {
+        position: absolute;
+        width: 3.25rem;
+        height: 3.25rem;
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0));
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        animation: floatDrift 12s ease-in-out infinite;
+    }
+
+    .hero-floaters .floater-1 { top: 10%; left: 12%; animation-delay: 1s; }
+    .hero-floaters .floater-2 { top: 35%; right: 15%; width: 4rem; height: 4rem; animation-delay: 3s; }
+    .hero-floaters .floater-3 { bottom: 18%; left: 22%; width: 2.75rem; height: 2.75rem; animation-delay: 5s; }
+
+    .hero-section h1 {
+        animation: textGlow 3s ease-in-out infinite;
+    }
+    
+    .space-text {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .space-text:hover {
+        animation: textGlow 2s ease-in-out infinite;
+    }
+
+    @keyframes floatOrbit {
+        0% { transform: translate(0, 0) scale(1); opacity: 0.55; }
+        50% { transform: translate(40px, -25px) scale(1.08); opacity: 0.75; }
+        100% { transform: translate(0, -45px) scale(1.04); opacity: 0.6; }
+    }
+
+    @keyframes floatDrift {
+        0% { transform: translate3d(0, 0, 0); opacity: 0.65; }
+        25% { transform: translate3d(12px, -18px, 0) rotate(4deg); opacity: 0.85; }
+        50% { transform: translate3d(-8px, -28px, 0) rotate(-2deg); opacity: 1; }
+        75% { transform: translate3d(-18px, -6px, 0) rotate(3deg); opacity: 0.8; }
+        100% { transform: translate3d(0, 0, 0); opacity: 0.65; }
+    }
+    
+    /* Button Ripple Animation */
+    .btn {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.5);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+    
+    .btn:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+    
+    .btn > * {
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Trust Badges Glass Effect */
+    .trust-badges {
+        margin-top: 3rem !important;
+    }
+    
+    .trust-badges a {
+        display: block;
+        height: 100%;
+    }
+    
+    .trust-badge {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+        padding: 1.5rem 1rem;
+        transition: all 0.3s ease;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        height: 100%;
+        cursor: pointer;
+    }
+    
+    .trust-badge:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 12px 40px rgba(108, 92, 231, 0.3);
+        border-color: rgba(108, 92, 231, 0.3);
+    }
+    
+    .trust-badge i {
+        color: #fff;
+        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
+        transition: all 0.3s ease;
+    }
+    
+    .trust-badge:hover i {
+        color: #fff;
+        filter: drop-shadow(0 0 15px rgba(108, 92, 231, 1));
+        transform: scale(1.1);
+    }
+    
+    .trust-badge h6 {
+        color: #fff;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    .trust-badge small {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.85rem;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Category Cards Styles */
+    .category-card {
+        display: block;
+        background: white;
+        border-radius: 15px;
+        padding: 2rem 1rem;
+        text-align: center;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        height: 100%;
+        border: 2px solid transparent;
+    }
+    
+    .category-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        border-color: var(--nebula-cyan);
+    }
+    
+    .category-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        transition: transform 0.3s ease;
+    }
+    
+    .category-card:hover .category-icon {
+        transform: scale(1.2) rotate(10deg);
+    }
+    
+    .category-card h5 {
+        color: #333;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+    }
+    
+    .category-card p {
+        margin-bottom: 0;
+    }
+    
+    /* Skeleton Loading Styles */
+    .skeleton-card {
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    
+    .skeleton {
+        background: linear-gradient(
+            90deg,
+            #f0f0f0 0%,
+            #e0e0e0 50%,
+            #f0f0f0 100%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 8px;
+    }
+    
+    .skeleton-img {
+        height: 200px;
+        width: 100%;
+        border-radius: 0;
+    }
+    
+    .skeleton-title {
+        height: 20px;
+        width: 80%;
+        margin-bottom: 0.75rem;
+    }
+    
+    .skeleton-text {
+        height: 14px;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .skeleton-text.short {
+        width: 60%;
+    }
+    
+    .skeleton-price {
+        height: 24px;
+        width: 40%;
+        margin-bottom: 0.75rem;
+    }
+    
+    .skeleton-button {
+        height: 38px;
+        width: 100%;
+        border-radius: 6px;
+    }
+    
+    @keyframes shimmer {
+        0% {
+            background-position: -200% 0;
+        }
+        100% {
+            background-position: 200% 0;
+        }
+    }
+    
+    /* Counter Animation Styles */
+    .stat-card {
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .counter {
+        display: inline-block;
+        font-weight: 700;
+        color: var(--nebula-cyan);
+    }
+    
+    /* Support Chat Message Styles */
+    .message-customer {
+        margin-bottom: 1rem;
+        display: flex;
+    }
+    
+    .message-customer.user {
+        justify-content: flex-end;
+    }
+    
+    .message-customer.admin {
+        justify-content: flex-start;
+    }
+    
+    .message-bubble-customer {
+        max-width: 70%;
+        padding: 0.75rem 1rem;
+        border-radius: 15px;
+        word-wrap: break-word;
+    }
+    
+    .message-customer.user .message-bubble-customer {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-bottom-right-radius: 5px;
+    }
+    
+    .message-customer.admin .message-bubble-customer {
+        background: #e9ecef;
+        color: #333;
+        border-bottom-left-radius: 5px;
+    }
+    
+    .message-sender-customer {
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        opacity: 0.8;
+    }
+    
+    .message-text-customer {
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+    
+    .message-time-customer {
+        font-size: 0.7rem;
+        margin-top: 0.25rem;
+        opacity: 0.7;
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .trust-badge {
+            padding: 1rem 0.5rem;
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .trust-badge i {
+            font-size: 1.5rem;
+        }
+        
+        .trust-badge h6 {
+            font-size: 0.9rem;
+        }
+        
+        .hero-section h1 {
+            font-size: 2rem;
+        }
+        
+        .category-card {
+            padding: 1.5rem 0.75rem;
+        }
+        
+        .category-icon {
+            font-size: 2rem;
+        }
+        
+        .category-card h5 {
+            font-size: 0.95rem;
+        }
+        
+        .skeleton-img {
+            height: 150px;
+        }
+        
+        /* Reduce animation intensity on mobile */
+        .btn::before {
+            transition: width 0.4s, height 0.4s;
+        }
+        
+        .btn:hover::before {
+            width: 200px;
+            height: 200px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .trust-badges {
+            margin-top: 2rem !important;
+        }
+        
+        .trust-badge h6 {
+            font-size: 0.85rem;
+        }
+        
+        .trust-badge small {
+            font-size: 0.75rem;
+        }
+        
+        .hero-section h1 {
+            font-size: 1.75rem;
+            animation: textGlow 4s ease-in-out infinite;
+        }
+        
+        .category-card h5 {
+            font-size: 0.9rem;
+        }
+        
+        .category-card p {
+            font-size: 0.8rem;
+        }
+    }
+</style>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<!-- Hero Section -->
+<section class="hero-section space-bg">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-4 fade-in">Chào mừng đến với thiên hà đồ chơi!</h1>
+        <p class="lead mb-4 fade-in">Khám phá thiên hà đồ chơi tuyệt vời nhất vũ trụ!</p>
+        <div class="fade-in">
+            <a href="#featured" class="btn btn-light btn-lg me-3">
+                <i class="fas fa-shopping-bag me-2"></i>Bay đến cửa hàng
+            </a>
+            <a th:href="@{/products}" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-star me-2"></i>Xem tất cả sản phẩm
+            </a>
+        </div>
+        <div class="hero-floaters">
+            <span class="floater-1"></span>
+            <span class="floater-2"></span>
+            <span class="floater-3"></span>
+        </div>
+        
+        <!-- Trust Badges -->
+        <div class="row mt-5 trust-badges">
+            <div class="col-6 col-md-3 mb-3">
+                <a href="#featured" class="text-decoration-none">
+                    <div class="trust-badge">
+                        <i class="fas fa-shipping-fast fa-2x mb-2"></i>
+                        <h6>Giao hàng nhanh</h6>
+                        <small>Trong 24h</small>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 mb-3">
+                <a th:href="@{/return-policy}" class="text-decoration-none">
+                    <div class="trust-badge">
+                        <i class="fas fa-undo-alt fa-2x mb-2"></i>
+                        <h6>Đổi trả dễ dàng</h6>
+                        <small>Trong 7 ngày</small>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 mb-3">
+                <a th:href="@{/shopping-guide}" class="text-decoration-none">
+                    <div class="trust-badge">
+                        <i class="fas fa-shield-alt fa-2x mb-2"></i>
+                        <h6>100% chính hãng</h6>
+                        <small>Cam kết chất lượng</small>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 mb-3">
+                <div class="trust-badge" id="openSupportChatHome" style="cursor: pointer;" title="Click để chat với admin">
+                    <i class="fas fa-headset fa-2x mb-2"></i>
+                    <h6>Hỗ trợ 24/7</h6>
+                    <small>Luôn sẵn sàng</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section id="featured" class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold space-text">Đồ chơi siêu đặc biệt</h2>
+            <p class="text-muted">Những món đồ chơi được yêu thích nhất trong thiên hà!</p>
+        </div>
+        <div id="featuredProducts" class="row">
+            <!-- Skeleton Loading State -->
+            <div class="col-12">
+                <div class="row" id="skeletonLoader">
+                    <div class="col-md-6 col-lg-3 mb-4" th:each="i : ${#numbers.sequence(1, 8)}">
+                        <div class="card skeleton-card">
+                            <div class="skeleton skeleton-img"></div>
+                            <div class="card-body">
+                                <div class="skeleton skeleton-title mb-2"></div>
+                                <div class="skeleton skeleton-text mb-2"></div>
+                                <div class="skeleton skeleton-text" style="width: 60%;"></div>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <div class="skeleton skeleton-price"></div>
+                                    <div class="skeleton skeleton-button"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-4">
+            <a th:href="@{/products}" class="btn btn-primary btn-lg">
+                <i class="fas fa-store me-2"></i>Khám phá thêm
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Promotion Banner -->
+<section class="bg-light py-5" style="background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%) !important;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h3 class="fw-bold space-text mb-3">Ưu đãi Thiên hà Đặc biệt!</h3>
+                <p class="text-muted mb-0">Giảm giá lên đến 50% cho tất cả đồ chơi khoa học! Cơ hội trở thành nhà khoa
+                    học nhí đang chờ các bạn!</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a th:href="@{/products}" class="btn btn-danger btn-lg">
+                    <i class="fas fa-compass me-2"></i>Khám phá ngay
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Support Chat Modal -->
+<div
+  class="modal fade"
+  id="supportChatModal"
+  tabindex="-1"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div
+      class="modal-content"
+      style="border-radius: 15px; overflow: hidden"
+    >
+      <div
+        class="modal-header"
+        style="
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+        "
+      >
+        <h5 class="modal-title">
+          <i class="fas fa-comments me-2"></i>Hỗ trợ khách hàng
+        </h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body p-0">
+        <div
+          id="supportChatContainer"
+          style="height: 500px; display: flex; flex-direction: column"
+        >
+          <div
+            id="supportMessages"
+            style="
+              flex: 1;
+              overflow-y: auto;
+              padding: 1.5rem;
+              background: #f8f9fa;
+            "
+          >
+            <div class="text-center py-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Đang kết nối...</span>
+              </div>
+              <p class="mt-2 text-muted">Đang kết nối với admin...</p>
+            </div>
+          </div>
+          <div
+            class="typing-indicator-customer"
+            id="typingIndicatorCustomer"
+            style="
+              display: none;
+              padding: 0.5rem 1.5rem;
+              font-size: 0.85rem;
+              color: #666;
+              font-style: italic;
+            "
+          >
+            <i class="fas fa-circle-notch fa-spin"></i> Admin đang nhập...
+          </div>
+          <div class="p-3 bg-white" style="border-top: 2px solid #e0e0e0">
+            <form id="supportChatForm" class="d-flex gap-2">
+              <input
+                type="text"
+                id="supportMessageInput"
+                class="form-control"
+                placeholder="Nhập tin nhắn..."
+                autocomplete="off"
+                style="border-radius: 25px"
+              />
+              <button
+                type="submit"
+                class="btn btn-primary"
+                style="border-radius: 50%; width: 45px; height: 45px"
+              >
+                <i class="fas fa-paper-plane"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/home.js}" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<script th:src="@{/js/support-chat.js}" defer></script>
+<script>
+// Add click handler for home page support badge
+document.addEventListener('DOMContentLoaded', function() {
+    const supportBadge = document.getElementById('openSupportChatHome');
+    if (supportBadge) {
+        supportBadge.addEventListener('click', function() {
+            // Check if user is logged in
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                alert('Vui lòng đăng nhập để sử dụng chức năng hỗ trợ!');
+                window.location.href = '/login';
+                return;
+            }
+            
+            // Call the openSupportChat function from support-chat.js
+            if (typeof openSupportChat === 'function') {
+                openSupportChat();
+            } else {
+                console.error('openSupportChat function not found');
+            }
+        });
+    }
+});
+</script>
+</body>
+</html>
