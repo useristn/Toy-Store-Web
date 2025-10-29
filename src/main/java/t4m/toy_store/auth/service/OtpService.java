@@ -5,15 +5,10 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import t4m.toy_store.auth.exception.OtpInvalidException;
 import t4m.toy_store.auth.exception.OtpExpiredException;
-
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -21,12 +16,12 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class OtpService {
     private static final Logger logger = LoggerFactory.getLogger(OtpService.class);
-    private final JavaMailSender mailSender;
+    private final EmailService emailService;
     private final Cache<String, OtpData> otpCache;
 
     @Autowired
-    public OtpService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
+    public OtpService(EmailService emailService) {
+        this.emailService = emailService;
         this.otpCache = Caffeine.newBuilder().expireAfterWrite(5, TimeUnit.MINUTES).maximumSize(1000).build();
     }
 
@@ -38,18 +33,8 @@ public class OtpService {
 
     @Async
     public void sendOtpEmail(String email, String otp, String purpose) {
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-            helper.setTo(email);
-            helper.setSubject("Your OTP for " + purpose);
-            helper.setText("Your OTP is: <b>" + otp + "</b>. It expires in 5 minutes.", true);
-            mailSender.send(message);
-            logger.info("OTP email sent to {} for {}", email, purpose);
-        } catch (MessagingException e) {
-            logger.error("Failed to send OTP email to {}: {}", email, e.getMessage());
-            throw new RuntimeException("Failed to send OTP email", e);
-        }
+        String action = purpose.equals("Account Activation") ? "đăng ký tài khoản" : "đặt lại mật khẩu";
+        emailService.sendOtpEmail(email, otp, action);
     }
 
     public void storeOtp(String email, String otp, String purpose) {

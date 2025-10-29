@@ -32,6 +32,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final OtpService otpService;
+    private final EmailService emailService;
 
     private final Cache<String, Role> roleCache = Caffeine.newBuilder()
             .expireAfterWrite(1, TimeUnit.HOURS)
@@ -120,6 +121,11 @@ public class UserService {
         user.setActivated(true);
         userRepository.save(user);
         logger.info("Account activated successfully: {}", sanitizedEmail);
+
+        // Send welcome email
+        String userName = user.getName() != null ? user.getName() : sanitizedEmail;
+        String ctaLink = "http://localhost:8080/products"; // Adjust as needed
+        emailService.sendWelcomeEmail(sanitizedEmail, userName, ctaLink);
     }
 
     /**
