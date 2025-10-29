@@ -523,8 +523,8 @@ function updateAuthUI() {
         if (userMenu) {
             userMenu.classList.remove('d-none');
             if (userName) {
-                // Display username part of email
-                userName.textContent = `${email.split('@')[0]} 🚀`;
+                // Display username part of email without extra iconography
+                userName.textContent = email.split('@')[0];
             }
         }
     } else {

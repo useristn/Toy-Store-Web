@@ -196,7 +196,7 @@ public class ChatbotService {
         "Bạn chọn món nào ạ?\n\n" +
         
         "LƯU Ý: MỖI LẦN CHỈ HỎI 1 CÂU | Trả lời NGẮN GỌN | ÍT EMOJI | CHỈ gợi ý sản phẩm CÓ TRONG DANH SÁCH\n\n" +
-        "CHÍNH SÁCH: Đổi trả 7 ngày | Giao 1-3 ngày | Miễn phí từ 300K | Hotline: 1800-363-363\n\n";
+        "CHÍNH SÁCH: Đổi trả 7 ngày | Giao 1-3 ngày | Miễn phí từ 300K | Hotline: 1800-8080\n\n";
     
     public String generateResponse(String userMessage, String conversationId) {
         logger.info("=== STEP 1: INPUT COLLECTION - ChatbotService.generateResponse CALLED ===");
@@ -206,7 +206,7 @@ public class ChatbotService {
         // Step 6: Security check - API key validation
         if (geminiApiKey == null || geminiApiKey.equals("YOUR_GEMINI_API_KEY_HERE")) {
             logger.warn("SECURITY: Gemini API key not configured");
-            return "Xin lỗi bạn, chatbot AI chưa được cấu hình. Vui lòng liên hệ quản trị viên hoặc gọi hotline 1800-363-363 để được hỗ trợ! 😊";
+            return "Xin lỗi bạn, chatbot AI chưa được cấu hình. Vui lòng liên hệ quản trị viên hoặc gọi hotline 1800-8080 để được hỗ trợ! 😊";
         }
         
         try {
@@ -312,13 +312,13 @@ public class ChatbotService {
                     return aiResponse;
                 }
                 
-                return aiResponse != null ? aiResponse : "Xin lỗi bạn, mình không thể trả lời câu hỏi này ngay bây giờ. Bạn có thể thử hỏi câu khác hoặc liên hệ hotline 1800-363-363 nhé! 😊";
+                return aiResponse != null ? aiResponse : "Xin lỗi bạn, mình không thể trả lời câu hỏi này ngay bây giờ. Bạn có thể thử hỏi câu khác hoặc liên hệ hotline 1800-8080 nhé! 😊";
             } else {
                 logger.error("Gemini API returned status: {}, body: {}", response.getStatusCode(), response.getBody());
             }
             
             logger.warn("Unexpected response format from Gemini API. Could not extract text from response.");
-            return "Xin lỗi bạn, mình không thể trả lời câu hỏi này ngay bây giờ. Bạn có thể thử hỏi câu khác hoặc liên hệ hotline 1800-363-363 nhé! 😊";
+            return "Xin lỗi bạn, mình không thể trả lời câu hỏi này ngay bây giờ. Bạn có thể thử hỏi câu khác hoặc liên hệ hotline 1800-8080 nhé! 😊";
             
         } catch (Exception e) {
             logger.error("Error calling Gemini API for conversation: " + conversationId, e);
@@ -330,10 +330,10 @@ public class ChatbotService {
             // Check if it's an overload error
             String errorMsg = e.getMessage();
             if (errorMsg != null && (errorMsg.contains("overloaded") || errorMsg.contains("503"))) {
-                return "Xin lỗi bạn, hệ thống AI đang quá tải. Vui lòng thử lại sau 1-2 phút hoặc gọi hotline 1800-363-363 để được hỗ trợ trực tiếp nhé! 😊";
+                return "Xin lỗi bạn, hệ thống AI đang quá tải. Vui lòng thử lại sau 1-2 phút hoặc gọi hotline 1800-8080 để được hỗ trợ trực tiếp nhé! 😊";
             }
             
-            return "Xin lỗi bạn, mình đang gặp chút trục trặc kỹ thuật. Bạn thử lại sau hoặc gọi hotline 1800-363-363 để được hỗ trợ trực tiếp nhé! 😊";
+            return "Xin lỗi bạn, mình đang gặp chút trục trặc kỹ thuật. Bạn thử lại sau hoặc gọi hotline 1800-8080 để được hỗ trợ trực tiếp nhé! 😊";
         }
     }
     
@@ -457,7 +457,7 @@ public class ChatbotService {
     private String buildHandoffResponse() {
         return "Mình hiểu bạn muốn được hỗ trợ trực tiếp! 👨‍💼\n\n" +
                "Vui lòng liên hệ:\n" +
-               "📞 Hotline: 1800-363-363 (miễn phí)\n" +
+               "📞 Hotline: 1800-8080 (miễn phí)\n" +
                "⏰ Làm việc: 8h-22h hàng ngày\n" +
                "📧 Email: support@t4m.com\n\n" +
                "Hoặc bạn có thể tiếp tục hỏi mình nếu cần tư vấn sản phẩm nhé! 😊";
@@ -555,7 +555,7 @@ public class ChatbotService {
             // Check if response has candidates
             if (!root.has("candidates")) {
                 logger.error("Response missing 'candidates' field. Full response: {}", responseBody);
-                return "Xin lỗi bạn, AI không trả lời được. Vui lòng thử lại hoặc gọi hotline 1800-363-363 nhé! 😊";
+                return "Xin lỗi bạn, AI không trả lời được. Vui lòng thử lại hoặc gọi hotline 1800-8080 nhé! 😊";
             }
             
             JsonNode candidates = root.get("candidates");
@@ -568,7 +568,7 @@ public class ChatbotService {
                     String finishReason = firstCandidate.get("finishReason").asText();
                     if ("SAFETY".equals(finishReason)) {
                         logger.warn("SECURITY: Response blocked by safety filters for conversation: {}", conversationId);
-                        return "Xin lỗi bạn, câu hỏi này không phù hợp. Bạn có thể hỏi về sản phẩm hoặc gọi hotline 1800-363-363 nhé! 😊";
+                        return "Xin lỗi bạn, câu hỏi này không phù hợp. Bạn có thể hỏi về sản phẩm hoặc gọi hotline 1800-8080 nhé! 😊";
                     }
                 }
                 
@@ -580,7 +580,7 @@ public class ChatbotService {
                     
                     if (aiResponse == null || aiResponse.trim().isEmpty()) {
                         logger.error("AI response is empty. Candidate: {}", firstCandidate);
-                        return "Xin lỗi bạn, mình không có câu trả lời phù hợp. Vui lòng thử lại hoặc gọi hotline 1800-363-363 nhé! 😊";
+                        return "Xin lỗi bạn, mình không có câu trả lời phù hợp. Vui lòng thử lại hoặc gọi hotline 1800-8080 nhé! 😊";
                     }
                     
                     return aiResponse;

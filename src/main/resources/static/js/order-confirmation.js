@@ -132,7 +132,7 @@ function displayCancelledPaymentMessage(order) {
 
     const statusTitle = document.getElementById('orderStatusTitle');
     if (statusTitle) {
-        statusTitle.textContent = '❌ Thanh toán đã bị hủy';
+        statusTitle.textContent = 'Thanh toán không thành công';
         statusTitle.classList.remove('space-text');
         statusTitle.classList.add('text-danger');
     }
@@ -207,7 +207,7 @@ function displayOrderDetails(order) {
 
     const statusTitle = document.getElementById('orderStatusTitle');
     if (statusTitle) {
-        statusTitle.textContent = '🎉 Tàu đã phóng thành công!';
+        statusTitle.textContent = 'Bạn đã đặt hàng thành công!';
         statusTitle.classList.add('space-text');
         statusTitle.classList.remove('text-danger');
     }

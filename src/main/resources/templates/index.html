@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/header :: head}">
-    <title>🚀 T4M - Cửa hàng đồ chơi vũ trụ</title>
+    <title>T4M - Cửa hàng đồ chơi vũ trụ</title>
 </head>
 <style>
     /* Scroll Snap Effect */
@@ -39,6 +39,61 @@
         }
     }
     
+    .hero-section {
+        position: relative;
+        overflow: hidden;
+        isolation: isolate;
+    }
+
+    .hero-section::before,
+    .hero-section::after {
+        content: '';
+        position: absolute;
+        width: 18rem;
+        height: 18rem;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.55), rgba(103, 58, 183, 0.15));
+        filter: blur(0);
+        opacity: 0.6;
+        z-index: -1;
+        animation: floatOrbit 16s ease-in-out infinite;
+    }
+
+    .hero-section::before {
+        top: -6rem;
+        left: -5rem;
+        animation-delay: 0s;
+    }
+
+    .hero-section::after {
+        bottom: -6rem;
+        right: -8rem;
+        background: radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.45), rgba(3, 169, 244, 0.15));
+        animation-delay: 4s;
+    }
+
+    .hero-floaters {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    .hero-floaters span {
+        position: absolute;
+        width: 3.25rem;
+        height: 3.25rem;
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0));
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        animation: floatDrift 12s ease-in-out infinite;
+    }
+
+    .hero-floaters .floater-1 { top: 10%; left: 12%; animation-delay: 1s; }
+    .hero-floaters .floater-2 { top: 35%; right: 15%; width: 4rem; height: 4rem; animation-delay: 3s; }
+    .hero-floaters .floater-3 { bottom: 18%; left: 22%; width: 2.75rem; height: 2.75rem; animation-delay: 5s; }
+
     .hero-section h1 {
         animation: textGlow 3s ease-in-out infinite;
     }
@@ -50,6 +105,20 @@
     
     .space-text:hover {
         animation: textGlow 2s ease-in-out infinite;
+    }
+
+    @keyframes floatOrbit {
+        0% { transform: translate(0, 0) scale(1); opacity: 0.55; }
+        50% { transform: translate(40px, -25px) scale(1.08); opacity: 0.75; }
+        100% { transform: translate(0, -45px) scale(1.04); opacity: 0.6; }
+    }
+
+    @keyframes floatDrift {
+        0% { transform: translate3d(0, 0, 0); opacity: 0.65; }
+        25% { transform: translate3d(12px, -18px, 0) rotate(4deg); opacity: 0.85; }
+        50% { transform: translate3d(-8px, -28px, 0) rotate(-2deg); opacity: 1; }
+        75% { transform: translate3d(-18px, -6px, 0) rotate(3deg); opacity: 0.8; }
+        100% { transform: translate3d(0, 0, 0); opacity: 0.65; }
     }
     
     /* Button Ripple Animation */
@@ -390,11 +459,16 @@
         <p class="lead mb-4 fade-in">Khám phá thiên hà đồ chơi tuyệt vời nhất vũ trụ!</p>
         <div class="fade-in">
             <a href="#featured" class="btn btn-light btn-lg me-3">
-                <i class="fas fa-rocket me-2"></i>Bay đến cửa hàng
+                <i class="fas fa-shopping-bag me-2"></i>Bay đến cửa hàng
             </a>
             <a th:href="@{/products}" class="btn btn-outline-light btn-lg">
                 <i class="fas fa-star me-2"></i>Xem tất cả sản phẩm
             </a>
+        </div>
+        <div class="hero-floaters">
+            <span class="floater-1"></span>
+            <span class="floater-2"></span>
+            <span class="floater-3"></span>
         </div>
         
         <!-- Trust Badges -->
@@ -437,74 +511,6 @@
     </div>
 </section>
 
-<!-- Categories Section -->
-<section class="py-5 bg-light">
-    <div class="container">
-        <div class="text-center mb-4">
-            <h2 class="fw-bold space-text">Danh mục sản phẩm</h2>
-            <p class="text-muted">Khám phá thế giới đồ chơi đa dạng</p>
-        </div>
-        <div class="row g-3">
-            <div class="col-6 col-md-4 col-lg-3">
-                <a href="/products?category=1" class="category-card">
-                    <div class="category-icon">🚀</div>
-                    <h5>Xe & Phi thuyền</h5>
-                    <p class="text-muted small mb-0">Phương tiện vũ trụ</p>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-lg-3">
-                <a href="/products?category=2" class="category-card">
-                    <div class="category-icon">🧩</div>
-                    <h5>Xếp hình</h5>
-                    <p class="text-muted small mb-0">Đồ chơi sáng tạo</p>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-lg-3">
-                <a href="/products?category=3" class="category-card">
-                    <div class="category-icon">🔬</div>
-                    <h5>Khoa học</h5>
-                    <p class="text-muted small mb-0">Học tập vui vẻ</p>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-lg-3">
-                <a href="/products?category=4" class="category-card">
-                    <div class="category-icon">⚽</div>
-                    <h5>Ngoài trời</h5>
-                    <p class="text-muted small mb-0">Vận động thể thao</p>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-lg-3">
-                <a href="/products?category=5" class="category-card">
-                    <div class="category-icon">🎨</div>
-                    <h5>Nghệ thuật</h5>
-                    <p class="text-muted small mb-0">Sáng tạo nghệ thuật</p>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-lg-3">
-                <a href="/products?category=6" class="category-card">
-                    <div class="category-icon">🤖</div>
-                    <h5>Robot</h5>
-                    <p class="text-muted small mb-0">Công nghệ hiện đại</p>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-lg-3">
-                <a href="/products?category=7" class="category-card">
-                    <div class="category-icon">🎲</div>
-                    <h5>Board Game</h5>
-                    <p class="text-muted small mb-0">Trò chơi trí tuệ</p>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-lg-3">
-                <a href="/products?category=8" class="category-card">
-                    <div class="category-icon">👸</div>
-                    <h5>Búp bê</h5>
-                    <p class="text-muted small mb-0">Búp bê xinh đẹp</p>
-                </a>
-            </div>
-        </div>
-    </div>
-</section>
-
 <!-- Featured Products -->
 <section id="featured" class="py-5">
     <div class="container">
@@ -535,7 +541,7 @@
         </div>
         <div class="text-center mt-4">
             <a th:href="@{/products}" class="btn btn-primary btn-lg">
-                <i class="fas fa-rocket me-2"></i>Khám phá thêm
+                <i class="fas fa-store me-2"></i>Khám phá thêm
             </a>
         </div>
     </div>
@@ -552,61 +558,8 @@
             </div>
             <div class="col-md-4 text-end">
                 <a th:href="@{/products}" class="btn btn-danger btn-lg">
-                    <i class="fas fa-rocket me-2"></i>Khám phá ngay
+                    <i class="fas fa-compass me-2"></i>Khám phá ngay
                 </a>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Fun Facts Section -->
-<section class="py-5">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="fw-bold space-text">Những điều thú vị về thiên hà đồ chơi</h2>
-        </div>
-        <div class="row text-center">
-            <div class="col-md-3 mb-4">
-                <div class="card h-100 stat-card" style="border: 3px solid var(--nebula-cyan); border-radius: 20px;">
-                    <div class="card-body">
-                        <div class="display-4 mb-3">🚀</div>
-                        <h5 class="space-text">
-                            <span class="counter" data-target="10000">0</span>+
-                        </h5>
-                        <p class="text-muted">Phi hành gia nhí hạnh phúc</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-4">
-                <div class="card h-100 stat-card" style="border: 3px solid var(--galaxy-pink); border-radius: 20px;">
-                    <div class="card-body">
-                        <div class="display-4 mb-3">🎯</div>
-                        <h5 class="space-text">
-                            <span class="counter" data-target="5000">0</span>+
-                        </h5>
-                        <p class="text-muted">Đồ chơi tuyệt vời</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-4">
-                <div class="card h-100 stat-card" style="border: 3px solid var(--star-yellow); border-radius: 20px;">
-                    <div class="card-body">
-                        <div class="display-4 mb-3">⭐</div>
-                        <h5 class="space-text">
-                            <span class="counter" data-target="100">0</span>%
-                        </h5>
-                        <p class="text-muted">An toàn & Chất lượng</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-4">
-                <div class="card h-100 stat-card" style="border: 3px solid var(--cosmic-purple); border-radius: 20px;">
-                    <div class="card-body">
-                        <div class="display-4 mb-3">🌟</div>
-                        <h5 class="space-text">24/7</h5>
-                        <p class="text-muted">Hỗ trợ vũ trụ</p>
-                    </div>
-                </div>
             </div>
         </div>
     </div>

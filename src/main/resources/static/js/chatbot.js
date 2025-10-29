@@ -19,7 +19,6 @@
                 <div class="avatar">🤖</div>
                 <div>
                     <div class="title">T4M AI Trợ lý</div>
-                    <div class="subtitle">Powered by Gemini AI ✨</div>
                 </div>
             </div>
             <div class="chatbot-messages" id="chatbot-messages" aria-live="polite"></div>
@@ -179,7 +178,7 @@
         } catch (error) {
             console.error('Error calling chatbot API:', error);
             // Fallback error message
-            return 'Xin lỗi bạn, mình đang gặp chút trục trặc kỹ thuật. Bạn có thể thử lại sau hoặc gọi hotline 1800-363-363 để được hỗ trợ trực tiếp nhé! 😊';
+            return 'Xin lỗi bạn, mình đang gặp chút trục trặc kỹ thuật. Bạn có thể thử lại sau hoặc gọi hotline 1800-8080 để được hỗ trợ trực tiếp nhé! 😊';
         }
     }
 

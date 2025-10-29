@@ -56,7 +56,7 @@ function showComingSoonModal(paymentMethod) {
                             <i class="fas fa-check-circle me-2"></i>Ví điện tử VNPay
                         </div>
                     </div>
-                    <div class="modal-footer">
+                    <div class="modal-footer justify-content-center">
                         <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
                             <i class="fas fa-check me-2"></i>Đã hiểu
                         </button>
@@ -359,7 +359,7 @@ function setupCheckoutButton() {
             
             // Re-enable button
             placeOrderBtn.disabled = false;
-            placeOrderBtn.innerHTML = '<i class="fas fa-rocket me-2"></i>Phóng tàu ngay! 🚀';
+            placeOrderBtn.innerHTML = '<i class="fas fa-rocket me-2"></i>Đặt hàng ngay!';
         }
     });
 }
