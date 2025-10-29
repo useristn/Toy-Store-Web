@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import t4m.toy_store.order.entity.OrderStatus;
 import t4m.toy_store.order.service.OrderService;
 import t4m.toy_store.payment.service.VNPayService;
 
@@ -99,10 +100,36 @@ public class VNPayController {
             model.addAttribute("responseCode", vnp_ResponseCode);
             model.addAttribute("message", getResponseMessage(vnp_ResponseCode));
 
-            log.info("Payment result for order {}: success={}", vnp_TxnRef, isSuccess);
+            log.info("Payment result for order {}: success={}, responseCode={}", vnp_TxnRef, isSuccess, vnp_ResponseCode);
 
-            // Redirect về trang order confirmation
-            return "redirect:/order-confirmation/" + vnp_TxnRef;
+            // Redirect based on payment result
+            if (isSuccess) {
+                // Payment successful - redirect to order confirmation
+                return "redirect:/order-confirmation/" + vnp_TxnRef;
+            } else {
+                // Check if user just returned without completing (no actual transaction attempt)
+                // or if payment actually failed/cancelled
+                
+                // If order is still PENDING_PAYMENT (not yet updated), redirect to payment-pending
+                // If order is already CANCELLED/FAILED, redirect to order-confirmation to show the error
+                try {
+                    if (orderService.orderExists(vnp_TxnRef)) {
+                        t4m.toy_store.order.dto.OrderResponse order = orderService.getOrderByNumber(vnp_TxnRef);
+                        if (order.getStatus() == OrderStatus.PENDING_PAYMENT) {
+                            // Still pending, redirect to payment-pending page
+                            return "redirect:/payment-pending/" + vnp_TxnRef;
+                        } else {
+                            // Already updated to CANCELLED/FAILED, redirect to order-confirmation
+                            return "redirect:/order-confirmation/" + vnp_TxnRef;
+                        }
+                    }
+                } catch (Exception e) {
+                    log.error("Error checking order status", e);
+                }
+                
+                // Default: redirect to payment pending
+                return "redirect:/payment-pending/" + vnp_TxnRef;
+            }
 
         } catch (Exception e) {
             log.error("Error processing VNPay return", e);
@@ -200,6 +227,52 @@ public class VNPayController {
             response.put("RspCode", "99");
             response.put("Message", "Unknown error");
             return ResponseEntity.ok(response);
+        }
+    }
+
+    /**
+     * Create new payment URL for existing pending order
+     */
+    @PostMapping("/create-url/{orderNumber}")
+    @ResponseBody
+    public ResponseEntity<?> createPaymentUrlForOrder(@PathVariable String orderNumber,
+                                                      HttpServletRequest httpRequest) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // Get order details
+            if (!orderService.orderExists(orderNumber)) {
+                response.put("error", "Order not found");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            // Get order to check status and amount
+            t4m.toy_store.order.dto.OrderResponse order = orderService.getOrderByNumber(orderNumber);
+            
+            // Check if order is still PENDING_PAYMENT
+            if (order.getStatus() != OrderStatus.PENDING_PAYMENT) {
+                response.put("error", "Order is not pending payment. Current status: " + order.getStatus());
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            // Create VNPay payment URL
+            String paymentUrl = vnPayService.createPaymentUrl(
+                orderNumber,
+                order.getTotalAmount(),
+                "Thanh toan don hang " + orderNumber,
+                httpRequest
+            );
+            
+            response.put("paymentUrl", paymentUrl);
+            response.put("success", true);
+            
+            log.info("Created new payment URL for order: {}", orderNumber);
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            log.error("Error creating payment URL for order: {}", orderNumber, e);
+            response.put("error", "Cannot create payment URL: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
         }
     }
 

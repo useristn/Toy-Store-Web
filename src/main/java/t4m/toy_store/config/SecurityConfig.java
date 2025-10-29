@@ -137,6 +137,8 @@ public class SecurityConfig {
                         .requestMatchers("/products", "/products/**", "/product/**").permitAll()
                         .requestMatchers("/cart", "/checkout", "/orders", "/favorites", "/profile").permitAll()
                         .requestMatchers("/order-confirmation", "/order-confirmation/**").permitAll() // Order confirmation after payment
+                        .requestMatchers("/payment-pending", "/payment-pending/**").permitAll() // Payment pending page
+                        .requestMatchers("/terms", "/privacy", "/return-policy", "/shopping-guide", "/payment-security").permitAll() // Policy pages
                         .requestMatchers("/test-search", "/test-support.html", "/debug-admin.html").permitAll()
 
                         // Admin HTML pages - allow access, JS will check role

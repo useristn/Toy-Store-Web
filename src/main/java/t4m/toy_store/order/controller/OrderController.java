@@ -154,6 +154,33 @@ public class OrderController {
     }
     
     /**
+     * Cancel order by order number (for payment-pending page)
+     */
+    @PostMapping("/{orderNumber}/cancel")
+    public ResponseEntity<?> cancelOrderByNumber(
+            @PathVariable String orderNumber,
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestHeader(value = "X-User-Email", required = false) String userEmail) {
+        try {
+            // Get email from UserDetails or fallback to header
+            String email = userDetails != null ? userDetails.getUsername() : userEmail;
+            
+            if (email == null || email.isEmpty()) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "User not authenticated");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+            }
+            
+            OrderResponse cancelledOrder = orderService.cancelOrderByNumber(orderNumber, email);
+            return ResponseEntity.ok(cancelledOrder);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
+    }
+    
+    /**
      * Public endpoint to get order details after VNPay payment
      * This endpoint doesn't require authentication because user may lose JWT token
      * after redirecting from VNPay

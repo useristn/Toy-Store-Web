@@ -339,6 +339,61 @@ public class OrderService {
         return convertToOrderResponse(cancelledOrder);
     }
 
+    /**
+     * Cancel order by order number (for payment-pending page)
+     */
+    @Transactional
+    public OrderResponse cancelOrderByNumber(String orderNumber, String userEmail) {
+        // Find order
+        Order order = orderRepository.findByOrderNumber(orderNumber)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
+        
+        // Find user
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        
+        // Verify order belongs to user
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Bạn không có quyền hủy đơn hàng này");
+        }
+        
+        // Check if order can be cancelled (PENDING or PENDING_PAYMENT)
+        if (order.getStatus() != OrderStatus.PENDING && order.getStatus() != OrderStatus.PENDING_PAYMENT) {
+            throw new RuntimeException("Chỉ có thể hủy đơn hàng đang chờ xử lý hoặc chờ thanh toán");
+        }
+        
+        // Update order status to CANCELLED
+        order.setStatus(OrderStatus.CANCELLED);
+        order.setPaymentStatus("CANCELLED");
+        
+        // Restore product stock
+        for (OrderItem item : order.getOrderItems()) {
+            Product product = item.getProduct();
+            product.setStock(product.getStock() + item.getQuantity());
+            productRepository.save(product);
+            logger.info("Restored stock for product {}: +{}", product.getName(), item.getQuantity());
+        }
+        
+        // Restore voucher usage if applied
+        if (order.getVoucherCode() != null) {
+            try {
+                Voucher voucher = voucherService.getVoucherByCode(order.getVoucherCode());
+                if (voucher != null) {
+                    voucherService.restoreVoucherUsage(voucher, order.getUser());
+                    logger.info("Restored voucher usage for: {}", order.getVoucherCode());
+                }
+            } catch (Exception e) {
+                logger.warn("Failed to restore voucher usage: {}", e.getMessage());
+            }
+        }
+        
+        Order cancelledOrder = orderRepository.save(order);
+        
+        logger.info("Order {} cancelled by user {}", orderNumber, userEmail);
+        
+        return convertToOrderResponse(cancelledOrder);
+    }
+
     // VNPay payment methods
     
     /**

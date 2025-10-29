@@ -66,6 +66,11 @@ public class PageController {
         return "order-confirmation";
     }
 
+    @GetMapping("/payment-pending/{orderNumber}")
+    public String paymentPending() {
+        return "payment-pending";
+    }
+
     @GetMapping("/orders")
     public String orders() {
         return "orders";

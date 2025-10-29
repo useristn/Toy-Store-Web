@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head}">
+    <title>⏳ Đơn hàng chờ thanh toán – T4M</title>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Loading State -->
+            <div id="loadingState" class="text-center py-5">
+                <div class="spinner-border text-warning mb-3" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Đang tải...</span>
+                </div>
+                <p class="text-muted">Đang tải thông tin đơn hàng...</p>
+            </div>
+
+            <!-- Payment Pending Message -->
+            <div id="orderDetails" style="display: none;">
+                <div class="card shadow-lg border-0">
+                    <div class="card-body text-center py-5">
+                        <div class="pending-animation mb-4">
+                            <i class="fas fa-clock text-warning" style="font-size: 5rem;"></i>
+                        </div>
+                        <h2 class="fw-bold mb-3">⏳ Đơn hàng đang chờ thanh toán</h2>
+                        <p class="lead text-muted mb-4">Đơn hàng của bạn đã được tạo nhưng chưa hoàn tất thanh toán.</p>
+                        
+                        <div class="order-number-box p-4 mb-4" style="background: linear-gradient(135deg, #fff3cd 0%, #ffe5d0 100%); border-radius: 15px;">
+                            <p class="mb-2 text-muted">Mã đơn hàng:</p>
+                            <h3 class="fw-bold text-warning mb-0" id="orderNumberDisplay">---</h3>
+                        </div>
+
+                        <div class="alert alert-warning" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Lưu ý:</strong> Vui lòng hoàn tất thanh toán trong vòng <strong id="timeRemaining">15 phút</strong> để giữ đơn hàng này.
+                        </div>
+
+                        <!-- Continue Payment Button -->
+                        <button id="continuePaymentBtn" class="btn btn-lg btn-warning text-white mb-3" style="min-width: 250px;">
+                            <i class="fas fa-credit-card me-2"></i>Tiếp tục thanh toán
+                        </button>
+
+                        <!-- Cancel Order Button -->
+                        <div>
+                            <button id="cancelOrderBtn" class="btn btn-link text-danger">
+                                <i class="fas fa-times me-2"></i>Hủy đơn hàng
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Details Card -->
+                <div class="card shadow-sm mt-4">
+                    <div class="card-header" style="background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%); color: white;">
+                        <h5 class="mb-0"><i class="fas fa-list me-2"></i>Thông tin đơn hàng</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <p class="text-muted mb-1"><i class="fas fa-user me-2"></i>Người nhận:</p>
+                                <p class="fw-bold mb-0" id="customerName">---</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <p class="text-muted mb-1"><i class="fas fa-phone me-2"></i>Số điện thoại:</p>
+                                <p class="fw-bold mb-0" id="customerPhone">---</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <p class="text-muted mb-1"><i class="fas fa-envelope me-2"></i>Email:</p>
+                                <p class="fw-bold mb-0" id="customerEmail">---</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <p class="text-muted mb-1"><i class="fas fa-credit-card me-2"></i>Thanh toán:</p>
+                                <p class="fw-bold mb-0" id="paymentMethod">---</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <p class="text-muted mb-1"><i class="fas fa-info-circle me-2"></i>Trạng thái:</p>
+                                <span class="badge bg-warning text-dark" id="orderStatus">Chờ thanh toán</span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <p class="text-muted mb-1"><i class="fas fa-calendar me-2"></i>Ngày tạo:</p>
+                                <p class="fw-bold mb-0" id="orderDate">---</p>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <p class="text-muted mb-1"><i class="fas fa-map-marker-alt me-2"></i>Địa chỉ giao hàng:</p>
+                                <p class="fw-bold mb-0" id="shippingAddress">---</p>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <h6 class="mb-3"><i class="fas fa-box me-2"></i>Sản phẩm đã đặt:</h6>
+                        <div id="orderItemsList">
+                            <!-- Items will be loaded here -->
+                        </div>
+
+                        <hr>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tạm tính:</span>
+                            <strong id="orderSubtotal">0 ₫</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Phí vận chuyển:</span>
+                            <strong class="text-success">Miễn phí 🚀</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2" id="voucherDiscountRow" style="display: none;">
+                            <span>Mã giảm giá (<span id="displayVoucherCode"></span>):</span>
+                            <strong class="text-success">- <span id="displayVoucherDiscount">0 ₫</span></strong>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <h5 class="mb-0">Tổng cộng:</h5>
+                            <h5 class="mb-0 text-danger" id="orderTotal">0 ₫</h5>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Help Section -->
+                <div class="card shadow-sm mt-4 border-info">
+                    <div class="card-body">
+                        <h6 class="text-info mb-3"><i class="fas fa-question-circle me-2"></i>Cần hỗ trợ?</h6>
+                        <p class="mb-2">
+                            <i class="fas fa-headset me-2 text-info"></i>
+                            Hotline: <strong class="text-info">1800-8080</strong>
+                        </p>
+                        <p class="mb-0">
+                            <i class="fas fa-envelope me-2 text-info"></i>
+                            Email: <strong class="text-info">support@t4m.com</strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error State -->
+            <div id="errorState" style="display: none;">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-exclamation-circle text-danger mb-3" style="font-size: 4rem;"></i>
+                        <h3 class="text-danger mb-3">Không tìm thấy đơn hàng</h3>
+                        <p class="text-muted mb-4">Đơn hàng không tồn tại hoặc đã bị xóa.</p>
+                        <a href="/orders" class="btn btn-primary me-2">
+                            <i class="fas fa-list me-2"></i>Xem danh sách đơn hàng
+                        </a>
+                        <a href="/products" class="btn btn-outline-primary">
+                            <i class="fas fa-shopping-bag me-2"></i>Tiếp tục mua sắm
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script src="/js/payment-pending.js"></script>
+
+<!-- Cancel Confirmation Modal -->
+<div class="modal fade" id="cancelConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Xác nhận hủy đơn hàng
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Bạn có chắc chắn muốn hủy đơn hàng này?</p>
+                <p class="text-muted small mb-0">Sản phẩm sẽ được trả lại kho và bạn có thể đặt hàng lại sau.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Không</button>
+                <button type="button" class="btn btn-danger" id="confirmCancelBtn">
+                    <i class="fas fa-times me-2"></i>Xác nhận hủy
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

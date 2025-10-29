@@ -159,21 +159,42 @@ function displaySessions(sessions) {
         return;
     }
     
-    sessionsList.innerHTML = sessions.map(session => `
-        <div class="session-item ${session.sessionId === currentSessionId ? 'active' : ''}" 
-             onclick="selectSession('${session.sessionId}', '${escapeHtml(session.userName)}', '${escapeHtml(session.userEmail)}')">
-            <div class="d-flex justify-content-between align-items-start">
-                <div class="flex-grow-1">
-                    <div class="session-name">
-                        <i class="fas fa-user-circle me-2"></i>${session.userName || 'Khách hàng'}
+    sessionsList.innerHTML = sessions.map(session => {
+        const displayName = normalizeUserField(session.userName, 'Khách hàng');
+        const displayEmail = normalizeUserField(session.userEmail, '');
+        const lastMessage = normalizeUserField(session.lastMessage, 'Chưa có tin nhắn');
+        const unreadBadge = session.unreadCount > 0 ? `<span class="badge bg-danger">${session.unreadCount}</span>` : '';
+        const emailHtml = displayEmail
+            ? `<div class="session-email">${escapeHtml(displayEmail)}</div>`
+            : '<div class="session-email text-muted fst-italic">Chưa cập nhật email</div>';
+
+        return `
+            <div class="session-item ${session.sessionId === currentSessionId ? 'active' : ''}" 
+                 onclick='selectSession(${JSON.stringify(session.sessionId)}, ${JSON.stringify(displayName)}, ${JSON.stringify(displayEmail)})'>
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="session-name">
+                            <i class="fas fa-user-circle me-2"></i>${escapeHtml(displayName)}
+                        </div>
+                        ${emailHtml}
+                        <div class="session-last-message">${escapeHtml(lastMessage)}</div>
                     </div>
-                    <div class="session-email">${session.userEmail}</div>
-                    <div class="session-last-message">${session.lastMessage || 'Chưa có tin nhắn'}</div>
+                    ${unreadBadge}
                 </div>
-                ${session.unreadCount > 0 ? `<span class="badge bg-danger">${session.unreadCount}</span>` : ''}
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
+}
+
+function normalizeUserField(value, fallback = '') {
+    if (value === null || value === undefined) {
+        return fallback;
+    }
+    const stringValue = String(value).trim();
+    if (!stringValue || stringValue.toLowerCase() === 'null' || stringValue.toLowerCase() === 'undefined') {
+        return fallback;
+    }
+    return stringValue;
 }
 
 function escapeHtml(text) {
@@ -185,17 +206,23 @@ function escapeHtml(text) {
 
 function selectSession(sessionId, userName, userEmail) {
     console.log('Selecting session:', sessionId, userName, userEmail);
+    const displayName = normalizeUserField(userName, 'Khách hàng');
+    const displayEmail = normalizeUserField(userEmail, '');
+
     currentSessionId = sessionId;
-    currentUserName = userName;
-    currentUserEmail = userEmail;
+    currentUserName = displayName;
+    currentUserEmail = displayEmail;
     
     // Update UI - Sử dụng ID mới từ HTML
     const userNameElement = document.getElementById('currentUserName');
     const userEmailElement = document.getElementById('currentUserEmail');
     const inputArea = document.getElementById('messageInputArea');
     
-    if (userNameElement) userNameElement.textContent = userName || 'Khách hàng';
-    if (userEmailElement) userEmailElement.textContent = userEmail || '';
+    if (userNameElement) userNameElement.textContent = displayName;
+    if (userEmailElement) {
+        userEmailElement.textContent = displayEmail;
+        userEmailElement.style.display = displayEmail ? 'block' : 'none';
+    }
     if (inputArea) inputArea.style.display = 'block';
     
     // Update active session
@@ -272,11 +299,15 @@ function displayMessage(chatMessage) {
         hour: '2-digit',
         minute: '2-digit'
     });
+    const senderLabel = chatMessage.senderType === 'ADMIN'
+        ? 'Bạn (Admin)'
+        : normalizeUserField(chatMessage.userName, 'Khách hàng');
+    const messageText = escapeHtml(chatMessage.message);
     
     messageDiv.innerHTML = `
         <div class="message-bubble">
-            <div class="message-sender">${chatMessage.senderType === 'ADMIN' ? 'Bạn (Admin)' : chatMessage.userName}</div>
-            <div class="message-text">${escapeHtml(chatMessage.message)}</div>
+            <div class="message-sender">${escapeHtml(senderLabel)}</div>
+            <div class="message-text">${messageText}</div>
             <div class="message-time">${time}</div>
         </div>
     `;

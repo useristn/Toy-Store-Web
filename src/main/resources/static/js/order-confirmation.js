@@ -53,10 +53,36 @@ async function loadOrderDetails() {
 
         const order = await response.json();
         console.log('Order loaded successfully:', order);
+        console.log('Order status:', order.status);
+        console.log('Payment status:', order.paymentStatus);
+        console.log('Payment method:', order.paymentMethod);
 
         // Save current order
         currentOrder = order;
 
+        // Check if order is PENDING_PAYMENT and redirect to payment-pending page
+        if (order.status === 'PENDING_PAYMENT' && order.paymentMethod === 'E_WALLET') {
+            console.log('Order is pending payment, redirecting to payment-pending page...');
+            window.location.href = '/payment-pending/' + orderNumber;
+            return;
+        }
+
+        // Check if order is CANCELLED (any paymentStatus) for E_WALLET payments
+        if (order.paymentMethod === 'E_WALLET' && order.status === 'CANCELLED') {
+            console.log('Payment was cancelled/failed, showing cancelled message...');
+            
+            // Display order details FIRST
+            displayOrderDetails(order);
+            
+            // Then modify the UI to show cancelled message
+            displayCancelledPaymentMessage(order);
+            
+            loadingState.style.display = 'none';
+            orderDetails.style.display = 'block';
+            return;
+        }
+
+        console.log('Displaying normal order details...');
         // Display order details
         displayOrderDetails(order);
 
@@ -96,7 +122,119 @@ async function loadOrderDetails() {
     }
 }
 
+function displayCancelledPaymentMessage(order) {
+    console.log('=== displayCancelledPaymentMessage called ===', order);
+
+    const statusIcon = document.getElementById('orderStatusIcon');
+    if (statusIcon) {
+        statusIcon.innerHTML = '<i class="fas fa-times-circle text-danger" style="font-size: 5rem;"></i>';
+    }
+
+    const statusTitle = document.getElementById('orderStatusTitle');
+    if (statusTitle) {
+        statusTitle.textContent = '❌ Thanh toán đã bị hủy';
+        statusTitle.classList.remove('space-text');
+        statusTitle.classList.add('text-danger');
+    }
+
+    const statusMessage = document.getElementById('orderStatusMessage');
+    if (statusMessage) {
+        statusMessage.innerHTML = 'Đơn hàng của bạn đã bị hủy do thanh toán không thành công.';
+        statusMessage.classList.remove('text-muted');
+        statusMessage.classList.add('text-danger');
+    }
+
+    const orderNumberBox = document.getElementById('orderNumberBox');
+    if (orderNumberBox) {
+        orderNumberBox.style.background = 'linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%)';
+    }
+
+    const orderNumberDisplay = document.getElementById('orderNumberDisplay');
+    if (orderNumberDisplay) {
+        orderNumberDisplay.classList.remove('text-primary');
+        orderNumberDisplay.classList.add('text-danger');
+    }
+
+    const statusActions = document.getElementById('orderStatusActions');
+    if (statusActions) {
+    const cancelReason = getPaymentCancelReason(order.vnpayResponseCode, order.paymentStatus);
+        statusActions.innerHTML = `
+            <div class="alert alert-danger mt-3" role="alert">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Lý do hủy:</strong> ${cancelReason}
+            </div>
+            <div class="d-flex justify-content-center flex-wrap gap-2 mt-3">
+                <a href="/products" class="btn btn-primary">
+                    <i class="fas fa-shopping-bag me-2"></i>Đặt hàng mới
+                </a>
+                <a href="/orders" class="btn btn-outline-secondary">
+                    <i class="fas fa-list me-2"></i>Xem đơn hàng của tôi
+                </a>
+            </div>
+        `;
+    }
+
+    console.log('=== displayCancelledPaymentMessage completed ===');
+}
+
+function getPaymentCancelReason(responseCode, paymentStatus) {
+    const reasons = {
+        '24': 'Khách hàng hủy giao dịch',
+        '11': 'Đã hết hạn chờ thanh toán',
+        '13': 'Nhập sai mật khẩu OTP',
+        '51': 'Tài khoản không đủ số dư',
+        '65': 'Vượt quá hạn mức giao dịch',
+        '75': 'Ngân hàng đang bảo trì',
+        '79': 'Nhập sai mật khẩu quá số lần quy định'
+    };
+    if (responseCode && reasons[responseCode]) {
+        return reasons[responseCode];
+    }
+
+    if (paymentStatus === 'CANCELLED') {
+        return 'Đơn hàng đã được hủy bởi bạn.';
+    }
+
+    return 'Thanh toán không thành công. Vui lòng thử lại.';
+}
+
 function displayOrderDetails(order) {
+    // Reset status header to success state by default
+    const statusIcon = document.getElementById('orderStatusIcon');
+    if (statusIcon) {
+        statusIcon.innerHTML = '<i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>';
+    }
+
+    const statusTitle = document.getElementById('orderStatusTitle');
+    if (statusTitle) {
+        statusTitle.textContent = '🎉 Tàu đã phóng thành công!';
+        statusTitle.classList.add('space-text');
+        statusTitle.classList.remove('text-danger');
+    }
+
+    const statusMessage = document.getElementById('orderStatusMessage');
+    if (statusMessage) {
+        statusMessage.innerHTML = 'Cảm ơn phi hành gia đã đặt hàng tại T4M!';
+        statusMessage.classList.add('text-muted');
+        statusMessage.classList.remove('text-danger');
+    }
+
+    const orderNumberBox = document.getElementById('orderNumberBox');
+    if (orderNumberBox) {
+        orderNumberBox.style.background = 'linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%)';
+    }
+
+    const orderNumberDisplay = document.getElementById('orderNumberDisplay');
+    if (orderNumberDisplay) {
+        orderNumberDisplay.classList.add('text-primary');
+        orderNumberDisplay.classList.remove('text-danger');
+    }
+
+    const statusActions = document.getElementById('orderStatusActions');
+    if (statusActions) {
+        statusActions.innerHTML = '';
+    }
+
     // Order number
     document.getElementById('orderNumberDisplay').textContent = order.orderNumber;
 

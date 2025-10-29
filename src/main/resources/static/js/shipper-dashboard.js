@@ -455,7 +455,7 @@ function displayActiveOrders(orders) {
             <td>${formatDateTime(order.createdAt)}</td>
             <td>
                 <button class="btn btn-sm btn-success me-1" onclick="completeOrder(${order.id})">
-                    <i class="fas fa-check me-1"></i>Giao thành công
+                    <i class="fas fa-check me-1"></i>Thành công
                 </button>
                 <button class="btn btn-sm btn-danger me-1" onclick="failOrder(${order.id})">
                     <i class="fas fa-times me-1"></i>Thất bại
