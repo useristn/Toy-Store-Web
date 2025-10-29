@@ -396,7 +396,7 @@ function displayOrderDetail(order) {
             </div>
             <div class="detail-row">
                 <span class="detail-label">Số điện thoại:</span>
-                <span class="detail-value">${order.shippingPhone || 'N/A'}</span>
+                <span class="detail-value">${order.customerPhone || 'N/A'}</span>
             </div>
             <div class="detail-row">
                 <span class="detail-label">Địa chỉ giao hàng:</span>
@@ -497,18 +497,6 @@ function displayOrderDetail(order) {
                     ` : ''}
                 </div>
             ` : ''}
-            <div class="detail-row">
-                <span class="detail-label">Phương thức:</span>
-                <span class="detail-value">${order.paymentMethod || 'COD'}</span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">Trạng thái thanh toán:</span>
-                <span class="detail-value">
-                    ${order.paymentStatus === 'PAID' 
-                        ? '<span class="badge bg-success">Đã thanh toán</span>' 
-                        : '<span class="badge bg-warning">Chưa thanh toán</span>'}
-                </span>
-            </div>
             ${order.voucherCode && order.voucherDiscount && order.voucherDiscount > 0 ? `
             <div class="detail-row">
                 <span class="detail-label">Mã giảm giá:</span>

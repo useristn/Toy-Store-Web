@@ -332,6 +332,28 @@ public class OrderService {
         
         // Update order status to CANCELLED
         order.setStatus(OrderStatus.CANCELLED);
+        
+        // Restore product stock
+        for (OrderItem item : order.getOrderItems()) {
+            Product product = item.getProduct();
+            product.setStock(product.getStock() + item.getQuantity());
+            productRepository.save(product);
+            logger.info("Restored stock for product {}: +{}", product.getName(), item.getQuantity());
+        }
+        
+        // Restore voucher usage if applied
+        if (order.getVoucherCode() != null) {
+            try {
+                Voucher voucher = voucherService.getVoucherByCode(order.getVoucherCode());
+                if (voucher != null) {
+                    voucherService.restoreVoucherUsage(voucher, order.getUser());
+                    logger.info("Restored voucher usage for: {}", order.getVoucherCode());
+                }
+            } catch (Exception e) {
+                logger.warn("Failed to restore voucher usage: {}", e.getMessage());
+            }
+        }
+        
         Order cancelledOrder = orderRepository.save(order);
         
         logger.info("Order {} cancelled by user {}", orderId, userEmail);
