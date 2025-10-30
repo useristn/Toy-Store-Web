@@ -112,8 +112,8 @@ Hệ thống thanh toán an toàn với Nhiều phương thức thanh toán như
 - Kiểm tra giỏ hàng và điều chỉnh số lượng
 - Nhập thông tin giao hàng chi tiết
 - Thanh toán trực tuyến qua VNPay
-- Nhận xác nhận đơn hàng qua email
-
+- Nhận xác nhận đơn hàng
+  
 ### 3. Quản trị hệ thống (Admin)
 Giao diện quản trị chuyên nghiệp với sidebar điều hướng rõ ràng.
 
@@ -132,7 +132,7 @@ Giao diện dành riêng cho nhân viên giao hàng với các công cụ hỗ t
 ![Dashboard Shipper](image_readme/shipper.png)
 
 **Tính năng giao hàng:**
-- Xem danh sách đơn hàng cần giao
+- Xem danh sách đơn hàng cần giao và nhận đơn
 - Cập nhật trạng thái giao hàng theo thời gian thực
 - Theo dõi vị trí giao hàng trên bản đồ
 - Báo cáo hiệu suất và thống kê công việc
@@ -146,7 +146,7 @@ Hệ thống tương tác đa dạng đảm bảo trải nghiệm tốt cho ngư
 - **Chat thời gian thực**: Kết nối khách hàng với admin qua WebSocket
 - **AI Chatbot**: Tư vấn tự động sử dụng Google Gemini
 - **Email thông báo**: OTP xác thực, đặt lại mật khẩu, xác nhận đơn hàng
-- **Đánh giá sản phẩm**: Hệ thống 5 sao với bình luận chi tiết
+- **Đánh giá sản phẩm**: Hệ thống đánh giá 5 sao giúp khách hàng có thể xem được sản phẩm tốt
 
 ### 6. Bảo mật & An toàn
 Hệ thống bảo mật toàn diện cho tất cả vai trò người dùng.
