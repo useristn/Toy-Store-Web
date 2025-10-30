@@ -55,4 +55,9 @@ public class AdminViewController {
     public String editVoucher() {
         return "admin/admin-voucher-form";
     }
+
+    @GetMapping("/accounts")
+    public String accounts() {
+        return "admin/admin-accounts";
+    }
 }

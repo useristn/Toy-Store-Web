@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Tài khoản – T4M Toy Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<!-- Mobile Menu Toggle -->
+<button class="btn btn-dark d-md-none mobile-menu-toggle" type="button" data-bs-toggle="offcanvas" data-bs-target="#adminSidebar">
+    <i class="fas fa-bars"></i>
+</button>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-3 col-lg-2 d-md-block bg-gradient-dark sidebar offcanvas-md offcanvas-start" id="adminSidebar" style="min-height: 100vh;">
+            <div class="offcanvas-header d-md-none">
+                <h5 class="offcanvas-title text-white">Menu Admin</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#adminSidebar"></button>
+            </div>
+            <div class="position-sticky pt-3">
+                <!-- Admin Profile -->
+                <div class="admin-profile text-center mb-4 px-3">
+                    <div class="profile-avatar mb-2">
+                        <i class="fas fa-user-shield fa-3x text-white"></i>
+                    </div>
+                    <h6 class="text-white mb-0" id="adminName">admin</h6>
+                    <small class="text-white-50" id="adminEmail">admin@t4m.com</small>
+                </div>
+
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
+                    <span class="text-white-50">📊 QUẢN TRỊ</span>
+                </h6>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin">
+                            <i class="fas fa-home me-2"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/products">
+                            <i class="fas fa-box me-2"></i>Quản lý sản phẩm
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/orders">
+                            <i class="fas fa-shopping-cart me-2"></i>Quản lý đơn hàng
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/admin/accounts">
+                            <i class="fas fa-users me-2"></i>Quản lý tài khoản
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/reviews">
+                            <i class="fas fa-star me-2"></i>Quản lý đánh giá
+                        </a>
+                    </li>
+                </ul>
+
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
+                    <span class="text-white-50">🎯 MARKETING</span>
+                </h6>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/vouchers">
+                            <i class="fas fa-ticket-alt me-2"></i>Mã giảm giá
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/support">
+                            <i class="fas fa-comments me-2"></i>Hỗ trợ khách hàng
+                        </a>
+                    </li>
+                </ul>
+
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
+                    <span class="text-white-50">⚙️ HỆ THỐNG</span>
+                </h6>
+                <ul class="nav flex-column mb-2">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="logout()">
+                            <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 bg-light">
+            <!-- Top Bar -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom bg-white shadow-sm px-3 rounded">
+                <h1 class="h2 mb-0">👥 Danh sách Tài khoản</h1>
+                <button type="button" class="btn btn-primary" onclick="openCreateModal()">
+                    <i class="fas fa-plus me-1"></i>Tạo Tài khoản Mới
+                </button>
+            </div>
+
+            <!-- Alert Messages -->
+            <div id="alertContainer"></div>
+
+            <!-- Filters and Search -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <!-- Search Bar -->
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" class="form-control" id="searchInput" 
+                                       placeholder="Tìm theo tên, email, số điện thoại..." 
+                                       onkeyup="searchAccounts()">
+                            </div>
+                        </div>
+
+                        <!-- Role Filter -->
+                        <div class="col-md-4">
+                            <select class="form-select" id="roleFilter" onchange="loadAccounts()">
+                                <option value="">Tất cả vai trò</option>
+                                <option value="ROLE_ADMIN">Admin</option>
+                                <option value="ROLE_USER">User</option>
+                                <option value="ROLE_SHIPPER">Shipper</option>
+                            </select>
+                        </div>
+
+                        <!-- Bulk Actions -->
+                        <div class="col-md-4">
+                            <select class="form-select" id="bulkActionSelect" onchange="handleBulkAction()">
+                                <option value="">Hành động hàng loạt</option>
+                                <option value="delete">Xóa đã chọn</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accounts Table -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="50">
+                                        <input type="checkbox" class="form-check-input" id="selectAll" 
+                                               onchange="toggleSelectAll()">
+                                    </th>
+                                    <th>Họ và Tên</th>
+                                    <th>Email</th>
+                                    <th>Số điện thoại</th>
+                                    <th>Vai trò</th>
+                                    <th>Ngày tham gia</th>
+                                    <th width="200">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="accountsTableBody">
+                                <tr>
+                                    <td colspan="7" class="text-center py-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Đang tải...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <select class="form-select form-select-sm" id="pageSizeSelect" 
+                                    style="width: auto;" onchange="loadAccounts()">
+                                <option value="10">10 / trang</option>
+                                <option value="20">20 / trang</option>
+                                <option value="50">50 / trang</option>
+                            </select>
+                        </div>
+                        <nav>
+                            <ul class="pagination mb-0" id="pagination">
+                                <!-- Pagination will be generated by JS -->
+                            </ul>
+                        </nav>
+                        <div id="pageInfo">
+                            <!-- Page info will be generated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Create/Edit Account Modal -->
+<div class="modal fade" id="accountModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="accountModalTitle">Tạo Tài khoản Mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="accountForm">
+                    <input type="hidden" id="accountId">
+                    
+                    <div class="mb-3">
+                        <label for="accountName" class="form-label">Họ và Tên <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="accountName" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="accountEmail" class="form-label">Email <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="accountEmail" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="accountPhone" class="form-label">Số điện thoại</label>
+                        <input type="tel" class="form-control" id="accountPhone">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="accountRole" class="form-label">Vai trò <span class="text-danger">*</span></label>
+                        <select class="form-select" id="accountRole" required>
+                            <option value="">Chọn vai trò</option>
+                            <option value="ROLE_USER">User</option>
+                            <option value="ROLE_SHIPPER">Shipper</option>
+                        </select>
+                    </div>
+
+                    <!-- Password change fields (only for edit) -->
+                    <div id="passwordChangeFields" style="display: none;">
+                        <hr class="my-3">
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="changePasswordCheck">
+                                <label class="form-check-label fw-bold" for="changePasswordCheck">
+                                    Thay đổi mật khẩu
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="passwordChangeInputs" style="display: none;">
+                            <div class="mb-3">
+                                <label for="newPassword" class="form-label">Mật khẩu mới <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" id="newPassword">
+                                <div class="form-text">Mật khẩu phải có ít nhất 6 ký tự</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="confirmNewPassword" class="form-label">Xác nhận mật khẩu mới <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" id="confirmNewPassword">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Password fields (only for create) -->
+                    <div id="passwordFields">
+                        <div class="mb-3">
+                            <label for="accountPassword" class="form-label">Mật khẩu <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" id="accountPassword">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="accountConfirmPassword" class="form-label">Xác nhận mật khẩu <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" id="accountConfirmPassword">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" onclick="saveAccount()">
+                    <i class="fas fa-save me-1"></i>Lưu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Account Details Modal -->
+<div class="modal fade" id="viewAccountModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chi tiết Tài khoản</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="viewAccountBody">
+                <!-- Account details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Cảnh báo
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">Bạn có chắc chắn muốn <strong>xóa vĩnh viễn</strong> tài khoản này không?</p>
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Cảnh báo:</strong> Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan sẽ bị xóa vĩnh viễn.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                    <i class="fas fa-trash me-1"></i>Xác nhận xóa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/admin-accounts.js"></script>
+
+<style>
+/* Sidebar Styles */
+.sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+}
+
+.sidebar .nav-link {
+    font-weight: 500;
+    color: #ecf0f1;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+}
+
+.sidebar .nav-link:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-left-color: #3498db;
+    transform: translateX(5px);
+}
+
+.sidebar .nav-link.active {
+    color: #fff;
+    background-color: rgba(52, 152, 219, 0.3);
+    border-left: 3px solid #3498db;
+    font-weight: 600;
+}
+
+.sidebar .nav-link i {
+    width: 20px;
+}
+
+.sidebar-heading {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Admin Profile */
+.admin-profile {
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.profile-avatar {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Card Styles */
+.card {
+    border: none;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+}
+
+.border-left-primary {
+    border-left: 4px solid #4e73df !important;
+}
+
+.border-left-success {
+    border-left: 4px solid #1cc88a !important;
+}
+
+.border-left-info {
+    border-left: 4px solid #36b9cc !important;
+}
+
+.border-left-warning {
+    border-left: 4px solid #f6c23e !important;
+}
+
+.border-left-danger {
+    border-left: 4px solid #e74a3b !important;
+}
+
+/* Typography */
+.text-xs {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.font-weight-bold {
+    font-weight: 700 !important;
+}
+
+.text-gray-800 {
+    color: #5a5c69 !important;
+}
+
+/* Background */
+main {
+    min-height: 100vh;
+}
+
+.bg-gradient-dark {
+    background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Progress Bar */
+.progress {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+/* Alert Styles */
+.alert {
+    border-radius: 0.5rem;
+    border-left: 4px solid;
+}
+
+/* Table Styles */
+.table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    color: #6c757d;
+    border-top: none;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0,0,0,0.02);
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1040;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        position: relative;
+        height: auto;
+    }
+    
+    main {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        margin-top: 60px;
+    }
+    
+    .hover-lift:hover {
+        transform: none;
+    }
+}
+
+@media (min-width: 768px) {
+    .mobile-menu-toggle {
+        display: none;
+    }
+}
+
+/* Scrollbar */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.1);
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 10px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.5);
+}
+</style>
+
+</body>
+</html>
