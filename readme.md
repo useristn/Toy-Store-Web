@@ -26,7 +26,7 @@
 
 ## Giới thiệu chung
 
-**T4M Toy Store** là website thương mại điện tử bán đồ chơi, được phát triển bằng **Spring Boot**, **Thymeleaf** và **Bootstrap 5**. Hệ thống hỗ trợ ba vai trò chính: **Khách hàng**, **Quản trị viên** và **Shipper**. Dự án tích hợp các công nghệ hiện đại như **AI Chatbot (Gemini)**, **thanh toán VNPay**, **chat thời gian thực (WebSocket)** và **upload ảnh Cloudinary** hướng đến trải nghiệm người dùng tối ưu.
+**T4M Toy Store** là website thương mại điện tử bán đồ chơi, được phát triển bằng **Spring Boot**, **Thymeleaf** và **Bootstrap 5**. Hệ thống hỗ trợ ba vai trò chính: **Khách hàng**, **Quản trị viên** và **Shipper**. Dự án tích hợp các công nghệ hiện đại như **AI Chatbot (Gemini)**, **thanh toán VNPay**, **chat thời gian thực (WebSocket)** và **upload ảnh Cloudinary**.
 
 ---
 
