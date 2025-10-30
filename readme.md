@@ -1,16 +1,19 @@
-#  ĐỒ ÁN MÔN HỌC LẬP TRÌNH WEB - Xây dựng website bán đồ chơi T4M
+# T4M Toy Store
 
-> Đồ án môn học: Lập trình Web - Học kỳ 1 Đợt 1 Năm học 2025-2026
->
-> Đơn vị đào tạo: Trường Đại Học Sư Phạm Kỹ Thuật TP. HCM
->
-> Giảng viên hướng dẫn: Nguyễn Hữu Trung
->
-> Nhóm sinh viên thực hiện: Nhóm 9 - T4M
+> **Đồ án môn học:** Lập trình Web (HK1 - Năm học 2025–2026)  
+> **Đơn vị đào tạo:** Đại học Sư Phạm Kỹ Thuật TP.HCM (HCMUTE)  
+> **Giảng viên hướng dẫn:** Nguyễn Hữu Trung  
+> **Nhóm sinh viên thực hiện:** Nhóm 9 - T4M
+
+![Java](https://img.shields.io/badge/Java-24-orange)
+![SpringBoot](https://img.shields.io/badge/Spring%20Boot-3.5.5-brightgreen)
+![Thymeleaf](https://img.shields.io/badge/Thymeleaf-3.1.2-blue)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-5-purple)
+![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 ---
 
-##  Thành viên nhóm
+## Thành viên nhóm
 
 | Họ và Tên | Mã Sinh Viên | Liên hệ (Email) |
 | :--- | :--- | :--- |
@@ -21,9 +24,11 @@
 
 ---
 
-##  Giới thiệu chung
+## Giới thiệu chung
 
-**T4M Toy Store** là website bán hàng được phát triển bằng công nghệ Spring Boot kết hợp Thymeleaf và Bootstrap 5. Dự án là một ứng dụng e-commerce hoàn chỉnh hỗ trợ ba vai trò chính: khách hàng (customer), quản trị viên (admin) và nhân viên giao hàng (shipper). Dự án không chỉ cung cấp các tính năng bán hàng cơ bản mà còn tập trung vào việc tối ưu hóa trải nghiệm người dùng (UX) thông qua các nghiệp vụ giao dịch tiên tiến, hệ thống quản trị chuyên sâu và tích hợp công nghệ hiện đại như AI Chatbot, thanh toán điện tử VNPay Sandbox và giao tiếp thời gian thực bằng WebSocket.
+**T4M Toy Store** là website thương mại điện tử bán đồ chơi, được phát triển bằng **Spring Boot**, **Thymeleaf** và **Bootstrap 5**.  
+Hệ thống hỗ trợ ba vai trò chính: **Khách hàng**, **Quản trị viên**, và **Shipper**.  
+Dự án tích hợp các công nghệ hiện đại như **AI Chatbot (Gemini)**, **thanh toán VNPay**, **chat thời gian thực (WebSocket)** và **upload ảnh Cloudinary** hướng đến trải nghiệm người dùng tối ưu.
 
 ---
 
@@ -52,7 +57,6 @@ Toy-Store-Web/
 │   │   │   └── voucher/                  # Module mã giảm giá
 │   │   ├── resources/
 │   │   │   ├── templates/
-│   │   │   │   ├── client files
 │   │   │   │   ├── admin/
 │   │   │   │   ├── shipper/
 │   │   │   │   ├── email/
@@ -84,75 +88,74 @@ Toy-Store-Web/
 
 ---
 
-##  Tính năng chi tiết (Feature Breakdown)
+## Tính năng chi tiết
 
-### A. Trải nghiệm Người dùng (Client-Side)
+### 1. Trang chủ & Mua sắm
+Website sở hữu giao diện trang chủ hiện đại với các banner quảng cáo và sản phẩm nổi bật.
 
-1. **Mua sắm & Thanh toán:**
-   - Trang chủ hiển thị các sản phẩm nổi bật, danh mục sản phẩm và các banner quảng cáo hấp dẫn.
-   - Tìm kiếm sản phẩm theo nhiều tiêu chí: tên sản phẩm, loại, giá cả, với các bộ lọc nâng cao.
-   - Trang chi tiết sản phẩm với hình ảnh đa dạng được lưu trữ trên Cloudinary, mô tả chi tiết, giá, kích cỡ và đánh giá từ người dùng.
-   - Giỏ hàng cho phép quản lý sản phẩm đã chọn, cập nhật số lượng, xóa sản phẩm và tính tổng tiền.
-   - Quy trình thanh toán gồm 3 bước: nhập thông tin giao hàng, chọn phương thức thanh toán, xác nhận đơn hàng.
-   - Tích hợp cổng thanh toán VNPay cho phép thanh toán trực tuyến an toàn.
+![Trang chủ](image_readme/main.png)
+<!-- ![Giao diện chính](image_readme/main_1.png) -->
 
-2. **Khuyến mãi & Tương tác:**
-   - Hệ thống mã giảm giá (Voucher): nhập mã voucher với phản hồi nhanh, hỗ trợ nhiều loại giảm giá.
-   - Đánh giá sản phẩm: xếp hạng (1-5 sao).
-   - Giao tiếp trực tuyến: chat trực tiếp với admin thông qua WebSocket để nhận hỗ trợ nhanh chóng.
-   - Đăng ký nhận tin: form tại footer sử dụng để đăng ký nhận tin khuyến mại.
-   - Yêu thích sản phẩm: lưu các sản phẩm yêu thích để mua sau.
+**Tính năng mua sắm:**
+- Tìm kiếm và lọc sản phẩm theo danh mục, giá cả
+- Xem chi tiết sản phẩm với hình ảnh chất lượng cao
+- Thêm sản phẩm vào giỏ hàng và yêu thích
 
-3. **Tài khoản và Hồ sơ:**
-   - Đăng ký và đăng nhập với xác thực OTP qua email.
-   - Đặt lại mật khẩu thông qua email.
-   - Quản lý hồ sơ cá nhân, xem lịch sử đơn hàng, quản lý địa chỉ giao hàng.
+![Trang sản phẩm](image_readme/product_1.png)
 
-### B. Khu vực Quản Trị (Admin Dashboard)
+### 2. Thanh toán & Đặt hàng
+Hệ thống thanh toán an toàn với Nhiều phương thức thanh toán như COD, VNPay,... hỗ trợ đầy đủ quy trình mua hàng.
 
-Giao diện Admin được thiết kế theo phong cách hiện đại, trực quan và đồng bộ về UI/UX với các thành phần của Bootstrap 5, sử dụng sidebar để điều hướng dễ dàng.
+![Thanh toán VNPay](image_readme/payment.png)
 
-1. **Quản lý Hệ thống (CRUD):**
-   - Quản lý sản phẩm: thêm, sửa, xóa sản phẩm, upload hình ảnh lên Cloudinary, quản lý danh mục và thương hiệu.
-   - Quản lý đơn hàng: xem danh sách, cập nhật trạng thái (chờ xử lý, đang giao, đã giao, bị hủy,...).
-   - Quản lý tài khoản người dùng: xem thông tin khách hàng, khóa/mở tài khoản, xem lịch sử đơn hàng.
+**Quy trình đặt hàng:**
+- Kiểm tra giỏ hàng và điều chỉnh số lượng
+- Nhập thông tin giao hàng chi tiết
+- Thanh toán trực tuyến qua VNPay
+- Nhận xác nhận đơn hàng qua email
 
-2. **Module Quản Lý Đánh Giá (Review Management):**
-   - Bảng danh sách chi tiết các đánh giá từ khách hàng.
-   - Bộ lọc chuyên sâu: lọc theo khoảng số sao, trạng thái và thời gian.
-   - Xóa đánh giá yêu cầu xác nhận bằng modal cảnh báo.
-   - Thống kê đánh giá để phân tích chất lượng sản phẩm.
+### 3. Quản trị hệ thống (Admin)
+Giao diện quản trị chuyên nghiệp với sidebar điều hướng rõ ràng.
 
-3. **Module Quản Lý Mã Giảm Giá (Voucher Management):**
-   - Loại hình giảm giá: giảm theo phần trăm, giảm số tiền cố định, miễn phí vận chuyển.
-   - Điều kiện: giá trị đơn hàng tối thiểu, giới hạn số lần sử dụng, ngày bắt đầu và kết thúc.
-   - Tạo và quản lý các chiến dịch khuyến mại.
+![Dashboard Admin](image_readme/admin.png)
 
-4. **Hỗ trợ và Chat:**
-   - Giao diện chat với khách hàng thời gian thực.
-   - Quản lý các tin nhắn và hỗ trợ khách hàng hiệu quả.
+**Chức năng quản lý:**
+- **Sản phẩm**: Thêm/sửa/xóa sản phẩm, upload ảnh lên Cloudinary
+- **Đơn hàng**: Theo dõi và cập nhật trạng thái giao hàng
+- **Tài khoản**: Quản lý người dùng, phân quyền chi tiết
+- **Mã giảm giá**: Tạo và quản lý các chương trình khuyến mãi
+- **Đánh giá**: Xem và quản lý feedback từ khách hàng
 
-### C. Khu vực Shipper (Shipper Dashboard)
+### 4. Giao hàng (Shipper)
+Giao diện dành riêng cho nhân viên giao hàng với các công cụ hỗ trợ.
 
-Shipper là vai trò chuyên giao đơn hàng từ admin đến khách hàng, có giao diện riêng để quản lý công việc hàng ngày.
+![Dashboard Shipper](image_readme/shipper.png)
 
-1. **Quản lý Đơn hàng Giao:**
-   - Xem danh sách các đơn hàng có thể nhận, với thông tin chi tiết về địa chỉ giao hàng, sản phẩm, tổng tiền.
-   - Cập nhật trạng thái giao hàng: đang giao, đã giao thành công, giao thất bại.
-   - Xem chi tiết đơn hàng trước khi giao.
-   - Xem được vị trí giao hàng trên google maps
+**Tính năng giao hàng:**
+- Xem danh sách đơn hàng cần giao
+- Cập nhật trạng thái giao hàng theo thời gian thực
+- Theo dõi vị trí giao hàng trên bản đồ
+- Báo cáo hiệu suất và thống kê công việc
 
-2. **Báo cáo và Thống kê:**
-   - Xem số lượng đơn hàng đã giao trong ngày/tháng.
-   - Thống kê hiệu suất công việc.
+### 5. Tương tác & Hỗ trợ
+Hệ thống tương tác đa dạng đảm bảo trải nghiệm tốt cho người dùng.
 
-### D. Hệ Thống Bảo mật & Giao tiếp (Core Systems)
+![AI Chatbot](image_readme/chatbot.png)
 
-- **Bảo mật:** Spring Security kết hợp JWT cho cả Client, Admin và Shipper. Xác thực dựa trên token.
-- **Mã hóa mật khẩu:** Sử dụng BCrypt để mã hóa mật khẩu an toàn.
-- **Email Chuyên nghiệp:** Tất cả email quan trọng (OTP, đặt lại mật khẩu, xác nhận) sử dụng HTML template.
-- **Chatbot AI:** Tích hợp Google Gemini AI để trả lời câu hỏi thường gặp.
-- **Upload Ảnh:** Sử dụng Cloudinary để lưu trữ và tối ưu hóa ảnh.
+**Tính năng nổi bật:**
+- **Chat thời gian thực**: Kết nối khách hàng với admin qua WebSocket
+- **AI Chatbot**: Tư vấn tự động sử dụng Google Gemini
+- **Email thông báo**: OTP xác thực, đặt lại mật khẩu, xác nhận đơn hàng
+- **Đánh giá sản phẩm**: Hệ thống 5 sao với bình luận chi tiết
+
+### 6. Bảo mật & An toàn
+Hệ thống bảo mật toàn diện cho tất cả vai trò người dùng.
+
+**Công nghệ bảo mật:**
+- JWT Authentication cho xác thực an toàn
+- BCrypt mã hóa mật khẩu
+- Phân quyền chi tiết theo vai trò (Admin/User/Shipper)
+- Bảo vệ chống SQL Injection và XSS
 
 ---
 
